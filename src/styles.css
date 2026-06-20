@@ -1381,6 +1381,13 @@ input[type="range"] {
 .workshop-code-info small { color: var(--text-3); font-size: 11px; }
 .workshop-msg { color: var(--good); font-size: 13px; margin: 0; }
 
+.counter-why {
+  margin: 0 0 10px; padding: 8px 10px; font-size: 13px; line-height: 1.5;
+  color: var(--text); background: var(--surface-2);
+  border-left: 3px solid var(--primary); border-radius: 0 var(--radius) var(--radius) 0;
+}
+.counter-why strong { color: var(--primary); }
+
 .swap-advisor h3,
 .swap-options h4 {
   color: var(--primary);

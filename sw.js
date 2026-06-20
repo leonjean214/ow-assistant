@@ -1,4 +1,4 @@
-const CACHE_NAME = "ow-cache-v13";
+const CACHE_NAME = "ow-cache-v14";
 const OVERFAST_HOST = "overfast-api.tekrop.fr";
 const APP_SHELL = [
   "./",
@@ -19,6 +19,7 @@ const APP_SHELL = [
   "./data/maps_meta.json",
   "./data/patches.json",
   "./data/workshop.json",
+  "./data/counter-notes.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/maskable-512.png"

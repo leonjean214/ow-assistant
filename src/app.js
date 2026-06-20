@@ -1,4 +1,4 @@
-import { BAN_LABELS, DEPTH_LABELS, PATCH_TYPE_LABELS, ROLE_LABELS, fallback, findHeroId, loadHeroData, loadMapMeta, loadPatches, loadWorkshop, toArray } from "./data.js";
+import { BAN_LABELS, DEPTH_LABELS, PATCH_TYPE_LABELS, ROLE_LABELS, fallback, findHeroId, loadCounterNotes, loadHeroData, loadMapMeta, loadPatches, loadWorkshop, toArray } from "./data.js";
 import { recommend, scoreHeroAgainstEnemies } from "./counter.js";
 import { debounce, friendlyApiError, getMaps, getStatsSummary, getSummary, searchPlayers } from "./api.js";
 import { buildPerformanceCards, formatDuration, formatRank, normalizeHeroStats, sortHeroStats, summarizeRoles } from "./stats.js";
@@ -49,6 +49,7 @@ const state = {
   team: [],
   teamMessage: "",
   workshop: { meta: {}, categories: [] },
+  counterNotes: new Map(),
   selectedEnemies: [],
   currentHeroId: "",
   overlayEnemies: [],
@@ -95,7 +96,7 @@ async function init() {
   bindEvents();
   state.favorites = loadFavorites();
   try {
-    const [data, mapMeta, patches, workshop] = await Promise.all([loadHeroData(), loadMapMeta(), loadPatches(), loadWorkshop()]);
+    const [data, mapMeta, patches, workshop, counterNotes] = await Promise.all([loadHeroData(), loadMapMeta(), loadPatches(), loadWorkshop(), loadCounterNotes()]);
     state.heroes = data.heroes;
     state.byId = data.byId;
     state.compare = loadCompare();
@@ -103,6 +104,7 @@ async function init() {
     state.mapMeta = mapMeta;
     state.patches = patches;
     state.workshop = workshop;
+    state.counterNotes = counterNotes;
     state.journalEntries = loadJournal();
     renderMetaText(data.meta);
     renderLatestHeroLine();
@@ -2409,6 +2411,13 @@ function createPositionBlock(hero) {
 
 function createCounterBlock(hero) {
   const wrap = create("div", "counter-groups");
+  const why = state.counterNotes.get(hero.id);
+  if (why) {
+    const note = create("p", "counter-why");
+    appendText(note, "strong", "为什么：");
+    note.append(document.createTextNode(why));
+    wrap.append(note);
+  }
   wrap.append(
     createHeroLinkGroup("我克制 strongAgainst", hero.counters.strongAgainst, "strong"),
     createHeroLinkGroup("我怕 weakAgainst", hero.counters.weakAgainst, "weak"),
