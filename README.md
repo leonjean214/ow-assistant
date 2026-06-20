@@ -1,6 +1,6 @@
 # 守望先锋助手
 
-零构建纯静态 SPA，用于浏览 `data/heroes.json` 中的英雄数据，追踪更新/补丁改动，计算 counter / ban 建议，并接入 OverFast API 做玩家战绩、地图和 Meta 速查。
+零构建纯静态 PWA，用于浏览 `data/heroes.json` 中的英雄数据，追踪更新/补丁改动，计算 counter / ban 建议，并接入 OverFast API 做玩家战绩、地图和 Meta 速查。
 
 ## 本地运行
 
@@ -15,6 +15,7 @@ http://localhost:8000
 ```
 
 不要直接双击 `index.html`，页面需要通过 HTTP 方式 `fetch('./data/heroes.json')`。
+`file://` 下 Service Worker 会安全跳过注册。
 
 Overlay 精简模式：
 
@@ -48,18 +49,23 @@ http://localhost:8000/#/compare/genji,ana
 - 地图：加载 OverFast `/maps`，按模式筛选 57 张地图；25 张竞技图优先使用 `data/maps_meta.json` 展示地形要点和强势英雄头像行，缺图回退本地英雄地图文本聚合。
 - Meta：本地聚合 Tier 网格、Ban 三栏和职业打法速览。
 - Overlay：`?overlay=1` 下只显示紧凑克制计算器和 Meta Ban 速览。
+- PWA：提供 Web App Manifest、192/512/maskable PNG 图标和根级 Service Worker；安装后可从桌面/手机启动，离线时仍可刷新使用 app shell、本地英雄库、克制、对比、更新、Meta 和地图静态文本。
 
 ## 文件结构
 
 - `index.html`：页面骨架
 - `src/styles.css`：OP.GG / OverHub 式浅色数据门户主题、深色变量和响应式布局
 - `src/theme.js`：浅/深主题切换与 `ow-theme` 持久化
+- `src/pwa.js`：Service Worker 注册和轻量更新提示，`file://`/非安全上下文自动跳过
 - `src/api.js`：OverFast 请求封装、超时、重试、localStorage 缓存和英雄 key 映射
 - `src/data.js`：加载、规范化和索引英雄、地图 meta、补丁数据
 - `src/counter.js`：`recommend(enemyIds, heroes)` 纯函数和 `console.assert` 自测
 - `src/recommend-hero.js`：`recommendHeroes(filters, heroes)` 新手英雄推荐纯函数和 `console.assert` 自测
 - `src/stats.js`：战绩整理、排序、段位格式化、表现卡片纯函数和 `console.assert` 自测
 - `src/app.js`：导航、英雄库、战绩、地图、Meta、Overlay 和详情交互
+- `manifest.webmanifest`：PWA 安装元数据
+- `sw.js`：预缓存 app shell、本地数据和图标；离线导航回退到 `index.html`
+- `icons/`：PWA 安装图标
 - `data/heroes.json`：英雄数据源，只读消费
 - `data/maps_meta.json`：竞技图地形要点数据源，只读消费
 - `data/patches.json`：英雄时间线和补丁改动数据源，只读消费
@@ -70,6 +76,7 @@ OverFast Base URL：`https://overfast-api.tekrop.fr`
 
 - 玩家搜索、概要和统计缓存 10 分钟。
 - 地图缓存 1 天。
+- Service Worker 不拦截也不缓存 `overfast-api.tekrop.fr` 请求，外部 API 仍由 `src/api.js` 的网络请求和 `localStorage` 缓存控制。
 - 请求超时、404、网络/CORS 失败都会显示中文错误提示，不会白屏。
 - API 英雄 key 会映射 `junker-queen/soldier-76/wrecking-ball` 与本地 `junkerqueen/soldier76/wreckingball`。
 

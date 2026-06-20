@@ -73,7 +73,11 @@ let activeDetailHeroId = "";
 let routeViews = new Set();
 let previousDetailFocus = null;
 
-document.addEventListener("DOMContentLoaded", init);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init, { once: true });
+} else {
+  init();
+}
 
 async function init() {
   bindElements();
@@ -104,7 +108,7 @@ async function init() {
     applyOverlayMode();
     initRouter();
   } catch (error) {
-    console.error(error);
+    console.warn(error);
     el.dataMeta.textContent = "数据加载失败，请确认使用 http.server 从项目根目录打开。";
     el.heroEmpty.hidden = false;
     el.heroEmpty.textContent = "无法加载 data/heroes.json。";
@@ -1674,7 +1678,7 @@ async function runPlayerSearch() {
     setApiState(el.playerSearchState, results.length ? "" : "empty", results.length ? "" : "没有找到候选玩家。");
     renderPlayerResults(results);
   } catch (error) {
-    console.error(error);
+    console.warn(error);
     setApiState(el.playerSearchState, "error", friendlyApiError(error, "玩家搜索失败"));
   }
 }
@@ -1728,7 +1732,7 @@ async function selectPlayer(playerId, options = {}) {
     renderPlayerProfile(summary, stats);
     renderCounter();
   } catch (error) {
-    console.error(error);
+    console.warn(error);
     if (requestId !== state.playerRequestId) return;
     setApiState(el.playerSearchState, "error", friendlyApiError(error, "玩家数据加载失败"));
     renderPlayerShell(state.selectedPlayer, null);
@@ -2000,9 +2004,26 @@ async function loadMapsOnce() {
     renderMapModeTabs();
     renderMapsGrid();
   } catch (error) {
-    console.error(error);
+    console.warn(error);
+    state.maps = localMapsFromMeta();
+    if (state.maps.length) {
+      setApiState(el.mapsState, "error", `${friendlyApiError(error, "地图加载失败")} 已显示本地地图静态数据。`);
+      renderMapModeTabs();
+      renderMapsGrid();
+      return;
+    }
     setApiState(el.mapsState, "error", friendlyApiError(error, "地图加载失败"));
   }
+}
+
+function localMapsFromMeta() {
+  return [...state.mapMeta.entries()].map(([key, meta]) => ({
+    key,
+    name: meta.nameZh,
+    location: meta.archetype,
+    country_code: "",
+    gamemodes: meta.mode && meta.mode !== "—" ? [meta.mode] : []
+  }));
 }
 
 function renderMapModeTabs() {
