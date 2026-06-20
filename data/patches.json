@@ -15,7 +15,7 @@
     { "hero": "freja", "nameZh": "弗蕾娅", "role": "damage", "date": "2026-03", "season": "S1 中期", "note": "弩手,缚索控制" },
     { "hero": "wuyang", "nameZh": "吴阳", "role": "support", "date": "2026-03", "season": "S1/S2", "note": "国风水系辅助" },
     { "hero": "sierra", "nameZh": "塞拉", "role": "damage", "date": "2026-04-14", "season": "S2 Summit", "note": "高机动输出,第6名" },
-    { "hero": "shion", "nameZh": "紫苑", "role": "damage", "date": "2026-06-15", "season": "S3 入虎穴", "note": "★最新★ 桥本组高速近战输出" }
+    { "hero": "shion", "nameZh": "紫苑", "role": "damage", "date": "2026-06-16", "season": "S3 入虎穴", "note": "★最新★ 桥本组高机动切入枪手(双枪 Kira Pistols)" }
   ],
   "patches": [
     {
