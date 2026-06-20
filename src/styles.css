@@ -666,6 +666,14 @@ input[type="range"] {
   color: var(--primary);
 }
 
+/* 克制关系按关系上色：克制=绿、被克=红、协同=蓝 */
+.hero-link-strong { border-color: color-mix(in srgb, var(--good) 45%, var(--border)); color: var(--good); }
+.hero-link-weak { border-color: color-mix(in srgb, var(--loss) 45%, var(--border)); color: var(--loss); }
+.hero-link-synergy { border-color: color-mix(in srgb, var(--primary) 45%, var(--border)); color: var(--primary); }
+.hero-link-strong:hover { border-color: var(--good); color: var(--good); }
+.hero-link-weak:hover { border-color: var(--loss); color: var(--loss); }
+.hero-link-synergy:hover { border-color: var(--primary); color: var(--primary); }
+
 .segmented button.is-active,
 .select-chip.is-selected,
 .selected-chip,

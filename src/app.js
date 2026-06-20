@@ -2252,15 +2252,15 @@ function createPositionBlock(hero) {
 function createCounterBlock(hero) {
   const wrap = create("div", "counter-groups");
   wrap.append(
-    createHeroLinkGroup("我克制 strongAgainst", hero.counters.strongAgainst),
-    createHeroLinkGroup("我怕 weakAgainst", hero.counters.weakAgainst),
-    createHeroLinkGroup("协同 synergy", hero.counters.synergy)
+    createHeroLinkGroup("我克制 strongAgainst", hero.counters.strongAgainst, "strong"),
+    createHeroLinkGroup("我怕 weakAgainst", hero.counters.weakAgainst, "weak"),
+    createHeroLinkGroup("协同 synergy", hero.counters.synergy, "synergy")
   );
   return wrap;
 }
 
-function createHeroLinkGroup(title, ids) {
-  const group = create("div", "link-group");
+function createHeroLinkGroup(title, ids, kind = "") {
+  const group = create("div", kind ? `link-group link-${kind}` : "link-group");
   appendText(group, "h4", title);
   const links = create("div", "link-row");
   const validIds = toArray(ids);
@@ -2269,7 +2269,7 @@ function createHeroLinkGroup(title, ids) {
   } else {
     validIds.forEach((id) => {
       const hero = state.byId.get(id);
-      const button = create("button", "hero-link");
+      const button = create("button", kind ? `hero-link hero-link-${kind}` : "hero-link");
       button.type = "button";
       button.dataset.jumpHero = id;
       button.textContent = hero ? `${hero.nameZh} / ${hero.name}` : id;
