@@ -102,6 +102,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   // overlay
   await c.evals(`location.href = '${BASE}/?overlay=1'; null`); await sleep(1800);
   check("overlay 模式 body.is-overlay", (await c.evals(`document.body.classList.contains('is-overlay')`)) === true);
+  const overlayComp = await c.evals(`(()=>{const chip=document.querySelector('#overlayCounterMount .select-chip');if(!chip)return 'no-chip';chip.click();return document.querySelectorAll('#overlayCounterMount .enemy-comp').length})()`);
+  check("overlay 选敌后显示对面阵容", overlayComp === 1, `v=${overlayComp}`);
 
   await sleep(300);
   console.log(out.join("\n"));

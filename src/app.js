@@ -3234,6 +3234,7 @@ function renderOverlay() {
       chips.append(chip);
     });
     renderCounterResults(results, recommend(state.overlayEnemies, state.heroes));
+    if (state.overlayEnemies.length) results.prepend(createEnemyCompSummary(state.overlayEnemies));
   };
   run.addEventListener("click", () => {
     state.overlayEnemies = mergeEnemyParts(state.overlayEnemies, input.value.split(/[,，、\s]+/).filter(Boolean));
