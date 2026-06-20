@@ -1,8 +1,8 @@
 {
   "meta": {
-    "game": "Overwatch (2026, 去掉 \"2\"，6v6 回归)",
-    "season": "Season 2 / 2026-06",
-    "note": "evergreen 字段=英雄基础kit与经典克制(稳定)；tier/ban/分段=当前meta(随补丁变，见 docs/SOURCES.md)。Perk为2选1天赋。",
+    "game": "Overwatch (2026 起官方去掉 \"2\")",
+    "season": "Season 3：Into the Tiger's Den (Reign of Talon) / 2026-06-16",
+    "note": "evergreen 字段=英雄基础kit与经典克制(稳定)；tier/ban/分段=当前meta(随补丁变，见 docs/SOURCES.md)。Perk为2选1天赋。最新英雄 Shion(Hero 52, S3, 2026-06-16) 已联网核实。",
     "updated": "2026-06-20"
   },
   "heroes": [

@@ -2,6 +2,25 @@
 
 审查人：Claude（设计+数据+审查）｜执行：Codex（前端实现）｜日期：2026-06-20
 
+## Phase 13 审查（数据时效/完整性 · Claude 联网核实）— 无阻塞，可交付
+执行方：**Claude**（Codex 额度耗尽期间；数据本就是 Claude 主场）。手段：WebSearch 多源核实 + node JSON 校验 + 无头加载冒烟。
+
+核实结论：**全 52 名册均为真实 OW 英雄，非臆造**（此前担心的 Domina/Anran/Vendetta/Shion/Sierra/Mizuki/Wuyang/Emre/Jetpack Cat 经 blizzard 官网/wikipedia/dexerto/pcgamer/gamerant/gameinformer 多源确认）。Shion 技能(Kira Pistols/Execution/Evade/Joyride/Satsuriku Spree)与官方完全一致。
+
+修正项（均有据）：
+| 项 | 改前 | 改后 | 依据 |
+|---|---|---|---|
+| heroes.json meta.season | Season 2 / 2026-06 | Season 3：Into the Tiger's Den (Reign of Talon) / 2026-06-16 | 与 latestHero=shion(S3) 矛盾；S3 实为 6/16 上线 |
+| patches timeline shion 日期 | 2026-06-15 | 2026-06-16 | 官方 S3 上线日 |
+| shion 描述 | 桥本组高速近战输出 | 高机动切入枪手(双枪 Kira Pistols) | 武器为枪非近战 |
+| heroes.json meta.game | …6v6 回归 | 去掉未核实的 6v6 主张 | 未能独立验证 6v6 |
+| SOURCES.md | — | 新增「数据核实日志 2026-06-20」+ 版本基准更新 + 待办澄清 | 留痕可追溯 |
+
+验证：两 JSON `JSON.parse` 通过；无头加载顶栏赛季显示已更新、52 卡渲染、紫苑在。
+
+---
+
+
 ## Phase 12 审查（队伍构筑 + 阵容分析）— 无阻塞，可交付
 **执行方变更**：Codex 在实现中第二次撞到自身额度上限（恢复时间 19:28），本阶段由 **Claude 直接实现**（用户指示「一个额度用完就换另一个继续」）。因 Codex 不可用，验证手段为：node 逻辑断言 + node --check + 无头 Chrome dump-dom 渲染级冒烟，**未做完整 CDP 点击流**（如实标注）。
 

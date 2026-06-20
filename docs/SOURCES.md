@@ -1,8 +1,12 @@
 # 数据来源与更新指引
 
 ## 版本基准
-- 游戏：**Overwatch**（2026 年初去掉 "2"，6v6 回归本体），当前 **Season 2 / 2026-06**。
-- 2026 已上线新英雄：Hazard(坦)、Domina(坦)、Anran(dps)、Vendetta(dps)、Emre、Mizuki、Fika/Jetpack Cat 等（年内计划共 10 名）。
+- 游戏：**Overwatch**（2026 年初去掉 "2"），当前 **Season 3：Into the Tiger's Den（Reign of Talon），2026-06-16 上线**。
+- 2026 已上线新英雄：Hazard(坦,2025)、Wuyang(辅,2025)、Domina(坦)、Anran(dps)、Emre、Mizuki、Jetpack Cat(以上 S1 2026-02-10 五连发)、Sierra(dps,S2 Summit 2026-04)、Shion(dps,Hero 52,S3 2026-06-16)。Vendetta(dps,Marzia Bartalotti)为 2025-12 加入、Reign of Talon 主线角色。年内计划共 10 名(S4 8月/S5 10月/S6 12月待出)。
+
+## 数据核实日志
+- **2026-06-20（Claude 联网复核 Phase 13）**：核实全 52 名册均为**真实** OW 英雄(非臆造)。OW 去 "2" 鲸鱼、S1 2026 五新英雄(Domina/Emre/Mizuki/Anran/Jetpack Cat)、Sierra(S2)、Shion(S3 Hero52 2026-06-16) 均经多源(blizzard 官网/wikipedia/dexerto/pcgamer/gamerant/gameinformer)确认。**已修**：meta.season Season2→Season3；patches timeline shion 日期 06-15→06-16、描述"高速近战"→"高机动切入枪手(双枪 Kira Pistols)"(其武器为枪非近战)。Shion kit(Kira Pistols/Execution/Evade/Joyride/Satsuriku Spree)与官方一致。
+  - 来源：dexerto.com/wikis/overwatch/overwatch-season-3-update、pcgamer Shion、en.wikipedia.org/wiki/Shion_(Overwatch)、en.wikipedia.org/wiki/Vendetta_(Overwatch)、gameinformer 2026-02-04 去"2"+五新英雄、gamerant Hero 52 Shion。
 
 ## 数据分层
 - **evergreen（稳定）**：英雄基础 kit、站位、经典克制关系、地图原型、分段打法原则——多版本稳定。
@@ -16,7 +20,7 @@
 - 新英雄 kit：esports.gg、gamerant、dexerto、oneesports、fandom 对应英雄页。
 
 ## 待办（数据缺口）
-- Domina / Anran / Vendetta / Emre / Mizuki 的精确数值与大招、perk 待官方页核对（当前为搜索摘要）。
+- Domina / Anran / Vendetta / Emre / Mizuki 已确认为真实英雄（见核实日志）；其**精确数值/大招细节/完整 perk** 仍为搜索摘要级，待官方页逐项核对。
 - 全部英雄 perk 的双选项完整列表（现仅部分英雄填了代表性天赋）。
 - 50 英雄完整克制矩阵的权重微调。
 
