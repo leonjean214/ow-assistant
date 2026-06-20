@@ -44,6 +44,40 @@ export function clearJournal(storage = storageRef()) {
   return [];
 }
 
+export function serializeJournal(entries) {
+  return {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    entries: normalizeJournalEntries(entries)
+  };
+}
+
+export function parseImportedJournal(text) {
+  try {
+    const parsed = JSON.parse(String(text || ""));
+    const source = Array.isArray(parsed) ? parsed : parsed?.entries;
+    if (!Array.isArray(source)) {
+      return { entries: [], error: "导入文件需要是记录数组，或包含 entries 数组。" };
+    }
+    const entries = normalizeJournalEntries(source);
+    if (source.length && !entries.length) {
+      return { entries: [], error: "没有找到可用的对局记录。" };
+    }
+    return { entries, error: "" };
+  } catch {
+    return { entries: [], error: "JSON 文件已损坏或格式不正确。" };
+  }
+}
+
+export function mergeJournal(existing, incoming) {
+  const merged = new Map();
+  for (const entry of [...normalizeJournalEntries(existing), ...normalizeJournalEntries(incoming)]) {
+    const current = merged.get(entry.id);
+    if (!current || entry.ts > current.ts) merged.set(entry.id, entry);
+  }
+  return normalizeJournalEntries([...merged.values()]);
+}
+
 export function summarizeJournal(entries, heroesById = new Map(), options = {}) {
   const rows = normalizeJournalEntries(entries);
   const todayKey = localDateKey(options.now || Date.now());
@@ -209,6 +243,14 @@ function selfTest() {
   console.assert(summary.heroes[0].heroId === "ana" && summary.heroes[0].winrate === 100, "journal: 英雄聚合应按场次和胜率排序");
   console.assert(summary.maps.find((row) => row.mapKey === "ilios").draws === 1, "journal: 地图聚合应保留平局数");
   console.assert(normalizeJournalEntries([{ result: "bad" }, entries[0]]).length === 1, "journal: 应过滤损坏记录");
+  console.assert(serializeJournal(entries).version === 1 && serializeJournal(entries).entries.length === 4, "journal: 导出对象应包含版本和记录");
+  console.assert(parseImportedJournal("{bad").error && parseImportedJournal("{bad").entries.length === 0, "journal: 损坏导入应返回错误");
+  console.assert(parseImportedJournal(JSON.stringify({ entries: [{ result: "bad" }, entries[0]] })).entries.length === 1, "journal: 导入应过滤损坏记录");
+  const merged = mergeJournal([entries[0], entries[1]], [entries[1], entries[2]]);
+  console.assert(merged.length === 3 && merged[0].id === "4", "journal: 合并应按 id 去重并保留新到旧排序");
+  const newerConflict = { ...entries[1], ts: base + 10, result: "loss" };
+  const conflict = mergeJournal([entries[1]], [newerConflict]);
+  console.assert(conflict.length === 1 && conflict[0].result === "loss" && conflict[0].ts === base + 10, "journal: id 冲突应保留较新 ts");
   return true;
 }
 

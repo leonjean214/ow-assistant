@@ -2,6 +2,23 @@
 
 审查人：Claude（设计+数据+审查）｜执行：Codex（前端实现）｜日期：2026-06-20
 
+## Phase 11 审查（session 增强：导出/导入 + 战绩分享图卡）— 无阻塞，可交付
+执行：Codex｜验证：Codex CDP + journal 新断言 + Claude 独立复核。
+
+| 级别 | 项 | 结果 |
+|---|---|---|
+| ①Bug | 导入合并/去重/冲突保新 | ✅ mergeJournal 按 id 去重、`ts` 较新者胜；断言 + CDP(id=b→win,3条)验证 |
+| ①Bug | 损坏文件容错 | ✅ parseImportedJournal 区分损坏/空/全无效；CDP 损坏 JSON 原数据不变不崩 |
+| ①Bug | Blob 内存泄漏 | ✅ createObjectURL 后 revokeObjectURL；toBlob 失败 reject 降级 |
+| ②回归 | canvas 主题/清晰度/中文 | ✅ devicePixelRatio backing store、读 CSS 变量、深浅两版有效 PNG 1080×1350 |
+| ③风险 | 剪贴板/文件读取失败降级 | ✅ clipboard 失败仅提示、FileReader try/catch |
+| ④测试 | 空态禁用/导出内容/1000上限 | ✅ CDP 空态 disabled、导出 version:1+entries、合并保最新1000 |
+
+独立复验：journal.js 导入 silent(断言全过含 4 条新增)；`node --check` 全过；0 innerHTML；sw v11。share-card 内联 app.js(未新增文件，APP_SHELL 无需改)。
+
+---
+
+
 ## Phase 10 审查（对局记录器 + 趋势统计）— 无阻塞，可交付
 执行：Codex｜验证：Codex CDP + journal.js 断言 + Claude 独立复核（新增 src/journal.js）。
 

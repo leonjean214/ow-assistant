@@ -10,11 +10,12 @@
 - **Phase 8**：a11y 全面化 + 详情抽屉焦点陷阱 + tablist 方向键 + 表格语义 + skip link + 对比度 AA。
 - **Phase 9**：PWA —— manifest + service worker 离线可用 + 安装到桌面/手机。
 - **Phase 10**：对局记录器 + 趋势统计（`#/journal`，localStorage session 日志，离线可用）。
+- **Phase 11**：session 增强 —— 记录 JSON 导出/导入、去重合并/替换、战绩分享图卡（canvas PNG，深浅主题，离线可用）。
 
 ## A 线：Web SPA 优化（Mac/Codex 可独立完成，不依赖 Win）
-- **Phase 11**：数据时效与完整性 —— 补缺英雄/Perk、克制「为什么」一句话解释、tier/ban 复核标注来源。
-- **Phase 12**：session 历史增强 —— 可分享战绩卡片、导入/导出、更多趋势维度。
-- **Phase 13**：工坊代码模块（仅收录真实代码 + 使用教程，绝不伪造）。
+- **Phase 12**：数据时效与完整性 —— 补缺英雄/Perk、克制「为什么」一句话解释、tier/ban 复核标注来源。
+- **Phase 13**：session 历史增强 —— 更多趋势维度与记录筛选。
+- **Phase 14**：工坊代码模块（仅收录真实代码 + 使用教程，绝不伪造）。
 
 ## B 线：Win 端实时对局（Overwolf ow-electron，需 Win 真机联调 `ssh win-desktop`）
 > 架构决策见 RESEARCH.md §3：Overwolf ow-electron 包壳现有 SPA，复用全部 UI/逻辑。

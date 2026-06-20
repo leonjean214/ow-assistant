@@ -3,7 +3,7 @@ import { recommend, scoreHeroAgainstEnemies } from "./counter.js";
 import { debounce, friendlyApiError, getMaps, getStatsSummary, getSummary, searchPlayers } from "./api.js";
 import { buildPerformanceCards, formatDuration, formatRank, normalizeHeroStats, sortHeroStats, summarizeRoles } from "./stats.js";
 import { recommendHeroes } from "./recommend-hero.js";
-import { addJournalEntry, clearJournal, loadJournal, removeJournalEntry, summarizeJournal } from "./journal.js";
+import { addJournalEntry, clearJournal, loadJournal, mergeJournal, parseImportedJournal, removeJournalEntry, saveJournal, serializeJournal, summarizeJournal } from "./journal.js";
 
 const roleNamesZh = { tank: "重装", damage: "输出", support: "支援" };
 const modeLabels = {
@@ -132,7 +132,8 @@ function bindElements() {
     "banList", "banCount", "detailDrawer", "detailDialog", "drawerScrim", "closeDrawer", "detailContent",
     "profileStatus", "playerSearchInput", "platformTabs", "recentPlayers", "playerSearchState", "playerResults", "playerProfile",
     "journalCount", "journalForm", "journalResultGroup", "journalHeroSelect", "journalMapSelect", "journalEnemyNote", "journalNote",
-    "saveJournal", "clearJournal", "journalStatus", "journalSummary", "journalHeroTable", "journalMapTable", "journalList", "journalEmpty",
+    "saveJournal", "clearJournal", "exportJournal", "importJournal", "replaceJournalToggle", "shareJournal", "journalImportFile", "journalShareCanvas",
+    "journalStatus", "journalSummary", "journalHeroTable", "journalMapTable", "journalList", "journalEmpty",
     "mapCount", "mapModeTabs", "mapsState", "mapsGrid", "mapDetail", "tierGrid", "banBoard", "rolePassives",
     "overlayView", "overlayCounterMount", "overlayBan"
   ]) {
@@ -319,6 +320,15 @@ function bindEvents() {
     state.journalEntries = clearJournal();
     renderJournal("已清空全部记录。");
   });
+  el.exportJournal.addEventListener("click", exportJournalFile);
+  el.importJournal.addEventListener("click", () => {
+    if (el.journalImportFile) {
+      el.journalImportFile.value = "";
+      el.journalImportFile.click();
+    }
+  });
+  el.journalImportFile.addEventListener("change", importJournalFile);
+  el.shareJournal.addEventListener("click", shareJournalCard);
   el.journalList.addEventListener("click", (event) => {
     const remove = event.target.closest("button[data-journal-delete]");
     if (remove) {
@@ -591,6 +601,7 @@ function renderJournal(message = "") {
   if (!el.journalSummary) return;
   const summary = summarizeJournal(state.journalEntries, state.byId);
   el.journalCount.textContent = `${summary.total.games} 局`;
+  syncJournalToolState(summary.total.games);
   if (message) {
     el.journalStatus.textContent = message;
   } else {
@@ -600,6 +611,250 @@ function renderJournal(message = "") {
   renderJournalHeroTable(summary.heroes);
   renderJournalMapTable(summary.maps);
   renderJournalList();
+}
+
+function syncJournalToolState(totalGames) {
+  const disabled = totalGames === 0;
+  if (el.exportJournal) el.exportJournal.disabled = disabled;
+  if (el.shareJournal) el.shareJournal.disabled = disabled;
+}
+
+function exportJournalFile() {
+  if (!state.journalEntries.length) {
+    renderJournal("先记录几局再导出。");
+    return;
+  }
+  const payload = serializeJournal(state.journalEntries);
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  downloadBlob(blob, `ow-journal-${dateFilePart()}.json`);
+  renderJournal("已生成 JSON 导出文件。");
+}
+
+async function importJournalFile() {
+  const file = el.journalImportFile?.files?.[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const parsed = parseImportedJournal(text);
+    if (parsed.error) {
+      renderJournal(`导入失败：${parsed.error}`);
+      return;
+    }
+    const replaceAll = Boolean(el.replaceJournalToggle?.checked);
+    if (replaceAll && state.journalEntries.length && !window.confirm("确定用导入文件替换全部本地记录？")) {
+      renderJournal("已取消导入。");
+      return;
+    }
+    state.journalEntries = replaceAll
+      ? saveJournal(parsed.entries)
+      : saveJournal(mergeJournal(state.journalEntries, parsed.entries));
+    renderJournal(`导入 ${parsed.entries.length} 条，去重后共 ${state.journalEntries.length} 条。`);
+  } catch {
+    renderJournal("导入失败：无法读取这个文件。");
+  } finally {
+    if (el.journalImportFile) el.journalImportFile.value = "";
+  }
+}
+
+async function shareJournalCard() {
+  if (!state.journalEntries.length) {
+    renderJournal("先记录几局再分享。");
+    return;
+  }
+  try {
+    const canvas = el.journalShareCanvas;
+    drawJournalShareCard(canvas, summarizeJournal(state.journalEntries, state.byId));
+    const blob = await canvasToBlob(canvas);
+    downloadBlob(blob, `ow-journal-share-${dateFilePart()}.png`);
+    const copied = await copyBlobToClipboard(blob);
+    renderJournal(copied ? "已生成分享图，并尝试复制到剪贴板。" : "已生成分享图，当前浏览器未允许复制图片。");
+  } catch {
+    renderJournal("生成分享图失败，请稍后重试。");
+  }
+}
+
+function drawJournalShareCard(canvas, summary) {
+  const width = 1080;
+  const height = 1350;
+  const dpr = Math.max(1, window.devicePixelRatio || 1);
+  canvas.width = Math.round(width * dpr);
+  canvas.height = Math.round(height * dpr);
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const colors = shareCardColors();
+  ctx.fillStyle = colors.bg;
+  ctx.fillRect(0, 0, width, height);
+  ctx.fillStyle = colors.surface;
+  roundRect(ctx, 54, 54, 972, 1242, 34);
+  ctx.fill();
+  ctx.strokeStyle = colors.border;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.fillStyle = colors.primary;
+  ctx.font = shareFont(30, 900);
+  ctx.fillText("OW 助手 · Session Journal", 96, 118);
+  ctx.fillStyle = colors.text;
+  ctx.font = shareFont(64, 900);
+  ctx.fillText("我的守望先锋战绩", 96, 198);
+  ctx.fillStyle = colors.text2;
+  ctx.font = shareFont(28, 700);
+  ctx.fillText(`S16 · ${new Intl.DateTimeFormat("zh-CN", { dateStyle: "medium" }).format(new Date())}`, 96, 252);
+
+  drawShareMetric(ctx, colors, 96, 320, 410, 220, "总场次", `${summary.total.games}`, `胜 ${summary.total.wins} / 负 ${summary.total.losses} / 平 ${summary.total.draws}`);
+  drawShareMetric(ctx, colors, 574, 320, 356, 220, "总胜率", percentText(summary.total), "胜 / (胜 + 负)");
+  drawShareMetric(ctx, colors, 96, 586, 410, 168, "今日", `${summary.today.games} 局 · ${percentText(summary.today)}`, `胜 ${summary.today.wins} / 负 ${summary.today.losses}`);
+  drawShareMetric(ctx, colors, 574, 586, 356, 168, "当前趋势", summary.streak.label, "从最近一局往前");
+
+  ctx.fillStyle = colors.text;
+  ctx.font = shareFont(34, 900);
+  ctx.fillText("最近 10 局", 96, 835);
+  const trend = summary.recent.length ? summary.recent : [];
+  for (let index = 0; index < 10; index += 1) {
+    const item = trend[index];
+    const x = 96 + index * 88;
+    const y = 870;
+    ctx.fillStyle = item ? resultColor(item.result, colors) : colors.surface3;
+    roundRect(ctx, x, y, 62, 62, 14);
+    ctx.fill();
+    ctx.fillStyle = item ? colors.onAccent : colors.text3;
+    ctx.font = shareFont(24, 900);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(item?.code || "·", x + 31, y + 31);
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+  }
+
+  ctx.fillStyle = colors.text;
+  ctx.font = shareFont(34, 900);
+  ctx.fillText("Top 英雄", 96, 1030);
+  const heroes = summary.heroes.slice(0, 3);
+  if (!heroes.length) {
+    ctx.fillStyle = colors.text2;
+    ctx.font = shareFont(28, 700);
+    ctx.fillText("暂无英雄趋势", 96, 1092);
+  }
+  heroes.forEach((hero, index) => {
+    const y = 1078 + index * 72;
+    ctx.fillStyle = colors.surface2;
+    roundRect(ctx, 96, y - 42, 838, 54, 14);
+    ctx.fill();
+    ctx.fillStyle = colors.primary;
+    ctx.font = shareFont(24, 900);
+    ctx.fillText(`#${index + 1}`, 122, y - 6);
+    ctx.fillStyle = colors.text;
+    ctx.font = shareFont(28, 900);
+    ctx.fillText(hero.nameZh || hero.name || hero.heroId, 190, y - 6);
+    ctx.fillStyle = colors.text2;
+    ctx.font = shareFont(24, 800);
+    ctx.fillText(`${hero.games} 局 · ${percentText(hero)}`, 702, y - 6);
+  });
+
+  ctx.fillStyle = colors.text3;
+  ctx.font = shareFont(22, 700);
+  ctx.fillText("本图完全在本地浏览器生成", 96, 1240);
+}
+
+function drawShareMetric(ctx, colors, x, y, width, height, label, value, note) {
+  ctx.fillStyle = colors.surface2;
+  roundRect(ctx, x, y, width, height, 22);
+  ctx.fill();
+  ctx.fillStyle = colors.text2;
+  ctx.font = shareFont(24, 800);
+  ctx.fillText(label, x + 32, y + 52);
+  ctx.fillStyle = colors.text;
+  ctx.font = shareFont(value.length > 8 ? 42 : 58, 900);
+  ctx.fillText(value, x + 32, y + 126);
+  ctx.fillStyle = colors.text3;
+  ctx.font = shareFont(22, 700);
+  ctx.fillText(note, x + 32, y + height - 34);
+}
+
+function shareCardColors() {
+  const styles = getComputedStyle(document.documentElement);
+  const token = (name, fallbackColor) => styles.getPropertyValue(name).trim() || fallbackColor;
+  return {
+    bg: token("--bg", "#F2F3F7"),
+    surface: token("--surface", "#FFFFFF"),
+    surface2: token("--surface-2", "#F7F8FA"),
+    surface3: token("--surface-3", "#EEF1F6"),
+    border: token("--border", "#E2E4EB"),
+    text: token("--text", "#202126"),
+    text2: token("--text-2", "#6E7178"),
+    text3: token("--text-3", "#9AA0A6"),
+    primary: token("--primary", "#2F63D7"),
+    win: token("--win", "#275DCE"),
+    loss: token("--loss", "#D52D44"),
+    onAccent: "#FFFFFF"
+  };
+}
+
+function resultColor(result, colors) {
+  if (result === "win") return colors.win;
+  if (result === "loss") return colors.loss;
+  return colors.text3;
+}
+
+function shareFont(size, weight) {
+  return `${weight} ${size}px -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif`;
+}
+
+function roundRect(ctx, x, y, width, height, radius) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+}
+
+function canvasToBlob(canvas) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) {
+        resolve(blob);
+      } else {
+        reject(new Error("canvas toBlob failed"));
+      }
+    }, "image/png");
+  });
+}
+
+async function copyBlobToClipboard(blob) {
+  try {
+    if (!navigator.clipboard?.write || typeof ClipboardItem === "undefined") return false;
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.hidden = true;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+function dateFilePart(value = new Date()) {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function renderJournalSummary(summary) {

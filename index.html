@@ -314,6 +314,17 @@
             <button class="ghost-btn" type="button" id="clearJournal">清空全部</button>
           </div>
         </form>
+        <div class="journal-tools" aria-label="记录导入导出与分享">
+          <button class="ghost-btn" type="button" id="exportJournal">导出 JSON</button>
+          <button class="ghost-btn" type="button" id="importJournal">导入 JSON</button>
+          <label class="favorite-filter journal-replace-toggle">
+            <input id="replaceJournalToggle" type="checkbox">
+            <span>替换全部</span>
+          </label>
+          <button class="primary-btn" type="button" id="shareJournal">生成分享图</button>
+          <input class="sr-only" id="journalImportFile" type="file" accept=".json,application/json">
+          <canvas class="share-canvas" id="journalShareCanvas" width="1080" height="1350" aria-hidden="true"></canvas>
+        </div>
         <p class="api-state" id="journalStatus" aria-live="polite"></p>
 
         <div class="journal-summary" id="journalSummary" aria-live="polite"></div>
