@@ -77,6 +77,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   check("英雄深链开抽屉", (await c.evals(`document.getElementById('detailDrawer').classList.contains('is-open')`)) === true);
   check("抽屉焦点在内", (await c.evals(`document.getElementById('detailDrawer').contains(document.activeElement)`)) === true);
   check("克制链接已上色", (await c.evals(`document.querySelectorAll('#detailContent .hero-link-strong, #detailContent .hero-link-weak').length`)) >= 1);
+  check("源氏详情有克制为什么", (await c.evals(`document.querySelectorAll('#detailContent .counter-why').length`)) === 1);
   await c.evals(`document.getElementById('closeDrawer').click(); null`); await sleep(300);
   check("关抽屉后失去 is-open", (await c.evals(`document.getElementById('detailDrawer').classList.contains('is-open')`)) === false);
 

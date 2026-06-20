@@ -104,6 +104,19 @@ export async function loadHeroData() {
   };
 }
 
+export async function loadCounterNotes() {
+  try {
+    const response = await fetch("./data/counter-notes.json");
+    if (!response.ok) throw new Error(`counter-notes.json 加载失败：${response.status}`);
+    const payload = await response.json();
+    const notes = payload?.notes && typeof payload.notes === "object" ? payload.notes : {};
+    return new Map(Object.entries(notes).map(([k, v]) => [String(k), String(v)]));
+  } catch (error) {
+    console.warn(error);
+    return new Map();
+  }
+}
+
 export async function loadWorkshop() {
   try {
     const response = await fetch("./data/workshop.json");
