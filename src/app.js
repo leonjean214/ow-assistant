@@ -20,14 +20,19 @@ const roleTips = {
   support: "支援既要保核心也要提供先手控制，反打技能和生存位移价值很高。"
 };
 const FAVORITES_KEY = "ow-favorites";
+const COMPARE_KEY = "ow-compare";
 const DEFAULT_VIEW = "heroes";
 const HERO_ROUTE_PREFIX = "#/hero/";
+const COMPARE_ROUTE_PREFIX = "#/compare/";
+const MAX_COMPARE = 4;
 
 const state = {
   heroes: [],
   byId: new Map(),
   filters: { role: "all", tier: "all", ban: "all", search: "", favoritesOnly: false },
   favorites: new Set(),
+  compare: [],
+  compareMessage: "",
   selectedEnemies: [],
   currentHeroId: "",
   overlayEnemies: [],
@@ -69,6 +74,7 @@ async function init() {
     const [data, mapMeta, patches] = await Promise.all([loadHeroData(), loadMapMeta(), loadPatches()]);
     state.heroes = data.heroes;
     state.byId = data.byId;
+    state.compare = loadCompare();
     state.mapMeta = mapMeta;
     state.patches = patches;
     renderMetaText(data.meta);
@@ -77,6 +83,8 @@ async function init() {
     renderHeroRecommendations();
     renderCurrentHeroOptions();
     renderHeroGrid();
+    renderCompareTray();
+    renderCompareView();
     renderUpdates();
     renderEnemyChips();
     renderCounter();
@@ -97,6 +105,7 @@ function bindElements() {
   for (const id of [
     "dataMeta", "heroCount", "heroGrid", "heroEmpty", "roleTabs", "tierFilter", "banFilter", "searchInput",
     "favoriteOnlyToggle",
+    "compareTray", "compareContent", "compareCount",
     "latestHeroLine", "updatesTimeline", "patchRoleFilter", "patchTypeFilter", "patchSearchInput", "patchList", "patchEmpty",
     "heroRecommendPanel", "recommendRole", "recommendDifficulty", "recommendDifficultyLabel", "recommendTag", "recommendResults",
     "enemyInput", "currentHeroSelect", "runCounter", "clearCounter", "selectedEnemies", "enemyChips", "counterResults",
@@ -162,8 +171,20 @@ function bindEvents() {
       toggleFavorite(favoriteButton.dataset.favoriteHero);
       return;
     }
+    const compareButton = event.target.closest("button[data-compare-hero]");
+    if (compareButton) {
+      toggleCompare(compareButton.dataset.compareHero);
+      return;
+    }
     const card = event.target.closest("[data-hero-id]");
     if (card) openDetail(card.dataset.heroId);
+  });
+  el.heroGrid.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    const card = event.target.closest(".hero-card[data-hero-id]");
+    if (!card || event.target !== card) return;
+    event.preventDefault();
+    openDetail(card.dataset.heroId);
   });
   el.updatesTimeline.addEventListener("click", (event) => {
     const item = event.target.closest("[data-update-hero]");
@@ -179,9 +200,35 @@ function bindEvents() {
       toggleFavorite(favoriteButton.dataset.favoriteHero);
       return;
     }
+    const compareButton = event.target.closest("button[data-compare-hero]");
+    if (compareButton) {
+      toggleCompare(compareButton.dataset.compareHero);
+      return;
+    }
     const target = event.target.closest("[data-jump-hero]");
     if (!target) return;
     openDetail(target.dataset.jumpHero);
+  });
+  el.compareTray.addEventListener("click", (event) => {
+    const remove = event.target.closest("button[data-remove-compare]");
+    if (remove) {
+      removeFromCompare(remove.dataset.removeCompare);
+      return;
+    }
+    if (event.target.closest("button[data-clear-compare]")) {
+      clearCompare();
+      return;
+    }
+    if (event.target.closest("button[data-view-compare]")) switchView("compare");
+  });
+  el.compareContent.addEventListener("click", (event) => {
+    const remove = event.target.closest("button[data-remove-compare]");
+    if (remove) {
+      removeFromCompare(remove.dataset.removeCompare);
+      return;
+    }
+    const hero = event.target.closest("button[data-compare-detail]");
+    if (hero) openDetail(hero.dataset.compareDetail);
   });
   el.closeDrawer.addEventListener("click", closeDetail);
   el.drawerScrim.addEventListener("click", closeDetail);
@@ -361,6 +408,7 @@ function switchView(view) {
     section.classList.toggle("is-active", section.id === `${view}View`);
   });
   if (view === "maps") loadMapsOnce();
+  if (view === "compare") renderCompareView();
   activeDetailHeroId = "";
   if (!isRouting) closeDetailPanel();
   syncHashForView(view);
@@ -402,6 +450,15 @@ function applyRouteFromHash() {
       return;
     }
 
+    if (route.type === "compare") {
+      setCompare(route.heroIds, { sync: false, silent: true });
+      switchView("compare");
+      activeDetailHeroId = "";
+      closeDetailPanel();
+      if (window.location.hash && route.invalid) replaceHash(compareHash());
+      return;
+    }
+
     switchView(route.view);
     activeDetailHeroId = "";
     closeDetailPanel();
@@ -416,6 +473,11 @@ function parseHashRoute(hash) {
   if (value.startsWith(HERO_ROUTE_PREFIX)) {
     const rawId = safeDecode(value.slice(HERO_ROUTE_PREFIX.length)).trim();
     return rawId ? { type: "hero", heroId: rawId } : { type: "view", view: DEFAULT_VIEW, invalid: true };
+  }
+  if (value.startsWith(COMPARE_ROUTE_PREFIX)) {
+    const rawIds = value.slice(COMPARE_ROUTE_PREFIX.length).split(",").map((part) => safeDecode(part).trim()).filter(Boolean);
+    const validIds = uniqueValidHeroIds(rawIds).slice(0, MAX_COMPARE);
+    return { type: "compare", heroIds: validIds, invalid: rawIds.length !== validIds.length };
   }
   if (value.startsWith("#/")) {
     const view = safeDecode(value.slice(2)).trim();
@@ -434,11 +496,18 @@ function safeDecode(value) {
 }
 
 function viewHash(view) {
+  if (view === "compare") return compareHash();
   return `#/${routeViews.has(view) ? view : DEFAULT_VIEW}`;
 }
 
 function heroHash(heroId) {
   return `${HERO_ROUTE_PREFIX}${encodeURIComponent(heroId)}`;
+}
+
+function compareHash() {
+  return state.compare.length
+    ? `${COMPARE_ROUTE_PREFIX}${state.compare.map((id) => encodeURIComponent(id)).join(",")}`
+    : "#/compare";
 }
 
 function syncHashForView(view, options = {}) {
@@ -456,6 +525,17 @@ function syncHashForHero(heroId) {
   if (overlayMode || isRouting) return;
   const next = heroHash(heroId);
   if (window.location.hash !== next) window.location.hash = next;
+}
+
+function syncHashForCompare(options = {}) {
+  if (overlayMode || isRouting || state.currentView !== "compare") return;
+  const next = compareHash();
+  if (window.location.hash === next) return;
+  if (options.replace) {
+    replaceHash(next);
+  } else {
+    window.location.hash = next;
+  }
 }
 
 function replaceHash(hash) {
@@ -626,10 +706,13 @@ function filteredHeroes() {
 }
 
 function createHeroCard(hero) {
-  const card = create("button", hero.id === state.patches.meta.latestHero ? "hero-card is-new-hero" : "hero-card");
-  card.type = "button";
+  const card = create("div", hero.id === state.patches.meta.latestHero ? "hero-card is-new-hero" : "hero-card");
+  card.setAttribute("role", "button");
+  card.tabIndex = 0;
+  card.setAttribute("aria-label", `${hero.nameZh} ${hero.name} 详情`);
   card.dataset.heroId = hero.id;
   card.append(createFavoriteButton(hero, "card"));
+  card.append(createCompareButton(hero, "card"));
   if (hero.id === state.patches.meta.latestHero) card.append(createCornerBadge("NEW", "new-corner"));
   const recentChanges = getLatestChanges(hero.id);
   if (recentChanges.length) {
@@ -717,6 +800,262 @@ function toggleFavorite(heroId) {
   }
 }
 
+function loadCompare() {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(COMPARE_KEY) || "[]");
+    return uniqueValidHeroIds(Array.isArray(parsed) ? parsed : []).slice(0, MAX_COMPARE);
+  } catch {
+    return [];
+  }
+}
+
+function saveCompare() {
+  try {
+    window.localStorage.setItem(COMPARE_KEY, JSON.stringify(state.compare));
+  } catch {
+    // Compare is optional if storage is unavailable.
+  }
+}
+
+function setCompare(ids, options = {}) {
+  state.compareMessage = "";
+  state.compare = uniqueValidHeroIds(ids).slice(0, MAX_COMPARE);
+  saveCompare();
+  renderCompareTray();
+  renderCompareView();
+  updateCompareButton();
+  if (options.sync !== false) syncHashForCompare(options);
+  if (!options.silent && ids.length > MAX_COMPARE) {
+    state.compareMessage = `最多同时对比 ${MAX_COMPARE} 位英雄。`;
+    renderCompareTray();
+    renderCompareView();
+  }
+}
+
+function toggleCompare(heroId) {
+  if (!state.byId.has(heroId)) return;
+  if (isInCompare(heroId)) {
+    removeFromCompare(heroId);
+    return;
+  }
+  if (state.compare.length >= MAX_COMPARE) {
+    state.compareMessage = `最多同时对比 ${MAX_COMPARE} 位英雄，先移除一个再添加。`;
+    renderCompareTray();
+    renderCompareView();
+    updateCompareButton();
+    return;
+  }
+  setCompare([...state.compare, heroId]);
+}
+
+function removeFromCompare(heroId) {
+  if (!isInCompare(heroId)) return;
+  setCompare(state.compare.filter((id) => id !== heroId));
+}
+
+function clearCompare() {
+  if (!state.compare.length) return;
+  setCompare([]);
+}
+
+function uniqueValidHeroIds(ids) {
+  const seen = new Set();
+  const valid = [];
+  for (const id of ids) {
+    const value = String(id || "").trim();
+    if (!value || seen.has(value) || !state.byId.has(value)) continue;
+    seen.add(value);
+    valid.push(value);
+  }
+  return valid;
+}
+
+function isInCompare(heroId) {
+  return state.compare.includes(heroId);
+}
+
+function createCompareButton(hero, context) {
+  const button = create("button", context === "detail" ? "compare-btn detail-compare" : "compare-btn");
+  button.type = "button";
+  button.dataset.compareHero = hero.id;
+  updateCompareButton(button, hero);
+  return button;
+}
+
+function updateCompareButton(button = null, hero = null) {
+  const buttons = button ? [button] : [...document.querySelectorAll("button[data-compare-hero]")];
+  buttons.forEach((item) => {
+    const currentHero = hero || state.byId.get(item.dataset.compareHero);
+    if (!currentHero) return;
+    const active = isInCompare(currentHero.id);
+    item.classList.toggle("is-active", active);
+    item.setAttribute("aria-pressed", String(active));
+    item.setAttribute("aria-label", `${active ? "移出对比" : "加入对比"} ${currentHero.nameZh}`);
+    item.title = active ? "移出对比" : "加入对比";
+    item.textContent = active ? "✓" : "⇄";
+  });
+}
+
+function renderCompareTray() {
+  el.compareTray.replaceChildren();
+  if (!state.compare.length) {
+    el.compareTray.hidden = true;
+    return;
+  }
+  el.compareTray.hidden = false;
+  const inner = create("div", "compare-tray-inner");
+  const summary = create("div", "compare-tray-summary");
+  appendText(summary, "strong", `已选 ${state.compare.length}/${MAX_COMPARE}`);
+  if (state.compareMessage) appendText(summary, "span", state.compareMessage);
+  const heroes = create("div", "compare-tray-heroes");
+  state.compare.forEach((id) => {
+    const hero = state.byId.get(id);
+    if (!hero) return;
+    heroes.append(createCompareChip(hero));
+  });
+  const actions = create("div", "compare-tray-actions");
+  const view = create("button", "primary-btn");
+  view.type = "button";
+  view.dataset.viewCompare = "true";
+  view.textContent = "查看对比";
+  const clear = create("button", "ghost-btn");
+  clear.type = "button";
+  clear.dataset.clearCompare = "true";
+  clear.textContent = "清空";
+  actions.append(view, clear);
+  inner.append(summary, heroes, actions);
+  el.compareTray.append(inner);
+}
+
+function createCompareChip(hero) {
+  const chip = create("div", "compare-chip");
+  chip.append(createAvatar(hero));
+  const name = create("span");
+  name.textContent = hero.nameZh;
+  const remove = create("button", "icon-btn");
+  remove.type = "button";
+  remove.dataset.removeCompare = hero.id;
+  remove.setAttribute("aria-label", `移出对比 ${hero.nameZh}`);
+  remove.textContent = "×";
+  chip.append(name, remove);
+  return chip;
+}
+
+function renderCompareView() {
+  if (!el.compareContent) return;
+  el.compareCount.textContent = `${state.compare.length} / ${MAX_COMPARE}`;
+  el.compareContent.replaceChildren();
+  if (state.compareMessage) {
+    const message = create("p", "compare-message");
+    message.textContent = state.compareMessage;
+    el.compareContent.append(message);
+  }
+  const heroes = state.compare.map((id) => state.byId.get(id)).filter(Boolean);
+  if (heroes.length < 2) {
+    const empty = create("div", "empty-state compare-empty");
+    appendText(empty, "strong", "选择至少 2 位英雄开始对比。");
+    appendText(empty, "span", "可在英雄卡或详情头部点击对比按钮，最多 4 位。");
+    el.compareContent.append(empty);
+    return;
+  }
+  const wrap = create("div", "compare-table-wrap");
+  const table = create("table", "compare-table");
+  table.append(createCompareHead(heroes), createCompareBody(heroes));
+  wrap.append(table);
+  el.compareContent.append(wrap);
+}
+
+function createCompareHead(heroes) {
+  const thead = document.createElement("thead");
+  const row = document.createElement("tr");
+  const empty = document.createElement("th");
+  empty.textContent = "维度";
+  row.append(empty);
+  heroes.forEach((hero) => {
+    const th = document.createElement("th");
+    const button = create("button", "compare-hero-head");
+    button.type = "button";
+    button.dataset.compareDetail = hero.id;
+    button.append(createAvatar(hero));
+    const text = create("span");
+    text.textContent = `${hero.nameZh} / ${hero.name}`;
+    button.append(text);
+    const remove = create("button", "icon-btn");
+    remove.type = "button";
+    remove.dataset.removeCompare = hero.id;
+    remove.setAttribute("aria-label", `移出对比 ${hero.nameZh}`);
+    remove.textContent = "×";
+    th.append(button, remove);
+    row.append(th);
+  });
+  thead.append(row);
+  return thead;
+}
+
+function createCompareBody(heroes) {
+  const tbody = document.createElement("tbody");
+  compareRows().forEach((row) => tbody.append(createCompareRow(row, heroes)));
+  return tbody;
+}
+
+function compareRows() {
+  return [
+    { label: "职业", get: (hero) => ROLE_LABELS[hero.role] || hero.role },
+    { label: "Tier", get: (hero) => `Tier ${fallback(hero.tier)}` },
+    { label: "难度", numeric: true, best: "min", get: (hero) => hero.difficulty, format: (value) => `${value}/5` },
+    { label: "总有效生命", numeric: true, best: "max", get: (hero) => hero.health.hp + hero.health.armor + hero.health.shield },
+    { label: "血量 HP", numeric: true, best: "max", get: (hero) => hero.health.hp },
+    { label: "护甲 Armor", numeric: true, best: "max", get: (hero) => hero.health.armor },
+    { label: "护盾 Shield", numeric: true, best: "max", get: (hero) => hero.health.shield },
+    { label: "DPS", numeric: true, best: "max", get: (hero) => firstNumber(hero.params.dps), format: (value, hero) => fallback(hero.params.dps) },
+    { label: "HPS", numeric: true, best: "max", get: (hero) => firstNumber(hero.params.healingPerSec), format: (value, hero) => fallback(hero.params.healingPerSec) },
+    { label: "射程", get: (hero) => hero.params.range },
+    { label: "机动", numeric: true, best: "max", get: (hero) => hero.params.mobility, format: (value) => `${value}/5` },
+    { label: "站位", get: (hero) => `${DEPTH_LABELS[hero.position.depth] || hero.position.depth} · ${hero.position.zh}` },
+    { label: "标签", get: (hero) => hero.tags.join("、") },
+    { label: "Ban 优先级", get: (hero) => BAN_LABELS[hero.ban.priority] || hero.ban.priority },
+    { label: "代表克制", get: (hero) => hero.counters.strongAgainst.slice(0, 3).map(heroName).join("、") }
+  ];
+}
+
+function createCompareRow(rowDef, heroes) {
+  const tr = document.createElement("tr");
+  const th = document.createElement("th");
+  th.scope = "row";
+  th.textContent = rowDef.label;
+  tr.append(th);
+  const values = heroes.map((hero) => rowDef.numeric ? normalizeCompareNumber(rowDef.get(hero)) : null);
+  const best = rowDef.numeric ? bestCompareValue(values, rowDef.best) : null;
+  heroes.forEach((hero, index) => {
+    const td = document.createElement("td");
+    const raw = rowDef.numeric ? values[index] : rowDef.get(hero);
+    const text = rowDef.numeric
+      ? (raw === null ? "—" : rowDef.format ? rowDef.format(raw, hero) : String(raw))
+      : fallback(raw);
+    td.textContent = text;
+    if (best !== null && raw === best) td.classList.add("is-best");
+    tr.append(td);
+  });
+  return tr;
+}
+
+function normalizeCompareNumber(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function firstNumber(value) {
+  if (typeof value === "number") return value;
+  const match = String(value || "").match(/\d+(?:\.\d+)?/);
+  return match ? Number(match[0]) : null;
+}
+
+function bestCompareValue(values, direction) {
+  const valid = values.filter((value) => value !== null);
+  if (!valid.length) return null;
+  return direction === "min" ? Math.min(...valid) : Math.max(...valid);
+}
+
 function createAvatar(hero) {
   const avatar = create("div", "avatar");
   const initial = create("span");
@@ -774,7 +1113,9 @@ function renderDetail(hero) {
   subtitle.textContent = `${hero.name} · ${ROLE_LABELS[hero.role] || hero.role} · Tier ${fallback(hero.tier)}`;
   names.append(title, subtitle);
   heroHead.append(names);
-  heroHead.append(createFavoriteButton(hero, "detail"));
+  const headActions = create("div", "detail-head-actions");
+  headActions.append(createFavoriteButton(hero, "detail"), createCompareButton(hero, "detail"));
+  heroHead.append(headActions);
   el.detailContent.append(heroHead);
 
   if (state.detailStat) el.detailContent.append(detailSection("你的此英雄战绩", [createHeroStatSummary(state.detailStat)]));

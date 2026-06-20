@@ -2,6 +2,29 @@
 
 审查人：Claude（设计+数据+审查）｜执行：Codex（前端实现）｜日期：2026-06-20
 
+## Phase 7 审查（英雄并排对比 + hero-card 改 div 修嵌套 button）— 无阻塞，可交付
+执行：Codex（中途撞 Codex 自身额度墙→恢复后续完成；审查方补了 createHeroCard 改 div + 详情对比按钮 + keydown 已在）｜验证：Codex CDP + Claude 独立复核。
+
+| 级别 | 项 | 结果 |
+|---|---|---|
+| ①Bug | `updateCompareButton()` 无参调用 | ✅ 重载设计：无参=刷新全部按钮，带参=更新单个，非 bug |
+| ①Bug | 数值高亮缺值处理 | ✅ `normalizeCompareNumber` 把非有限/≤0→null，不参与 best、显示「—」 |
+| ①Bug | min/max 方向 | ✅ 难度 best=min，生命/护甲/机动/DPS=max，`bestCompareValue` 正确 |
+| ②回归 | hero-card 改 div 后键盘/点击 | ✅ keydown `event.target!==card` 守卫；CDP 实测 Enter 开详情、★/对比不误开 |
+| ②回归 | 嵌套 button（Phase6 遗留）| ✅ CDP `querySelectorAll("button button").length===0` |
+| ②回归 | overlay 被对比/路由污染 | ✅ `?overlay=1#/compare/...` 仍 is-overlay、对比视图未激活 |
+| ③风险 | localStorage 损坏/超限 | ✅ try/catch 回退空；超 4 位保持 4 位 + 提示 |
+| ④测试 | node/0innerHTML/375px/深链/刷新持久 | ✅ 全过，console 0 报错 |
+
+独立复验：12 个对比函数各定义 1 次、我补的两处调用接上；`node --check` 全过；0 innerHTML。
+
+### 已知风险（非阻塞）
+1. 护甲/护盾为 0 的英雄该行显示「—」而非「0」（0 被当缺值排除高亮）——语义上可接受，纯展示细节。
+2. 数值平局时多列同时 `.is-best`（如同难度），符合「最优高亮」预期。
+
+---
+
+
 ## Phase 6 审查（hash 路由/深链 + 英雄收藏）— 无阻塞，可交付
 执行：Codex｜验证：Codex 无头 Chrome + Claude 独立复核（git diff +390/-47，6 文件）。
 
