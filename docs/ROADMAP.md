@@ -11,11 +11,13 @@
 - **Phase 9**：PWA —— manifest + service worker 离线可用 + 安装到桌面/手机。
 - **Phase 10**：对局记录器 + 趋势统计（`#/journal`，localStorage session 日志，离线可用）。
 - **Phase 11**：session 增强 —— 记录 JSON 导出/导入、去重合并/替换、战绩分享图卡（canvas PNG，深浅主题，离线可用）。
+- **Phase 14**：工坊代码模块（`#/workshop`，导入指南 + 免责 + 分类代码一键复制 + workshop.codes 实时源）。
 - **Phase 12**：队伍构筑 + 阵容分析（`#/team/<ids>`，职业配比/原型/配合/弱点 + 拿威胁去克制计算器，离线可用）。**Codex 额度耗尽期间由 Claude 直接实现**（一额度用完换另一额度继续）。
 
+- **Phase 14**：工坊代码模块（`#/workshop`，导入指南 + 免责 + 分类代码一键复制 + workshop.codes 实时源链接；只收社区多源流行代码并标来源，离线可用）。✅ Claude 实现。
+
 ## A 线：Web SPA 优化（Mac/Codex 可独立完成，不依赖 Win）
-- **Phase 13**：数据时效与完整性 —— 补缺英雄/Perk、克制「为什么」一句话解释、tier/ban 复核标注来源（**Claude 主导 + 联网核实**）。
-- **Phase 14**：工坊代码模块（仅收录真实代码 + 使用教程，绝不伪造）。
+- （A 线主体已完成；后续可做克制「为什么」逐英雄一句话、Perk 补全等内容深化。）
 
 ## B 线：Win 端实时对局（Overwolf ow-electron，需 Win 真机联调 `ssh win-desktop`）
 > 架构决策见 RESEARCH.md §3：Overwolf ow-electron 包壳现有 SPA，复用全部 UI/逻辑。

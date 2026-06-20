@@ -60,6 +60,7 @@
       <button class="view-tab is-active" type="button" data-view="heroes" id="heroesTab">英雄库</button>
       <button class="view-tab" type="button" data-view="compare" id="compareTab">英雄对比</button>
       <button class="view-tab" type="button" data-view="team" id="teamTab">组队</button>
+      <button class="view-tab" type="button" data-view="workshop" id="workshopTab">工坊</button>
       <button class="view-tab" type="button" data-view="updates" id="updatesTab">更新</button>
       <button class="view-tab" type="button" data-view="counter" id="counterTab">克制计算器</button>
       <button class="view-tab" type="button" data-view="profile" id="profileTab">战绩查询</button>
@@ -180,6 +181,16 @@
           <span class="count-pill" id="teamCount">0 / 5</span>
         </div>
         <div class="team-content" id="teamContent" aria-live="polite"></div>
+      </section>
+
+      <section class="panel view" id="workshopView" aria-labelledby="workshopTitle">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Workshop</p>
+            <h2 id="workshopTitle">工坊代码</h2>
+          </div>
+        </div>
+        <div class="workshop-content" id="workshopContent" aria-live="polite"></div>
       </section>
 
       <section class="panel view" id="updatesView" aria-labelledby="updatesTitle">

@@ -104,6 +104,21 @@ export async function loadHeroData() {
   };
 }
 
+export async function loadWorkshop() {
+  try {
+    const response = await fetch("./data/workshop.json");
+    if (!response.ok) throw new Error(`workshop.json 加载失败：${response.status}`);
+    const payload = await response.json();
+    return {
+      meta: payload?._meta && typeof payload._meta === "object" ? payload._meta : {},
+      categories: Array.isArray(payload?.categories) ? payload.categories : []
+    };
+  } catch (error) {
+    console.warn(error);
+    return { meta: {}, categories: [] };
+  }
+}
+
 export async function loadMapMeta() {
   try {
     const response = await fetch("./data/maps_meta.json");

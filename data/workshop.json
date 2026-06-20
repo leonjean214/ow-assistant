@@ -1,0 +1,60 @@
+{
+  "_meta": {
+    "desc": "工坊代码模块：仅收录社区多源出现的流行代码，均标注来源。代码会随版本失效——导入前以 workshop.codes 最新为准。",
+    "updated": "2026-06-20",
+    "disclaimer": "⚠️ 工坊代码可能随补丁/作者下架而失效。导入前请到 workshop.codes 搜同名最新代码；一般末次更新在 6 个月内的较可靠。本表代码为社区流行项+来源标注，非官方、不保证当前可用。",
+    "liveSource": "https://workshop.codes",
+    "import": {
+      "title": "如何导入工坊代码",
+      "steps": [
+        "主菜单 → 游戏 → 自定义游戏（Custom Games）",
+        "右上「创建」（Create）→ 进入「设置」（Settings）",
+        "找到地图/工坊「导入代码」（Import Code），粘贴代码 → 确定",
+        "等设置加载完成（先别急着改选项）→ 返回 → 开始（START）"
+      ],
+      "tip": "导入后等大厅完全加载好再调选项，避免覆盖。国服路径相同（游戏→自定义→设置→导入代码）。"
+    }
+  },
+  "categories": [
+    {
+      "id": "aim",
+      "name": "练枪 / 瞄准",
+      "desc": "综合、跟枪(tracking)、甩枪(flick) 等瞄准训练。",
+      "search": "https://workshop.codes/search?search=aim",
+      "codes": [
+        { "code": "VAXTA", "name": "综合瞄准训练", "note": "全能型练枪", "source": "dotesports/esports.net 2026 aim 榜" },
+        { "code": "VERYD", "name": "跟枪 Tracking", "note": "练持续跟踪(猎空/狂鼠类)", "source": "dotesports 2026" },
+        { "code": "NADDS", "name": "甩枪 Flick", "note": "练瞬狙/急停(黑百合/卡西)", "source": "dotesports 2026" },
+        { "code": "KAVE5", "name": "PMAJellies Aim Trainer V5", "note": "经典综合练枪房", "source": "esports.net / progameguides" }
+      ]
+    },
+    {
+      "id": "aim-cn",
+      "name": "练枪（国服流行）",
+      "desc": "国服社区常用练枪房。",
+      "search": "https://workshop.codes/search?search=aim",
+      "codes": [
+        { "code": "KPDEZ", "name": "基础练枪", "note": "国服基础瞄准", "source": "知乎/网易大神 练枪代码合集" },
+        { "code": "PP823", "name": "全英雄练枪+挑战模式", "note": "覆盖各英雄+挑战", "source": "知乎 练枪代码" }
+      ]
+    },
+    {
+      "id": "hero",
+      "name": "英雄专项练习",
+      "desc": "单英雄机制练习。",
+      "search": "https://workshop.codes/search?search=hero%20practice",
+      "codes": [
+        { "code": "PTTTA", "name": "安娜睡针练习", "note": "练 Ana 睡眠镖命中", "source": "知乎 练枪代码合集" }
+      ]
+    },
+    {
+      "id": "1v1",
+      "name": "1v1 / 对枪",
+      "desc": "单挑、随机换英雄等。",
+      "search": "https://workshop.codes/search?search=1v1",
+      "codes": [
+        { "code": "34204", "name": "漓江塔 1v1（死亡随机换英雄）", "note": "可加 bot/真人，难度随机", "source": "游戏果/B站 工坊合集" }
+      ]
+    }
+  ]
+}

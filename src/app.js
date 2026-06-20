@@ -1,4 +1,4 @@
-import { BAN_LABELS, DEPTH_LABELS, PATCH_TYPE_LABELS, ROLE_LABELS, fallback, findHeroId, loadHeroData, loadMapMeta, loadPatches, toArray } from "./data.js";
+import { BAN_LABELS, DEPTH_LABELS, PATCH_TYPE_LABELS, ROLE_LABELS, fallback, findHeroId, loadHeroData, loadMapMeta, loadPatches, loadWorkshop, toArray } from "./data.js";
 import { recommend, scoreHeroAgainstEnemies } from "./counter.js";
 import { debounce, friendlyApiError, getMaps, getStatsSummary, getSummary, searchPlayers } from "./api.js";
 import { buildPerformanceCards, formatDuration, formatRank, normalizeHeroStats, sortHeroStats, summarizeRoles } from "./stats.js";
@@ -48,6 +48,7 @@ const state = {
   compareMessage: "",
   team: [],
   teamMessage: "",
+  workshop: { meta: {}, categories: [] },
   selectedEnemies: [],
   currentHeroId: "",
   overlayEnemies: [],
@@ -94,13 +95,14 @@ async function init() {
   bindEvents();
   state.favorites = loadFavorites();
   try {
-    const [data, mapMeta, patches] = await Promise.all([loadHeroData(), loadMapMeta(), loadPatches()]);
+    const [data, mapMeta, patches, workshop] = await Promise.all([loadHeroData(), loadMapMeta(), loadPatches(), loadWorkshop()]);
     state.heroes = data.heroes;
     state.byId = data.byId;
     state.compare = loadCompare();
     state.team = loadTeam();
     state.mapMeta = mapMeta;
     state.patches = patches;
+    state.workshop = workshop;
     state.journalEntries = loadJournal();
     renderMetaText(data.meta);
     renderLatestHeroLine();
@@ -112,6 +114,7 @@ async function init() {
     renderCompareTray();
     renderCompareView();
     renderTeam();
+    renderWorkshop();
     renderUpdates();
     renderEnemyChips();
     renderCounter();
@@ -134,7 +137,7 @@ function bindElements() {
     "dataMeta", "heroCount", "heroGrid", "heroEmpty", "roleTabs", "tierFilter", "banFilter", "searchInput",
     "favoriteOnlyToggle",
     "compareTray", "compareContent", "compareCount",
-    "teamContent", "teamCount",
+    "teamContent", "teamCount", "workshopContent",
     "latestHeroLine", "updatesTimeline", "patchRoleFilter", "patchTypeFilter", "patchSearchInput", "patchList", "patchEmpty",
     "heroRecommendPanel", "recommendRole", "recommendDifficulty", "recommendDifficultyLabel", "recommendTag", "recommendResults",
     "enemyInput", "currentHeroSelect", "runCounter", "clearCounter", "selectedEnemies", "enemyChips", "counterResults",
@@ -291,6 +294,10 @@ function bindEvents() {
     const jump = event.target.closest("button[data-jump-hero]");
     if (jump) openDetail(jump.dataset.jumpHero);
   });
+  if (el.workshopContent) el.workshopContent.addEventListener("click", (event) => {
+    const copy = event.target.closest("button[data-copy-code]");
+    if (copy) copyWorkshopCode(copy.dataset.copyCode, copy);
+  });
   el.closeDrawer.addEventListener("click", closeDetail);
   el.drawerScrim.addEventListener("click", closeDetail);
   document.addEventListener("keydown", (event) => {
@@ -436,6 +443,7 @@ function setupA11y() {
     [el.mapsState, "polite"],
     [el.compareContent, "polite"],
     [el.teamContent, "polite"],
+    [el.workshopContent, "polite"],
     [el.recommendResults, "polite"],
     [el.patchList, "polite"],
     [el.journalStatus, "polite"],
@@ -1102,6 +1110,7 @@ function switchView(view) {
   if (view === "maps") loadMapsOnce();
   if (view === "compare") renderCompareView();
   if (view === "team") renderTeam();
+  if (view === "workshop") renderWorkshop();
   if (view === "journal") renderJournal();
   activeDetailHeroId = "";
   if (!isRouting) closeDetailPanel();
@@ -1844,6 +1853,105 @@ function teamThreatsToCounter() {
   switchView("counter");
   renderEnemyChips();
   renderCounter();
+}
+
+// ---- 工坊代码 ----
+function renderWorkshop(message = "") {
+  if (!el.workshopContent) return;
+  const { meta = {}, categories = [] } = state.workshop || {};
+  el.workshopContent.replaceChildren();
+
+  if (message) {
+    const m = create("p", "workshop-msg");
+    m.textContent = message;
+    el.workshopContent.append(m);
+  }
+
+  // 导入指南
+  if (meta.import) {
+    const guide = create("div", "team-card");
+    appendText(guide, "h3", meta.import.title || "如何导入");
+    const ol = document.createElement("ol");
+    ol.className = "workshop-steps";
+    toArray(meta.import.steps).forEach((s) => { const li = document.createElement("li"); li.textContent = s; ol.append(li); });
+    guide.append(ol);
+    if (meta.import.tip) appendText(guide, "p", meta.import.tip);
+    el.workshopContent.append(guide);
+  }
+
+  // 免责声明 + 实时源
+  if (meta.disclaimer) {
+    const warn = create("div", "workshop-disclaimer");
+    appendText(warn, "p", meta.disclaimer);
+    if (meta.liveSource) {
+      const a = document.createElement("a");
+      a.href = meta.liveSource; a.target = "_blank"; a.rel = "noopener noreferrer";
+      a.className = "hero-link";
+      a.textContent = "打开 workshop.codes（实时最新）";
+      warn.append(a);
+    }
+    el.workshopContent.append(warn);
+  }
+
+  if (!categories.length) {
+    const empty = create("p", "empty-state");
+    empty.textContent = "工坊数据未加载。";
+    el.workshopContent.append(empty);
+    return;
+  }
+
+  categories.forEach((cat) => {
+    const card = create("div", "team-card workshop-cat");
+    const head = create("div", "section-head");
+    const titleBox = create("div");
+    appendText(titleBox, "h3", cat.name);
+    if (cat.desc) appendText(titleBox, "p", cat.desc);
+    head.append(titleBox);
+    if (cat.search) {
+      const a = document.createElement("a");
+      a.href = cat.search; a.target = "_blank"; a.rel = "noopener noreferrer";
+      a.className = "hero-link";
+      a.textContent = "更多 ↗";
+      head.append(a);
+    }
+    card.append(head);
+
+    const list = create("div", "workshop-codes");
+    toArray(cat.codes).forEach((c) => {
+      const row = create("div", "workshop-code-row");
+      const codeBtn = create("button", "workshop-code");
+      codeBtn.type = "button";
+      codeBtn.dataset.copyCode = c.code;
+      codeBtn.setAttribute("aria-label", `复制工坊代码 ${c.code}`);
+      codeBtn.textContent = c.code;
+      const info = create("div", "workshop-code-info");
+      appendText(info, "strong", c.name || c.code);
+      if (c.note) appendText(info, "span", c.note);
+      if (c.source) appendText(info, "small", `来源：${c.source}`);
+      row.append(codeBtn, info);
+      list.append(row);
+    });
+    card.append(list);
+    el.workshopContent.append(card);
+  });
+}
+
+function copyWorkshopCode(code, button) {
+  const done = (ok) => {
+    if (!button) return;
+    const prev = button.textContent;
+    button.textContent = ok ? "已复制" : code;
+    if (ok) window.setTimeout(() => { button.textContent = prev; }, 1200);
+  };
+  try {
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(code).then(() => done(true)).catch(() => done(false));
+    } else {
+      done(false);
+    }
+  } catch {
+    done(false);
+  }
 }
 
 function uniqueValidHeroIds(ids) {
