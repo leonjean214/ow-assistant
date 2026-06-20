@@ -1,0 +1,7 @@
+# Codex 执行日志（巨大，不入库）
+.ai/*.log
+.ai/*-backup.css
+
+# OS / 编辑器
+.DS_Store
+*.swp
