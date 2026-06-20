@@ -2,6 +2,27 @@
 
 审查人：Claude（设计+数据+审查）｜执行：Codex（前端实现）｜日期：2026-06-20
 
+## Phase 12 审查（队伍构筑 + 阵容分析）— 无阻塞，可交付
+**执行方变更**：Codex 在实现中第二次撞到自身额度上限（恢复时间 19:28），本阶段由 **Claude 直接实现**（用户指示「一个额度用完就换另一个继续」）。因 Codex 不可用，验证手段为：node 逻辑断言 + node --check + 无头 Chrome dump-dom 渲染级冒烟，**未做完整 CDP 点击流**（如实标注）。
+
+| 级别 | 项 | 结果 |
+|---|---|---|
+| ①Bug | analyzeTeam 边界(空/缺tags/无synergy) | ✅ team.js 6 条断言通过；空阵容 count=0 不崩、不除零、不强行归类 |
+| ①Bug | runCounter 不存在(原始 TASK 笔误) | ✅ 改用 renderCounter()(内含 recommend)，去掉 runCounter 调用 |
+| ②回归 | 三角标(收藏/对比/入队)委托互斥 | ✅ heroGrid/detailContent 委托按 favorite→compare→team 顺序判定，各自 return，均排在 openDetail 前 |
+| ②回归 | team 深链/hash 同步不循环 | ✅ 沿用 isRouting guard + overlay 短路；dump-dom #/team/genji,winston,ana 恢复 3 槽+4卡+6威胁 |
+| ④测试 | 渲染冒烟 | ✅ 首页 52 卡+52 入队按钮+team tab；深链分析卡/威胁/拿去克制按钮齐全；init 未崩 |
+| ④测试 | 离线/缓存 | ✅ team.js 进 sw APP_SHELL + CACHE_NAME v12 |
+
+独立复验：`node --check` 全 8 文件过；0 innerHTML；team.js `node` 自测过。
+
+### 已知风险（非阻塞 / 待 Codex 恢复后补测）
+1. **未做 CDP 点击流测试**：入队/移除/清空切换、「拿威胁去克制计算器」跳转、三角标键盘聚焦、375px 三角标布局——逻辑按已验证的 compare(Phase7) 模式实现，但建议 Codex 恢复后补一次完整 CDP 回归。
+2. 三角标在卡片左侧叠三个(top 7/43/79)，375px 下需确认不与头像/内容重叠（dump-dom 无法验视觉）。
+
+---
+
+
 ## Phase 11 审查（session 增强：导出/导入 + 战绩分享图卡）— 无阻塞，可交付
 执行：Codex｜验证：Codex CDP + journal 新断言 + Claude 独立复核。
 

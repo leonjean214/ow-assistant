@@ -779,6 +779,159 @@ input[type="range"] {
   box-shadow: var(--focus);
 }
 
+/* 组队按钮（卡片左侧第三个，做成小药丸容纳「+队」） */
+.team-btn {
+  display: inline-grid;
+  place-items: center;
+  height: 24px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  color: var(--good);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.hero-card .team-btn {
+  position: absolute;
+  left: 7px;
+  top: 79px;
+  z-index: 3;
+}
+
+.team-btn:hover,
+.team-btn.is-active {
+  border-color: var(--good);
+  background: var(--good);
+  color: #fff;
+}
+
+.team-btn:focus-visible {
+  outline: 2px solid var(--good);
+  outline-offset: 2px;
+  box-shadow: var(--focus);
+}
+
+.detail-team {
+  width: auto;
+  padding: 0 10px;
+  height: 30px;
+}
+
+/* 组队视图 */
+.team-slots {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.team-slot {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  min-height: 96px;
+  align-content: center;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 10px 6px;
+  background: var(--surface-2);
+  position: relative;
+}
+
+.team-slot.is-filled {
+  border-style: solid;
+  background: var(--surface);
+}
+
+.team-slot-name {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  min-width: 0;
+  text-align: center;
+}
+
+.team-slot-name strong { font-size: 13px; }
+.team-slot-name span { color: var(--text-2); font-size: 11px; }
+
+.team-slot .icon-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+}
+
+.team-slot-empty { color: var(--text-3); font-size: 12px; }
+
+.team-analysis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.team-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  background: var(--surface);
+}
+
+.team-card h3 { margin: 0 0 8px; font-size: 14px; }
+.team-card p { margin: 6px 0 0; color: var(--text-2); font-size: 13px; }
+
+.tag.ok { border-color: var(--good); color: var(--good); }
+.tag.warn { border-color: var(--warn); color: var(--warn); }
+
+.team-threats {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.team-threat-row {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 8px;
+  background: var(--surface-2);
+  text-align: left;
+  cursor: pointer;
+}
+
+.team-threat-row:hover { border-color: var(--primary); }
+.team-threat-row .avatar { width: 36px; height: 36px; }
+.team-threat-row strong { display: block; font-size: 13px; }
+.team-threat-row span { color: var(--text-2); font-size: 12px; }
+
+.team-advice {
+  margin-top: 12px;
+  border-left: 3px solid var(--primary);
+  padding: 8px 12px;
+  background: var(--primary-weak);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.team-advice p { margin: 2px 0; font-size: 13px; }
+
+.team-message { color: var(--warn); font-size: 13px; margin: 0 0 10px; }
+.team-tools { margin-top: 12px; }
+.team-empty { margin-top: 12px; }
+
+@media (max-width: 768px) {
+  .team-analysis { grid-template-columns: 1fr; }
+  .team-slots { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 375px) {
+  .team-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 .detail-favorite {
   flex: 0 0 auto;
 }

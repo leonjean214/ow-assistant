@@ -1,54 +1,65 @@
-# Task Phase 11：session 增强 —— 导出/导入 + 战绩分享图卡
+# Task Phase 12：队伍构筑 + 阵容分析
 
-> Phase 1-10 全部功能须保留不回归。在 Phase 10「记录」模块上增量：①记录导出/导入(JSON，跨设备/备份)；②把统计卡渲染成可下载的分享图片(canvas)。仍零构建、离线可用、0 innerHTML。
+> Phase 1-11 全部功能须保留不回归。新增「组队」模块：选最多 5 个英雄拼阵容，自动分析职业配比、阵容原型(dive/poke/brawl)、内部配合、整体被克弱点并给建议。基于现有英雄数据 + counter.js，离线可用、0 innerHTML。
 
 ## Goal
-1. **导出/导入**：把 `ow-journal` 记录导出为 JSON 文件下载；从 JSON 文件导入(合并或替换，去重)，容错损坏文件。
-2. **战绩分享图卡**：「记录」视图一键把当前统计(总/今日胜率、连胜、最近 10 局走势、Top 英雄)绘制到 canvas，生成 PNG 可下载/复制，OP.GG 风格，深浅主题色。
+新增「组队」视图：用户从英雄库选英雄进「我的阵容」(最多 5，标准 1 坦 2 输出 2 辅)，实时分析：①职业配比是否健康；②阵容原型(突进/远程消耗/近身缠斗，按英雄标签/特征聚合)；③内部配合(picked 英雄间的 synergy 连线/提示)；④整体弱点(聚合 picked 的 weakAgainst → 哪些敌方英雄克制本阵容)与补强建议；⑤可一键把当前阵容的敌方威胁丢进克制计算器。深链 `#/team/<ids>`。
 
 ## Context（现状）
-- 纯静态零构建 SPA，ES module。记录模块在 `src/journal.js`(loadJournal/saveJournal/addJournalEntry/removeJournalEntry/clearJournal/summarizeJournal/aggregateByHero/aggregateByMap/normalizeJournalEntries 等) + app.js 的 `renderJournal*` + `journalView`(`#/journal`)。
-- 数据：localStorage `ow-journal`，条目 `{id,ts,result,heroId,mapKey|mapName,role,enemyNote?,note?}`，上限 1000。
-- 主题 token：`--primary #5383E8`、`--win/--loss/--good/--surface/--text` 等；`document.documentElement.dataset.theme` 为 `light|dark`。
-- SW 预缓存清单在 `sw.js` APP_SHELL，新增 js 要加入并升级 `CACHE_NAME`(→ v11)。
-- helper：`create/appendText/createBadge/createAvatar/fallback`；统计来自 `summarizeJournal(state.journalEntries, state.byId)`。
+- 纯静态零构建 SPA，ES module。`index.html` + `src/{app,api,stats,data,counter,recommend-hero,theme,journal,pwa}.js` + `styles.css` + `sw.js`。
+- 英雄数据 `normalizeHero`(data.js)：`id/name/nameZh/role(tank|damage|support)/subrole/tier/tags[]/counters{strongAgainst[],weakAgainst[],synergy[]}/ban` 等。`state.byId`、`state.heroes`。
+- 克制：`src/counter.js` 有 `recommend(enemyIds, heroes)`、`scoreHeroAgainstEnemies`。克制视图状态 `state.selectedEnemies`，`renderCounter`/`runCounter`。
+- 视图体系：`.view-tab[data-view]` + `.view`(id=`${view}View`)，`switchView`，hash 路由(parseHashRoute/applyRouteFromHash/syncHash*，有 `isRouting` guard、overlay 短路)，a11y `setupNavigationA11y`(role=tab/tabpanel/roving)。**新视图与深链要纳入这套**(参考 Phase 7 `#/compare/<ids>` 的实现方式，team 深链同理)。
+- helper：`create/appendText/createBadge/createAvatar/fallback/ROLE_LABELS`。
+- 收藏/对比已有持久化(localStorage)。组队可持久化 `ow-team`(可选)或仅靠深链，建议持久化最近阵容。
+- SW APP_SHELL 在 sw.js，新增 js 要加入并升级 `CACHE_NAME`(→ v12)。
 - 硬约束：0 innerHTML 注入数据；不引框架/构建/库。
 
 ## Requirements
-1. **导出**：「记录」视图加「导出」按钮 → 生成 `Blob`(application/json) → `URL.createObjectURL` + 临时 `<a download>` 触发下载，文件名含日期(如 `ow-journal-2026-06-20.json`)。导出内容含 `{ version:1, exportedAt, entries:[...] }`。用完 `revokeObjectURL`。
-2. **导入**：「导入」按钮 → 隐藏 `<input type=file accept=".json,application/json">` → 读文件 `FileReader`/`text()` → `JSON.parse` try/catch → 校验结构(数组或 `{entries}`)→ 用 `normalizeJournalEntries` 过滤 → **按 `id` 去重合并**(默认合并到现有；若 id 冲突保留较新 ts)，可提供「合并/替换」二选(简单起见：默认合并，附一个「替换全部」勾选或二次确认)。导入后落 localStorage(尊重 1000 上限，保最新)、即时刷新统计/表/列表、aria-live 提示「导入 N 条，去重后共 M 条」。损坏文件给友好错误，不崩。
-3. **journal.js 增强**：加纯函数 `serializeJournal(entries)`→导出对象、`parseImportedJournal(text)`→`{entries, error}`、`mergeJournal(existing, incoming)`→去重合并按 ts，含 console.assert 自测(合并去重/损坏/冲突保新)。
-4. **分享图卡**：「生成分享图」按钮 → 用 `<canvas>`(设 devicePixelRatio 缩放保清晰) 绘制：标题「我的守望先锋战绩」、赛季/日期、总场次+总胜率(大字)、今日、当前连胜、最近 10 局走势色块、Top 3 英雄(名+胜率)。配色取当前主题 token(可 `getComputedStyle` 读 CSS 变量)。绘制完 `canvas.toBlob` → 提供下载 PNG(文件名含日期)，并尝试 `navigator.clipboard.write`(失败仅提示，不报错)。卡片尺寸适合分享(如 1080×1350 或 1200×630)。
-5. **空态**：无记录时导出/分享按钮禁用或点了给提示「先记录几局再导出/分享」。
-6. **离线**：全部本地 + canvas，断网可用；`src/journal.js`(已在缓存)更新 + 若新增 `src/share-card.js` 要进 sw APP_SHELL 并升级版本。
+1. **阵容状态**：`state.team`(有序数组，最多 5 个有效 hero id)，localStorage `ow-team` 持久化(try/catch 容错)。`addToTeam/removeFromTeam/isInTeam/clearTeam/setTeam`。满 5 提示不超限。
+2. **入口**：英雄卡/详情头部加「入队」切换按钮(`button[data-team-hero]`，aria-pressed/aria-label，点击不冒泡开详情，委托优先判定，**排在 openDetail 之前，且与已有 favorite/compare 按钮判定不冲突**)；已入队高亮。组队视图也能从一个英雄选择器加人。
+3. **组队视图**(新 `team` tab + `teamView`)：
+   - 「我的阵容」槽位区(5 槽，显示已选英雄头像/名/职业 + 移除；空槽占位)。
+   - **职业配比卡**：坦/输出/辅 数量 vs 标准(1/2/2)，偏离给提示(如「缺 1 辅助」「坦克过多」)。
+   - **阵容原型**：用 `src/team.js` 纯函数按英雄 tags/特征归类 dive/poke/brawl 倾向，输出主原型 + 占比(标签关键词映射，缺标签英雄不强行归类)。
+   - **内部配合**：列出 picked 英雄两两间的 synergy(若 A.counters.synergy 含 B 或反向)，给「强配合」提示；无则提示「暂无显著配合数据」。
+   - **整体弱点**：聚合所有 picked 的 `weakAgainst`，统计被多少 picked 英雄惧怕 → Top 敌方威胁列表(头像+名+被几名队员克)，并给「建议针对/换人」文字。
+   - 「拿去克制计算器」按钮：把 Top 威胁(或全部聚合 weakAgainst) 灌入 `state.selectedEnemies` 并切到克制视图运行(复用现有 runCounter 流程，不破坏其逻辑)。
+4. **`src/team.js`**(纯函数 + console.assert 自测，import 进 app.js)：`analyzeTeam(team, heroesById)` 返回 `{ roleCount, roleAdvice, archetype, synergies, threats, advice }`；`teamArchetype(heroes)`；`teamThreats(heroes)`(聚合 weakAgainst 计数排序)。不触 DOM/localStorage(便于 node 自测)。
+5. **深链** `#/team/<id1>,<id2>,...`：恢复阵容并切 team 视图，非法/缺失 id 跳过不崩；`switchView('team')`/阵容变化同步 hash(沿用 isRouting guard / overlay 短路)。
+6. **空态**：阵容为空时引导「从英雄库点『入队』搭建你的阵容」。
+7. **离线**：纯本地数据；`src/team.js` 进 sw APP_SHELL + `CACHE_NAME→v12`。
 
 ## Constraints
-- 不改现有 JS 对外签名/数据流；可在 journal.js 加新导出函数，app.js 挂接，index.html 加按钮/隐藏 input/canvas 容器，styles.css 加样式。
-- 只读 `data/`，不改 `data/`、`docs/`(本 TASK 除外；允许在 docs/ROADMAP.md 标记本阶段完成)。不引框架/构建/库。
-- 0 innerHTML 注入数据。复用 token，深浅主题协调。
-- Phase 1-10 全部功能不回归；overlay 不受影响。
-- 文件下载用 Blob+revokeObjectURL；剪贴板/文件读取失败都要 try/catch 友好降级。
+- 不改现有 JS 对外签名/数据流；可加 `src/team.js`、app.js 挂接、index.html 新视图/按钮、styles.css 样式。复用 counter.js 现有函数，不改其签名。
+- 只读 `data/`，不改 `data/`、`docs/`(本 TASK 除外；允许 docs/ROADMAP.md 标记完成)。不引框架/构建/库。
+- 0 innerHTML 注入数据。复用 token，深浅主题协调；新增 class 不破坏既有 hook。
+- 英雄卡现在有 favorite + compare 两个角标按钮，再加 team 按钮要保证三者点击委托互不冲突、布局不挤(375px 不溢出)、键盘可分别聚焦、都不冒泡开详情。
+- Phase 1-11 全部功能(路由/收藏/对比/记录/a11y/PWA/overlay/克制/战绩等)不回归。overlay 不被 team/路由污染。
 
 ## Implementation Plan（建议）
-1. journal.js：`serializeJournal/parseImportedJournal/mergeJournal` + 自测。
-2. index.html：记录视图工具条加 导出/导入(file input)/生成分享图 按钮 + 离屏或容器 canvas。
-3. app.js：绑定导出(下载)、导入(读文件→merge→落库→刷新)、分享图(canvas 绘制→toBlob→下载/复制)；空态禁用。
-4. (可选)`src/share-card.js` 封装 canvas 绘制；若新增则进 sw APP_SHELL + CACHE_NAME→v11。
-5. styles.css：工具条/按钮/canvas 预览样式。
-6. 自测(无头 Chrome)：见验收。更新 README、HANDOFF、ROADMAP 标记完成。
+1. `src/team.js`：analyzeTeam/teamArchetype/teamThreats + 自测。
+2. 阵容数据层(state.team + load/save/add/remove/is/clear/set)。
+3. 英雄卡/详情加 team 按钮；委托三按钮(favorite/compare/team)判定顺序清晰。
+4. index.html：team tab + teamView(槽位/职业卡/原型/配合/弱点/按钮)。
+5. app.js：renderTeam()(分析+渲染)，switchView 进 team 渲染，深链 parseHashRoute/applyRouteFromHash 加 team 分支(参考 compare)，「拿去克制计算器」接 runCounter。
+6. styles.css：槽位、分析卡、威胁表、三角标布局。
+7. sw.js：APP_SHELL 加 team.js，CACHE_NAME→v12。
+8. 自测(无头 Chrome)：见验收。更新 README、HANDOFF、ROADMAP 标记完成。
 
 ## Acceptance Criteria
-- 导出生成含 `version/exportedAt/entries` 的 JSON 并触发下载(CDP 可验证 Blob 内容/anchor download 属性)。
-- 导入合法 JSON：记录合并去重、即时刷新、localStorage 更新、提示条数；导入损坏 JSON：友好错误不崩、原数据不变。
-- `mergeJournal/parseImportedJournal` 断言通过(去重、冲突保新、损坏过滤)。
-- 生成分享图：canvas 绘出统计且 `toBlob` 产出 PNG(非空)，文件名含日期；深浅主题各出一版且可读。
-- 无记录时导出/分享禁用或提示。
-- 离线可用；新增 js(若有)进 sw 预缓存且版本升级。
-- Phase 1-10 全功能不回归；`node --check` 全过；journal 自测断言通过；console 无报错；375px 无横向溢出；0 innerHTML 注入数据。
+- 「组队」tab/`#/team/<ids>` 深链可达(tablist/方向键沿用 Phase 8)；非法 id 跳过不崩。
+- 入队/移除/清空即时更新分析，刷新后保持(localStorage `ow-team`)，上限 5。
+- 职业配比、阵容原型、内部配合、整体弱点(威胁计数排序)正确展示；空/数据不足有合理文案。
+- 「拿去克制计算器」把威胁灌入克制视图并出推荐(不破坏克制原逻辑)。
+- 英雄卡三角标(收藏/对比/入队)点击互不冲突、都不误开详情、键盘各自可聚焦、375px 不溢出。
+- `src/team.js` 进 sw 预缓存且版本升级；离线可用。
+- Phase 1-11 全功能不回归；`node --check` 全过(含 team.js)；team.js 自测断言通过；console 无报错；375px 无横向溢出；0 innerHTML 注入数据。
 
 ## Review Focus（Codex 自查）
-- 导入去重/合并/替换语义清晰且不丢数据；1000 上限保最新。
-- 损坏/超大/非 JSON 文件容错；FileReader/clipboard/toBlob 失败降级。
-- canvas devicePixelRatio 清晰度；读 CSS 变量在两主题正确取色；中文字体可渲染。
-- Blob URL 及时 revoke，无内存泄漏。
-- 离线与 sw 版本升级后资源可加载。
+- 三角标(favorite/compare/team)委托判定顺序与互斥；不冒泡 openDetail。
+- analyzeTeam 对 0/部分/满员、缺 tags、无 synergy/weakAgainst 的边界(不除零、不强行归类)。
+- 威胁聚合计数与排序方向(被越多队员惧怕越靠前)。
+- team 深链与 switchView hash 同步不循环(isRouting guard)；overlay 短路。
+- 「拿去克制计算器」复用 runCounter 不破坏 selectedEnemies 上限/去重逻辑。
+- localStorage 容错；sw 版本升级后 team.js 离线可加载。

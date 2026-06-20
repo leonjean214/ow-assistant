@@ -4,6 +4,7 @@ import { debounce, friendlyApiError, getMaps, getStatsSummary, getSummary, searc
 import { buildPerformanceCards, formatDuration, formatRank, normalizeHeroStats, sortHeroStats, summarizeRoles } from "./stats.js";
 import { recommendHeroes } from "./recommend-hero.js";
 import { addJournalEntry, clearJournal, loadJournal, mergeJournal, parseImportedJournal, removeJournalEntry, saveJournal, serializeJournal, summarizeJournal } from "./journal.js";
+import { analyzeTeam, ROLE_ZH as TEAM_ROLE_ZH } from "./team.js";
 
 const roleNamesZh = { tank: "重装", damage: "输出", support: "支援" };
 const modeLabels = {
@@ -26,6 +27,9 @@ const DEFAULT_VIEW = "heroes";
 const HERO_ROUTE_PREFIX = "#/hero/";
 const COMPARE_ROUTE_PREFIX = "#/compare/";
 const MAX_COMPARE = 4;
+const TEAM_KEY = "ow-team";
+const TEAM_ROUTE_PREFIX = "#/team/";
+const MAX_TEAM = 5;
 const FOCUSABLE_SELECTOR = [
   "a[href]",
   "button:not([disabled])",
@@ -42,6 +46,8 @@ const state = {
   favorites: new Set(),
   compare: [],
   compareMessage: "",
+  team: [],
+  teamMessage: "",
   selectedEnemies: [],
   currentHeroId: "",
   overlayEnemies: [],
@@ -92,6 +98,7 @@ async function init() {
     state.heroes = data.heroes;
     state.byId = data.byId;
     state.compare = loadCompare();
+    state.team = loadTeam();
     state.mapMeta = mapMeta;
     state.patches = patches;
     state.journalEntries = loadJournal();
@@ -104,6 +111,7 @@ async function init() {
     renderHeroGrid();
     renderCompareTray();
     renderCompareView();
+    renderTeam();
     renderUpdates();
     renderEnemyChips();
     renderCounter();
@@ -126,6 +134,7 @@ function bindElements() {
     "dataMeta", "heroCount", "heroGrid", "heroEmpty", "roleTabs", "tierFilter", "banFilter", "searchInput",
     "favoriteOnlyToggle",
     "compareTray", "compareContent", "compareCount",
+    "teamContent", "teamCount",
     "latestHeroLine", "updatesTimeline", "patchRoleFilter", "patchTypeFilter", "patchSearchInput", "patchList", "patchEmpty",
     "heroRecommendPanel", "recommendRole", "recommendDifficulty", "recommendDifficultyLabel", "recommendTag", "recommendResults",
     "enemyInput", "currentHeroSelect", "runCounter", "clearCounter", "selectedEnemies", "enemyChips", "counterResults",
@@ -201,6 +210,11 @@ function bindEvents() {
       toggleCompare(compareButton.dataset.compareHero);
       return;
     }
+    const teamButton = event.target.closest("button[data-team-hero]");
+    if (teamButton) {
+      toggleTeam(teamButton.dataset.teamHero);
+      return;
+    }
     const card = event.target.closest("[data-hero-id]");
     if (card) openDetail(card.dataset.heroId);
   });
@@ -230,6 +244,11 @@ function bindEvents() {
       toggleCompare(compareButton.dataset.compareHero);
       return;
     }
+    const teamButton = event.target.closest("button[data-team-hero]");
+    if (teamButton) {
+      toggleTeam(teamButton.dataset.teamHero);
+      return;
+    }
     const target = event.target.closest("[data-jump-hero]");
     if (!target) return;
     openDetail(target.dataset.jumpHero);
@@ -254,6 +273,23 @@ function bindEvents() {
     }
     const hero = event.target.closest("button[data-compare-detail]");
     if (hero) openDetail(hero.dataset.compareDetail);
+  });
+  el.teamContent.addEventListener("click", (event) => {
+    const remove = event.target.closest("button[data-remove-team]");
+    if (remove) {
+      removeFromTeam(remove.dataset.removeTeam);
+      return;
+    }
+    if (event.target.closest("button[data-clear-team]")) {
+      clearTeam();
+      return;
+    }
+    if (event.target.closest("button[data-team-to-counter]")) {
+      teamThreatsToCounter();
+      return;
+    }
+    const jump = event.target.closest("button[data-jump-hero]");
+    if (jump) openDetail(jump.dataset.jumpHero);
   });
   el.closeDrawer.addEventListener("click", closeDetail);
   el.drawerScrim.addEventListener("click", closeDetail);
@@ -384,6 +420,7 @@ function setupA11y() {
     [el.playerSearchState, "polite"],
     [el.mapsState, "polite"],
     [el.compareContent, "polite"],
+    [el.teamContent, "polite"],
     [el.recommendResults, "polite"],
     [el.patchList, "polite"],
     [el.journalStatus, "polite"],
@@ -1049,6 +1086,7 @@ function switchView(view) {
   });
   if (view === "maps") loadMapsOnce();
   if (view === "compare") renderCompareView();
+  if (view === "team") renderTeam();
   if (view === "journal") renderJournal();
   activeDetailHeroId = "";
   if (!isRouting) closeDetailPanel();
@@ -1101,6 +1139,15 @@ function applyRouteFromHash() {
       return;
     }
 
+    if (route.type === "team") {
+      setTeam(route.heroIds, { sync: false, silent: true });
+      switchView("team");
+      activeDetailHeroId = "";
+      closeDetailPanel();
+      if (window.location.hash && route.invalid) replaceHash(teamHash());
+      return;
+    }
+
     switchView(route.view);
     activeDetailHeroId = "";
     closeDetailPanel();
@@ -1121,6 +1168,11 @@ function parseHashRoute(hash) {
     const validIds = uniqueValidHeroIds(rawIds).slice(0, MAX_COMPARE);
     return { type: "compare", heroIds: validIds, invalid: rawIds.length !== validIds.length };
   }
+  if (value.startsWith(TEAM_ROUTE_PREFIX)) {
+    const rawIds = value.slice(TEAM_ROUTE_PREFIX.length).split(",").map((part) => safeDecode(part).trim()).filter(Boolean);
+    const validIds = uniqueValidHeroIds(rawIds).slice(0, MAX_TEAM);
+    return { type: "team", heroIds: validIds, invalid: rawIds.length !== validIds.length };
+  }
   if (value.startsWith("#/")) {
     const view = safeDecode(value.slice(2)).trim();
     if (routeViews.has(view)) return { type: "view", view, invalid: false };
@@ -1139,6 +1191,7 @@ function safeDecode(value) {
 
 function viewHash(view) {
   if (view === "compare") return compareHash();
+  if (view === "team") return teamHash();
   return `#/${routeViews.has(view) ? view : DEFAULT_VIEW}`;
 }
 
@@ -1172,6 +1225,23 @@ function syncHashForHero(heroId) {
 function syncHashForCompare(options = {}) {
   if (overlayMode || isRouting || state.currentView !== "compare") return;
   const next = compareHash();
+  if (window.location.hash === next) return;
+  if (options.replace) {
+    replaceHash(next);
+  } else {
+    window.location.hash = next;
+  }
+}
+
+function teamHash() {
+  return state.team.length
+    ? `${TEAM_ROUTE_PREFIX}${state.team.map((id) => encodeURIComponent(id)).join(",")}`
+    : "#/team";
+}
+
+function syncHashForTeam(options = {}) {
+  if (overlayMode || isRouting || state.currentView !== "team") return;
+  const next = teamHash();
   if (window.location.hash === next) return;
   if (options.replace) {
     replaceHash(next);
@@ -1355,6 +1425,7 @@ function createHeroCard(hero) {
   card.dataset.heroId = hero.id;
   card.append(createFavoriteButton(hero, "card"));
   card.append(createCompareButton(hero, "card"));
+  card.append(createTeamButton(hero, "card"));
   if (hero.id === state.patches.meta.latestHero) card.append(createCornerBadge("NEW", "new-corner"));
   const recentChanges = getLatestChanges(hero.id);
   if (recentChanges.length) {
@@ -1498,6 +1569,231 @@ function removeFromCompare(heroId) {
 function clearCompare() {
   if (!state.compare.length) return;
   setCompare([]);
+}
+
+// ---- 队伍构筑 ----
+function loadTeam() {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(TEAM_KEY) || "[]");
+    return uniqueValidHeroIds(Array.isArray(parsed) ? parsed : []).slice(0, MAX_TEAM);
+  } catch {
+    return [];
+  }
+}
+
+function saveTeam() {
+  try {
+    window.localStorage.setItem(TEAM_KEY, JSON.stringify(state.team));
+  } catch {
+    // 阵容为可选功能，存储不可用时忽略。
+  }
+}
+
+function isInTeam(heroId) {
+  return state.team.includes(heroId);
+}
+
+function setTeam(ids, options = {}) {
+  state.teamMessage = "";
+  state.team = uniqueValidHeroIds(ids).slice(0, MAX_TEAM);
+  saveTeam();
+  renderTeam();
+  updateTeamButton();
+  if (options.sync !== false) syncHashForTeam(options);
+  if (!options.silent && ids.length > MAX_TEAM) {
+    state.teamMessage = `一支队伍最多 ${MAX_TEAM} 位英雄。`;
+    renderTeam();
+  }
+}
+
+function toggleTeam(heroId) {
+  if (!state.byId.has(heroId)) return;
+  if (isInTeam(heroId)) {
+    removeFromTeam(heroId);
+    return;
+  }
+  if (state.team.length >= MAX_TEAM) {
+    state.teamMessage = `一支队伍最多 ${MAX_TEAM} 位英雄，先移除一个再添加。`;
+    renderTeam();
+    updateTeamButton();
+    return;
+  }
+  setTeam([...state.team, heroId]);
+}
+
+function removeFromTeam(heroId) {
+  if (!isInTeam(heroId)) return;
+  setTeam(state.team.filter((id) => id !== heroId));
+}
+
+function clearTeam() {
+  if (!state.team.length) return;
+  setTeam([]);
+}
+
+function createTeamButton(hero, context) {
+  const button = create("button", context === "detail" ? "team-btn detail-team" : "team-btn");
+  button.type = "button";
+  button.dataset.teamHero = hero.id;
+  updateTeamButton(button, hero);
+  return button;
+}
+
+function updateTeamButton(button = null, hero = null) {
+  const buttons = button ? [button] : [...document.querySelectorAll("button[data-team-hero]")];
+  buttons.forEach((item) => {
+    const currentHero = hero || state.byId.get(item.dataset.teamHero);
+    if (!currentHero) return;
+    const active = isInTeam(currentHero.id);
+    item.classList.toggle("is-active", active);
+    item.setAttribute("aria-pressed", String(active));
+    item.setAttribute("aria-label", `${active ? "移出队伍" : "加入队伍"} ${currentHero.nameZh}`);
+    item.title = active ? "移出队伍" : "加入队伍";
+    item.textContent = active ? "✓队" : "+队";
+  });
+}
+
+function renderTeam(message = "") {
+  if (message) state.teamMessage = message;
+  if (!el.teamContent) return;
+  if (el.teamCount) el.teamCount.textContent = `${state.team.length} / ${MAX_TEAM}`;
+  el.teamContent.replaceChildren();
+
+  if (state.teamMessage) {
+    const msg = create("p", "team-message");
+    msg.textContent = state.teamMessage;
+    el.teamContent.append(msg);
+  }
+
+  // 槽位
+  const slots = create("div", "team-slots");
+  for (let i = 0; i < MAX_TEAM; i += 1) {
+    const id = state.team[i];
+    const hero = id ? state.byId.get(id) : null;
+    const slot = create("div", hero ? "team-slot is-filled" : "team-slot");
+    if (hero) {
+      slot.append(createAvatar(hero));
+      const name = create("div", "team-slot-name");
+      appendText(name, "strong", hero.nameZh);
+      appendText(name, "span", ROLE_LABELS[hero.role] || hero.role);
+      slot.append(name);
+      const remove = create("button", "icon-btn");
+      remove.type = "button";
+      remove.dataset.removeTeam = hero.id;
+      remove.setAttribute("aria-label", `移出队伍 ${hero.nameZh}`);
+      remove.textContent = "×";
+      slot.append(remove);
+    } else {
+      const ph = create("span", "team-slot-empty");
+      ph.textContent = "空位";
+      slot.append(ph);
+    }
+    slots.append(slot);
+  }
+  el.teamContent.append(slots);
+
+  if (!state.team.length) {
+    const empty = create("div", "empty-state team-empty");
+    appendText(empty, "strong", "阵容为空");
+    appendText(empty, "span", "从英雄库点卡片上的「+队」搭建你的阵容（最多 5 人）。");
+    el.teamContent.append(empty);
+    return;
+  }
+
+  const analysis = analyzeTeam(state.team, state.byId);
+
+  // 职业配比
+  const roleCard = create("div", "team-card");
+  appendText(roleCard, "h3", "职业配比");
+  const roleRow = create("div", "tag-row");
+  ["tank", "damage", "support"].forEach((role) => {
+    const have = analysis.roleCount[role] || 0;
+    const want = ({ tank: 1, damage: 2, support: 2 })[role];
+    const badge = textBadge(`${TEAM_ROLE_ZH[role]} ${have}/${want}`, have === want ? "tag ok" : "tag warn");
+    roleRow.append(badge);
+  });
+  roleCard.append(roleRow);
+  if (analysis.roleAdvice.length) appendText(roleCard, "p", analysis.roleAdvice.join("，"));
+
+  // 阵容原型
+  const archCard = create("div", "team-card");
+  appendText(archCard, "h3", "阵容原型");
+  appendText(archCard, "p", analysis.archetype.label + (analysis.archetype.mixed ? "（多原型并存）" : ""));
+  const archRow = create("div", "tag-row");
+  [["dive", "突进"], ["poke", "消耗"], ["brawl", "缠斗"]].forEach(([k, zh]) => {
+    if (analysis.archetype.counts[k]) archRow.append(textBadge(`${zh} ${analysis.archetype.counts[k]}`, "tag"));
+  });
+  if (archRow.children.length) archCard.append(archRow);
+
+  // 内部配合
+  const synCard = create("div", "team-card");
+  appendText(synCard, "h3", `内部配合（${analysis.synergies.length}）`);
+  if (analysis.synergies.length) {
+    const list = create("div", "tag-row");
+    analysis.synergies.forEach((p) => list.append(textBadge(`${p.aName} + ${p.bName}`, "tag ok")));
+    synCard.append(list);
+  } else {
+    appendText(synCard, "p", "暂无显著配合数据。");
+  }
+
+  // 整体弱点
+  const threatCard = create("div", "team-card");
+  appendText(threatCard, "h3", "整体弱点（敌方威胁）");
+  if (analysis.threats.length) {
+    const table = create("div", "team-threats");
+    analysis.threats.slice(0, 6).forEach((t) => {
+      const enemy = state.byId.get(t.enemyId);
+      const row = create("button", "team-threat-row");
+      row.type = "button";
+      if (enemy) row.dataset.jumpHero = t.enemyId; else row.disabled = true;
+      row.append(createAvatar(enemy || { nameZh: t.name }));
+      const body = create("div");
+      appendText(body, "strong", t.name);
+      appendText(body, "span", `克制你方 ${t.count} 名英雄`);
+      row.append(body);
+      table.append(row);
+    });
+    threatCard.append(table);
+    const toCounter = create("button", "primary-btn");
+    toCounter.type = "button";
+    toCounter.dataset.teamToCounter = "true";
+    toCounter.textContent = "拿威胁去克制计算器";
+    threatCard.append(toCounter);
+  } else {
+    appendText(threatCard, "p", "暂无明显被克数据。");
+  }
+
+  const grid = create("div", "team-analysis");
+  grid.append(roleCard, archCard, synCard, threatCard);
+  el.teamContent.append(grid);
+
+  if (analysis.advice.length) {
+    const advice = create("div", "team-advice");
+    analysis.advice.forEach((line) => appendText(advice, "p", line));
+    el.teamContent.append(advice);
+  }
+
+  const tools = create("div", "team-tools");
+  const clear = create("button", "ghost-btn");
+  clear.type = "button";
+  clear.dataset.clearTeam = "true";
+  clear.textContent = "清空阵容";
+  tools.append(clear);
+  el.teamContent.append(tools);
+}
+
+// 把全队聚合威胁送进克制计算器并运行。
+function teamThreatsToCounter() {
+  const analysis = analyzeTeam(state.team, state.byId);
+  const enemyIds = analysis.threats.map((t) => t.enemyId).filter((id) => state.byId.has(id)).slice(0, 5);
+  if (!enemyIds.length) {
+    renderTeam("当前阵容没有明显威胁可分析。");
+    return;
+  }
+  state.selectedEnemies = enemyIds;
+  switchView("counter");
+  renderEnemyChips();
+  renderCounter();
 }
 
 function uniqueValidHeroIds(ids) {
@@ -1848,7 +2144,7 @@ function renderDetail(hero) {
   names.append(title, subtitle);
   heroHead.append(names);
   const headActions = create("div", "detail-head-actions");
-  headActions.append(createFavoriteButton(hero, "detail"), createCompareButton(hero, "detail"));
+  headActions.append(createFavoriteButton(hero, "detail"), createCompareButton(hero, "detail"), createTeamButton(hero, "detail"));
   heroHead.append(headActions);
   el.detailContent.append(heroHead);
 
