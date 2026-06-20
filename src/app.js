@@ -296,6 +296,19 @@ function bindEvents() {
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeDetail();
     if (event.key === "Tab") trapDrawerFocus(event);
+    // 全局快捷键：仅在非输入态、无修饰键、抽屉未开、非 overlay 时生效
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
+    if (isTypingTarget(event.target) || overlayMode) return;
+    if (el.detailDrawer.classList.contains("is-open")) return;
+    if (event.key === "/") {
+      event.preventDefault();
+      switchView("profile");
+      window.requestAnimationFrame(() => el.playerSearchInput?.focus());
+    } else if (event.key === "b" || event.key === "B") {
+      event.preventDefault();
+      switchView("heroes");
+      window.requestAnimationFrame(() => el.searchInput?.focus());
+    }
   });
 
   el.enemyChips.addEventListener("click", (event) => {
@@ -1187,6 +1200,12 @@ function safeDecode(value) {
   } catch {
     return "";
   }
+}
+
+function isTypingTarget(node) {
+  if (!(node instanceof Element)) return false;
+  if (node.isContentEditable) return true;
+  return ["INPUT", "TEXTAREA", "SELECT"].includes(node.tagName);
 }
 
 function viewHash(view) {
