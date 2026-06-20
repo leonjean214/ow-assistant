@@ -19,7 +19,7 @@
 
 ## B 线：Win 端实时对局（Overwolf ow-electron，需 Win 真机联调 `ssh win-desktop`）
 > 架构决策见 RESEARCH.md §3：Overwolf ow-electron 包壳现有 SPA，复用全部 UI/逻辑。
-- **Phase W0 / Spike**：仓库加 `overwolf/`：ow-electron manifest + GEP 订阅最小 demo（订阅 OW2，打印本方 hero/对局事件）。在 Win 跑通，拿真实事件名/字段回填。
+- **Phase W0 / Spike**：✅ **脚手架已就绪**（`overwolf/`：manifest + background GEP 订阅 + overlay iframe 复用 `?overlay=1` + `SPIKE.md` 施工图/Win 实测计划）。⏳ **待 Win 实测**：在 `ssh win-desktop` 装 Overwolf+OW，load unpacked，回填真实 game id / supportedFeatures / 事件字段（见 SPIKE.md「实测回填」）。
 - **Phase W1**：游戏内 overlay 窗口（单键热键唤出，复用 `?overlay=1` 紧凑模式）+ 本方英雄自动带入「我该玩谁」+ 对局开始/结束检测 + session 战绩落地。
 - **Phase W2**：敌方计分板英雄获取（GEP 官方更新后用官方；否则评估 OCR）→ 实时自动克制推荐 + 胜率估算。
 

@@ -1,0 +1,34 @@
+<!doctype html>
+<!--
+  W0 spike：游戏内浮层窗口。用 iframe 复用现有 SPA 的 overlay 模式(?overlay=1)，
+  并把 background.js 转发来的 GEP 消息(owgep)中继进 iframe。
+  ⚠️ 未在 Win 实测。SPA_URL 需指向可访问的 SPA(本地 http.server 或部署地址)；
+     打包进 Overwolf 时也可改为把整个 SPA 拷进本目录、iframe 指向相对路径。见 SPIKE.md。
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>OW 助手 Overlay</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
+    iframe { width: 100%; height: 100%; border: 0; background: transparent; }
+  </style>
+</head>
+<body>
+  <iframe id="spa" title="OW 助手浮层"></iframe>
+  <script>
+    // 部署后改为你的 SPA 地址；本地联调可用 http://localhost:8000/?overlay=1
+    const SPA_URL = "http://localhost:8000/?overlay=1";
+    const frame = document.getElementById("spa");
+    frame.src = SPA_URL;
+
+    // 接收 background.js 的 GEP 消息，中继给 SPA(iframe)。
+    // SPA 侧后续可监听 message 事件，把本方英雄 → state.overlayEnemies/「我该玩谁」等。
+    window.addEventListener("message", (ev) => {
+      const d = ev.data;
+      if (!d || d.source !== "owgep") return;
+      try { frame.contentWindow.postMessage(d, "*"); } catch (e) { /* iframe 跨域时降级 */ }
+    });
+  </script>
+</body>
+</html>
