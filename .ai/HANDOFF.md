@@ -2,6 +2,48 @@
 
 ## 已完成
 
+- Phase 6 URL Hash 路由 / 深链 + 英雄收藏已完成，未修改 `data/`、`docs/` 或 `.ai/TASK.md`，未引入框架/构建/依赖。
+- `src/app.js` 新增纯静态 hash 路由层：初始化在数据加载完成后解析 hash；监听 `hashchange`；`switchView()`、`openDetail()`、`closeDetail()` 在 overlay 之外同步 hash；`?overlay=1` 下路由读写整体短路，不干扰 Overlay 模式。
+- 英雄详情深链 `#/hero/<id>` 会切到英雄库背景并打开对应抽屉；非法 hash 或非法 hero id 不崩溃，回退 `#/heroes`。
+- `src/app.js` 新增收藏数据层：`localStorage` key 为 `ow-favorites`，内存态为 `state.favorites: Set`，读写均有 try/catch 容错，损坏数据回退空集合。
+- 英雄卡右上角新增 ★/☆ 收藏按钮，包含 `aria-pressed` 和 `aria-label`；点击星标只切换收藏，不会冒泡打开详情。
+- 详情抽屉头部新增收藏按钮，与英雄卡同步；切换后立即刷新英雄库并更新详情按钮状态。
+- 英雄库筛选区新增“只看收藏”开关；开启后只显示收藏英雄；无收藏时显示“还没有收藏英雄，点卡片右上角 ★ 添加”；未开启时收藏英雄在当前过滤结果中置顶。
+- `src/styles.css` 新增收藏星标和收藏筛选 pill 样式，复用 `--warn`、`--primary`、`--border`、`--surface` 等现有 token，并保留 375px 响应式无横向溢出。
+- `README.md` 已补充深链 URL 示例、hash 路由和英雄收藏说明。
+
+## Phase 6 data-view → hash 映射
+
+| data-view | section id | hash |
+| --- | --- | --- |
+| `heroes` | `heroesView` | `#/heroes` |
+| `updates` | `updatesView` | `#/updates` |
+| `counter` | `counterView` | `#/counter` |
+| `profile` | `profileView` | `#/profile` |
+| `maps` | `mapsView` | `#/maps` |
+| `meta` | `metaView` | `#/meta` |
+| `ban` | `banView` | `#/ban` |
+| 英雄详情 | `detailDrawer` over `heroesView` | `#/hero/<id>`，例如 `#/hero/genji` |
+
+说明：当前 DOM 中实际 `data-view` 为 `profile` 和 `ban`；任务文本中的 `players`、`recommend` 不是现有导航视图，因此未新增不存在的 hash 入口。
+
+## Phase 6 验证记录
+
+- 静态检查：
+  - `for f in src/*.js; do node --check "$f" || exit 1; done`
+  - `rg -n "innerHTML|insertAdjacentHTML|outerHTML" .` 无命中
+- Headless Chrome/CDP 验收通过：
+  - 直接打开 `http://127.0.0.1:8000/#/maps` 激活 `mapsView`，hash 保持 `#/maps`。
+  - 直接打开 `http://127.0.0.1:8000/#/hero/genji` 激活 `heroesView` 并打开源氏详情抽屉。
+  - 点击 tab 到 `#/counter`、再到 `#/heroes`、点击英雄卡到 `#/hero/<id>`；浏览器后退依次关闭详情并回到 `#/counter`，前进依次回到 `#/heroes` 并重开详情。
+  - 英雄卡 ★ 点击不会打开详情；`ow-favorites` 持久化；刷新后收藏状态保持。
+  - “只看收藏”只显示收藏英雄；在详情中取消收藏后英雄库立即变空并显示收藏空态。
+  - `?overlay=1#/hero/genji` 下 body 保持 `is-overlay`，topbar 隐藏，overlay 可见，详情未被路由打开。
+  - 非法 hash `#/not-a-real-route` 回退 `#/heroes`，无崩溃。
+  - 375px 视口 `scrollWidth === clientWidth`，无横向溢出。
+  - console/runtime error 数量为 0。
+
+- Phase 5 视觉改版已完成，未修改 `data/heroes.json`、`data/maps_meta.json`、`data/patches.json`、`docs/` 或 `.ai/TASK.md`。
 - Phase 5 视觉改版已完成，未修改 `data/heroes.json`、`data/maps_meta.json`、`data/patches.json`、`docs/` 或 `.ai/TASK.md`。
 - `src/styles.css` 已整体重写为 OP.GG / OverHub 式浅色数据门户风：`:root` 默认浅色 token、`[data-theme="dark"]` 深色 token、冷灰背景 `#F2F3F7`、白卡、OP.GG 蓝 `#5383E8`、细边框轻阴影、蓝色激活下划线 tab、斑马/hover 数据表、tabular 数字、胜率蓝红、英雄头像 tile、补丁/time line、地图卡、段位/表现卡、overlay 紧凑卡和 768/375 响应式规则。
 - `index.html` 顶栏改为 logo + 顶栏 BattleTag 搜索壳 + 主题切换按钮 + season pill + Overlay 入口；主导航独立为 OP.GG tab 条；内容区使用 `main.app-shell` 居中 `max-width:1080px`。保留了 `app.js` 依赖的所有核心 id、`.view`、`.view-tab`、`.hero-card`、`#heroGrid` 和 `data-*` 事件 hook。

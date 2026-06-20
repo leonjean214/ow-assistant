@@ -19,15 +19,19 @@ const roleTips = {
   damage: "输出围绕地图视野和敌方后排压力选角，当前更重视稳定击杀窗口。",
   support: "支援既要保核心也要提供先手控制，反打技能和生存位移价值很高。"
 };
+const FAVORITES_KEY = "ow-favorites";
+const DEFAULT_VIEW = "heroes";
+const HERO_ROUTE_PREFIX = "#/hero/";
 
 const state = {
   heroes: [],
   byId: new Map(),
-  filters: { role: "all", tier: "all", ban: "all", search: "" },
+  filters: { role: "all", tier: "all", ban: "all", search: "", favoritesOnly: false },
+  favorites: new Set(),
   selectedEnemies: [],
   currentHeroId: "",
   overlayEnemies: [],
-  currentView: "heroes",
+  currentView: DEFAULT_VIEW,
   platform: "pc",
   playerRequestId: 0,
   selectedPlayer: null,
@@ -50,12 +54,17 @@ const state = {
 };
 
 const el = {};
+let isRouting = false;
+let overlayMode = false;
+let activeDetailHeroId = "";
+let routeViews = new Set();
 
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
   bindElements();
   bindEvents();
+  state.favorites = loadFavorites();
   try {
     const [data, mapMeta, patches] = await Promise.all([loadHeroData(), loadMapMeta(), loadPatches()]);
     state.heroes = data.heroes;
@@ -75,6 +84,7 @@ async function init() {
     renderMetaDashboard();
     renderRecentPlayers();
     applyOverlayMode();
+    initRouter();
   } catch (error) {
     console.error(error);
     el.dataMeta.textContent = "数据加载失败，请确认使用 http.server 从项目根目录打开。";
@@ -86,6 +96,7 @@ async function init() {
 function bindElements() {
   for (const id of [
     "dataMeta", "heroCount", "heroGrid", "heroEmpty", "roleTabs", "tierFilter", "banFilter", "searchInput",
+    "favoriteOnlyToggle",
     "latestHeroLine", "updatesTimeline", "patchRoleFilter", "patchTypeFilter", "patchSearchInput", "patchList", "patchEmpty",
     "heroRecommendPanel", "recommendRole", "recommendDifficulty", "recommendDifficultyLabel", "recommendTag", "recommendResults",
     "enemyInput", "currentHeroSelect", "runCounter", "clearCounter", "selectedEnemies", "enemyChips", "counterResults",
@@ -96,6 +107,7 @@ function bindElements() {
   ]) {
     el[id] = document.getElementById(id);
   }
+  routeViews = new Set([...document.querySelectorAll(".view-tab[data-view]")].map((button) => button.dataset.view));
 }
 
 function bindEvents() {
@@ -123,6 +135,10 @@ function bindEvents() {
     state.filters.search = el.searchInput.value.trim().toLowerCase();
     renderHeroGrid();
   });
+  el.favoriteOnlyToggle.addEventListener("change", () => {
+    state.filters.favoritesOnly = el.favoriteOnlyToggle.checked;
+    renderHeroGrid();
+  });
   el.patchRoleFilter.addEventListener("change", () => {
     state.patchFilters.role = el.patchRoleFilter.value;
     renderPatchList();
@@ -141,6 +157,11 @@ function bindEvents() {
   });
 
   el.heroGrid.addEventListener("click", (event) => {
+    const favoriteButton = event.target.closest("button[data-favorite-hero]");
+    if (favoriteButton) {
+      toggleFavorite(favoriteButton.dataset.favoriteHero);
+      return;
+    }
     const card = event.target.closest("[data-hero-id]");
     if (card) openDetail(card.dataset.heroId);
   });
@@ -153,6 +174,11 @@ function bindEvents() {
     if (item) openDetail(item.dataset.patchHero);
   });
   el.detailContent.addEventListener("click", (event) => {
+    const favoriteButton = event.target.closest("button[data-favorite-hero]");
+    if (favoriteButton) {
+      toggleFavorite(favoriteButton.dataset.favoriteHero);
+      return;
+    }
     const target = event.target.closest("[data-jump-hero]");
     if (!target) return;
     openDetail(target.dataset.jumpHero);
@@ -326,6 +352,7 @@ function renderCurrentHeroOptions() {
 }
 
 function switchView(view) {
+  if (!routeViews.has(view)) view = DEFAULT_VIEW;
   state.currentView = view;
   document.querySelectorAll(".view-tab").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.view === view);
@@ -334,16 +361,106 @@ function switchView(view) {
     section.classList.toggle("is-active", section.id === `${view}View`);
   });
   if (view === "maps") loadMapsOnce();
+  activeDetailHeroId = "";
+  if (!isRouting) closeDetailPanel();
+  syncHashForView(view);
 }
 
 function applyOverlayMode() {
-  const overlay = new URLSearchParams(window.location.search).get("overlay") === "1";
-  document.body.classList.toggle("is-overlay", overlay);
-  if (!overlay) return;
+  overlayMode = new URLSearchParams(window.location.search).get("overlay") === "1";
+  document.body.classList.toggle("is-overlay", overlayMode);
+  if (!overlayMode) return;
   document.querySelector(".topbar").hidden = true;
   document.querySelectorAll("main > .view").forEach((section) => { section.hidden = true; });
   el.overlayView.hidden = false;
   renderOverlay();
+}
+
+function initRouter() {
+  if (overlayMode) return;
+  window.addEventListener("hashchange", applyRouteFromHash);
+  applyRouteFromHash();
+}
+
+function applyRouteFromHash() {
+  if (overlayMode) return;
+  const route = parseHashRoute(window.location.hash);
+  isRouting = true;
+  try {
+    if (route.type === "hero") {
+      switchView(DEFAULT_VIEW);
+      if (state.byId.has(route.heroId)) {
+        const hero = state.byId.get(route.heroId);
+        state.detailStat = state.heroStatById.get(route.heroId) || null;
+        renderDetail(hero);
+        openDetailPanel(route.heroId);
+      } else {
+        activeDetailHeroId = "";
+        closeDetailPanel();
+        replaceHash(viewHash(DEFAULT_VIEW));
+      }
+      return;
+    }
+
+    switchView(route.view);
+    activeDetailHeroId = "";
+    closeDetailPanel();
+    if (window.location.hash && route.invalid) replaceHash(viewHash(route.view));
+  } finally {
+    isRouting = false;
+  }
+}
+
+function parseHashRoute(hash) {
+  const value = String(hash || "").trim();
+  if (value.startsWith(HERO_ROUTE_PREFIX)) {
+    const rawId = safeDecode(value.slice(HERO_ROUTE_PREFIX.length)).trim();
+    return rawId ? { type: "hero", heroId: rawId } : { type: "view", view: DEFAULT_VIEW, invalid: true };
+  }
+  if (value.startsWith("#/")) {
+    const view = safeDecode(value.slice(2)).trim();
+    if (routeViews.has(view)) return { type: "view", view, invalid: false };
+    return { type: "view", view: DEFAULT_VIEW, invalid: true };
+  }
+  return { type: "view", view: DEFAULT_VIEW, invalid: Boolean(value) };
+}
+
+function safeDecode(value) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return "";
+  }
+}
+
+function viewHash(view) {
+  return `#/${routeViews.has(view) ? view : DEFAULT_VIEW}`;
+}
+
+function heroHash(heroId) {
+  return `${HERO_ROUTE_PREFIX}${encodeURIComponent(heroId)}`;
+}
+
+function syncHashForView(view, options = {}) {
+  if (overlayMode || isRouting) return;
+  const next = viewHash(view);
+  if (window.location.hash === next) return;
+  if (options.replace) {
+    replaceHash(next);
+  } else {
+    window.location.hash = next;
+  }
+}
+
+function syncHashForHero(heroId) {
+  if (overlayMode || isRouting) return;
+  const next = heroHash(heroId);
+  if (window.location.hash !== next) window.location.hash = next;
+}
+
+function replaceHash(hash) {
+  const target = `${window.location.pathname}${window.location.search}${hash}`;
+  window.history.replaceState(null, "", target);
 }
 
 function renderHeroGrid() {
@@ -351,6 +468,9 @@ function renderHeroGrid() {
   const heroes = filteredHeroes();
   el.heroCount.textContent = `${heroes.length} 位英雄`;
   el.heroEmpty.hidden = heroes.length !== 0;
+  el.heroEmpty.textContent = state.filters.favoritesOnly && !state.favorites.size
+    ? "还没有收藏英雄，点卡片右上角 ★ 添加"
+    : "没有符合条件的英雄。";
   for (const hero of heroes) el.heroGrid.append(createHeroCard(hero));
 }
 
@@ -492,20 +612,24 @@ function createPatchChangeRow(change) {
 }
 
 function filteredHeroes() {
-  return state.heroes.filter((hero) => {
+  const heroes = state.heroes.filter((hero) => {
     if (state.filters.role !== "all" && hero.role !== state.filters.role) return false;
     if (state.filters.tier !== "all" && hero.tier !== state.filters.tier) return false;
     if (state.filters.ban !== "all" && hero.ban.priority !== state.filters.ban) return false;
+    if (state.filters.favoritesOnly && !isFavorite(hero.id)) return false;
     if (!state.filters.search) return true;
     const haystack = [hero.id, hero.name, hero.nameZh, hero.subrole, hero.tier, ...hero.tags].join(" ").toLowerCase();
     return haystack.includes(state.filters.search);
   });
+  if (state.filters.favoritesOnly) return heroes;
+  return heroes.sort((a, b) => Number(isFavorite(b.id)) - Number(isFavorite(a.id)));
 }
 
 function createHeroCard(hero) {
   const card = create("button", hero.id === state.patches.meta.latestHero ? "hero-card is-new-hero" : "hero-card");
   card.type = "button";
   card.dataset.heroId = hero.id;
+  card.append(createFavoriteButton(hero, "card"));
   if (hero.id === state.patches.meta.latestHero) card.append(createCornerBadge("NEW", "new-corner"));
   const recentChanges = getLatestChanges(hero.id);
   if (recentChanges.length) {
@@ -539,6 +663,60 @@ function createHeroCard(hero) {
   return card;
 }
 
+function createFavoriteButton(hero, context) {
+  const button = create("button", context === "detail" ? "favorite-btn detail-favorite" : "favorite-btn");
+  button.type = "button";
+  button.dataset.favoriteHero = hero.id;
+  updateFavoriteButton(button, hero);
+  return button;
+}
+
+function updateFavoriteButton(button, hero) {
+  const active = isFavorite(hero.id);
+  button.setAttribute("aria-pressed", String(active));
+  button.setAttribute("aria-label", `${active ? "取消收藏" : "收藏"} ${hero.nameZh}`);
+  button.title = active ? "取消收藏" : "收藏";
+  button.textContent = active ? "★" : "☆";
+}
+
+function loadFavorites() {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(FAVORITES_KEY) || "[]");
+    if (!Array.isArray(parsed)) return new Set();
+    return new Set(parsed.map((id) => String(id)).filter(Boolean));
+  } catch {
+    return new Set();
+  }
+}
+
+function saveFavorites() {
+  try {
+    window.localStorage.setItem(FAVORITES_KEY, JSON.stringify([...state.favorites]));
+  } catch {
+    // Favorites are optional if storage is unavailable.
+  }
+}
+
+function isFavorite(heroId) {
+  return state.favorites.has(heroId);
+}
+
+function toggleFavorite(heroId) {
+  if (!state.byId.has(heroId)) return;
+  if (isFavorite(heroId)) {
+    state.favorites.delete(heroId);
+  } else {
+    state.favorites.add(heroId);
+  }
+  saveFavorites();
+  renderHeroGrid();
+  if (activeDetailHeroId) {
+    const hero = state.byId.get(activeDetailHeroId);
+    const button = el.detailContent.querySelector("button[data-favorite-hero]");
+    if (hero && button) updateFavoriteButton(button, hero);
+  }
+}
+
 function createAvatar(hero) {
   const avatar = create("div", "avatar");
   const initial = create("span");
@@ -561,11 +739,25 @@ function openDetail(heroId, heroStat = null) {
   if (!hero) return;
   state.detailStat = heroStat || state.heroStatById.get(heroId) || null;
   renderDetail(hero);
+  openDetailPanel(hero.id);
+  syncHashForHero(hero.id);
+}
+
+function closeDetail() {
+  const wasOpen = el.detailDrawer.classList.contains("is-open");
+  activeDetailHeroId = "";
+  closeDetailPanel();
+  if (!wasOpen) return;
+  syncHashForView(state.currentView, { replace: true });
+}
+
+function openDetailPanel(heroId) {
+  activeDetailHeroId = heroId;
   el.detailDrawer.classList.add("is-open");
   el.detailDrawer.setAttribute("aria-hidden", "false");
 }
 
-function closeDetail() {
+function closeDetailPanel() {
   el.detailDrawer.classList.remove("is-open");
   el.detailDrawer.setAttribute("aria-hidden", "true");
 }
@@ -582,6 +774,7 @@ function renderDetail(hero) {
   subtitle.textContent = `${hero.name} · ${ROLE_LABELS[hero.role] || hero.role} · Tier ${fallback(hero.tier)}`;
   names.append(title, subtitle);
   heroHead.append(names);
+  heroHead.append(createFavoriteButton(hero, "detail"));
   el.detailContent.append(heroHead);
 
   if (state.detailStat) el.detailContent.append(detailSection("你的此英雄战绩", [createHeroStatSummary(state.detailStat)]));
