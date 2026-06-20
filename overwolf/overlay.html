@@ -22,12 +22,27 @@
     const frame = document.getElementById("spa");
     frame.src = SPA_URL;
 
-    // 接收 background.js 的 GEP 消息，中继给 SPA(iframe)。
-    // SPA 侧后续可监听 message 事件，把本方英雄 → state.overlayEnemies/「我该玩谁」等。
+    // 接收 background.js 的【原始 GEP】消息，翻译成 SPA 约定的【干净 schema】再中继给 iframe。
+    // SPA(app.js handleOverlayMessage) 已实现并可测：
+    //   { source:"owgep", kind:"my-hero", heroId }      → 设为克制「我当前英雄」
+    //   { source:"owgep", kind:"enemies", heroIds:[...] } → 灌入克制/overlay 敌方
+    // ⚠️ 下面 translate() 的字段路径是占位，待 W0 在 Win 看到真实 info/events 结构后回填。
+    function translate(raw) {
+      const msgs = [];
+      if (!raw) return msgs;
+      // 例(待核对)：raw.payload.info.match_info.hero_name → 本方英雄名 → 经 SPA findHeroId 匹配
+      const heroName = raw?.payload?.info?.hero?.name || raw?.payload?.info?.me?.hero;
+      if (heroName) msgs.push({ source: "owgep", kind: "my-hero", heroId: heroName });
+      return msgs;
+    }
     window.addEventListener("message", (ev) => {
       const d = ev.data;
       if (!d || d.source !== "owgep") return;
-      try { frame.contentWindow.postMessage(d, "*"); } catch (e) { /* iframe 跨域时降级 */ }
+      // 已是干净 schema(带 kind)直接转发；否则尝试翻译原始 GEP。
+      const toSend = d.kind ? [d] : translate(d);
+      for (const m of toSend) {
+        try { frame.contentWindow.postMessage(m, "*"); } catch (e) { /* iframe 跨域时降级 */ }
+      }
     });
   </script>
 </body>

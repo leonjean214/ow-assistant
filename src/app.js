@@ -330,6 +330,8 @@ function bindEvents() {
     state.currentHeroId = el.currentHeroSelect.value;
     renderCounter();
   });
+  // Overwolf/Win 浮层消息桥（W1 SPA 侧）：overlay.html 把 GEP→干净 schema 后发来。
+  window.addEventListener("message", handleOverlayMessage);
   el.enemyInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
       mergeInputEnemies();
@@ -1206,6 +1208,35 @@ function isTypingTarget(node) {
   if (!(node instanceof Element)) return false;
   if (node.isContentEditable) return true;
   return ["INPUT", "TEXTAREA", "SELECT"].includes(node.tagName);
+}
+
+// W1：处理 Overwolf overlay 中继来的对局消息（干净 schema，GEP→schema 翻译在 overlay.html）。
+// schema: { source:"owgep", kind:"my-hero", heroId } | { kind:"enemies", heroIds:[...] }
+function handleOverlayMessage(event) {
+  const d = event?.data;
+  if (!d || d.source !== "owgep") return;
+  if (d.kind === "my-hero" && d.heroId != null) {
+    const raw = String(d.heroId);
+    const id = state.byId.has(raw) ? raw : findHeroId(raw, state.heroes);
+    if (id && state.byId.has(id)) {
+      state.currentHeroId = id;
+      if (el.currentHeroSelect) el.currentHeroSelect.value = id;
+      renderCounter();
+    }
+    return;
+  }
+  if (d.kind === "enemies" && Array.isArray(d.heroIds)) {
+    const ids = uniqueValidHeroIds(d.heroIds).slice(0, 5);
+    if (!ids.length) return;
+    if (document.body.classList.contains("is-overlay")) {
+      state.overlayEnemies = ids;
+      renderOverlay();
+    } else {
+      state.selectedEnemies = ids;
+      renderEnemyChips();
+      renderCounter();
+    }
+  }
 }
 
 function viewHash(view) {
