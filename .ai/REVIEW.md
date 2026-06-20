@@ -2,6 +2,27 @@
 
 审查人：Claude（设计+数据+审查）｜执行：Codex（前端实现）｜日期：2026-06-20
 
+## Phase 9 审查（PWA 可安装 + 离线）— 无阻塞，可交付
+执行：Codex｜验证：Codex CDP（含离线模拟）+ Claude 独立复核（新增 manifest/sw.js/pwa.js/3图标）。
+
+| 级别 | 项 | 结果 |
+|---|---|---|
+| ①Bug/安全 | SW 误拦截 OverFast API | ✅ sw.js 双重透传(hostname==OVERFAST_HOST return + 跨源 return)；CDP Cache 无 overfast 条目、在线 API 200 |
+| ①Bug | 缓存版本升级/旧缓存清理 | ✅ ow-cache-v9，activate 删非当前缓存；CDP 造 ow-cache-old 被清理 |
+| ①Bug | skipWaiting 无限刷新 | ✅ 无 controllerchange 自动 reload 循环(once+刷新后已受控)；见非阻塞① UX |
+| ②回归 | 离线导航回退后 hash/overlay 还原 | ✅ 离线 #/heroes/counter/compare/meta/updates/maps/?overlay=1 全可用 |
+| ②回归 | file:// / 无 SW 优雅跳过 | ✅ pwa.js 安全上下文+非file:才注册，try/catch；index file:// 降级显 HTTP 提示 |
+| ④测试 | 可安装/预缓存/离线渲染 | ✅ manifest 有效、图标 192/512/maskable PNG、app shell+data 预缓存、离线 52 卡 |
+
+附带改进（合理、非回归）：离线地图回退 data/maps_meta.json（25 图静态可看）、handled 错误降 console.warn、DOMContentLoaded 已触发兼容直接 init。
+
+### 已知风险（非阻塞）
+1. sw.js install 无条件 skipWaiting，配合更新 toast 的 controllerchange→reload，新 SW 安装后会**自动刷新**而非等点击 toast。非循环、低频(仅 sw.js 变更后二次访问)，纯 UX 细节。
+2. 导航/资源 cache-first：部署更新需二次加载生效（PWA 常规行为）。
+
+---
+
+
 ## Phase 8 审查（a11y 全面化 + 详情抽屉焦点陷阱）— 无阻塞，可交付
 执行：Codex｜验证：Codex CDP（含对比度数值）+ Claude 独立复核（+400/-97，6 文件）。
 

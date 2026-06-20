@@ -158,6 +158,27 @@ img {
   transform: translateY(0);
 }
 
+.pwa-update-toast {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 80;
+  max-width: calc(100vw - 32px);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  background: var(--primary);
+  color: var(--surface);
+  font-weight: 800;
+  box-shadow: var(--shadow-hover);
+  cursor: pointer;
+}
+
+.pwa-update-toast:disabled {
+  cursor: progress;
+  opacity: .72;
+}
+
 .topbar {
   position: sticky;
   top: 0;

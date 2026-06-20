@@ -1,5 +1,40 @@
 # Handoff
 
+## Phase 9 已完成
+
+- 已实现 PWA 可安装与离线 app shell，未引入框架、构建、依赖或 Workbox，未提交 git commit。
+- 新增 `manifest.webmanifest`：`name/short_name/description/lang/dir/start_url/scope/display/orientation/theme_color/background_color` 完整；图标包含 `192x192`、`512x512` 和 `purpose:"maskable"`。
+- 新增真实 PNG 图标：`icons/icon-192.png`、`icons/icon-512.png`、`icons/maskable-512.png`，均为可安装用 PNG。
+- 新增根级 `sw.js`：版本化缓存 `ow-cache-v9`；install 预缓存 `./`、`index.html`、manifest、icons、全部 `src/*.js`、`src/styles.css` 和 `data/*.json`；activate 清理旧缓存；`skipWaiting()` + `clients.claim()`。
+- SW 对同源导航/静态资源使用缓存优先并后台更新；离线导航回退缓存的 `index.html`；`overfast-api.tekrop.fr` 请求直接 return，不拦截、不缓存。
+- 新增 `src/pwa.js`：仅在非 `file:`、支持 Service Worker 且安全上下文中注册 `./sw.js`；注册失败只 warning，不影响主功能；检测到新 SW installed 时显示底部“有更新，点击刷新”提示，全部用 DOM API。
+- `index.html` 新增 theme-color、图标和 PWA 动态接入；`file://` 下不挂载 manifest/app module/PWA 注册脚本，显示 HTTP 运行提示，避免 Chrome file CORS 报错。
+- `src/app.js` 入口兼容动态 module 加载：如果 `DOMContentLoaded` 已发生则直接 `init()`；地图页在 OverFast `/maps` 失败时回退 `data/maps_meta.json` 的本地静态地图数据，离线可看 25 张竞技图静态文本。
+- 已将已处理的外部 API/数据加载失败日志降为 `console.warn`，用户仍看到原有友好错误态，避免验收中的应用级 console error。
+- `README.md` 已补充 PWA、离线、Service Worker 与 OverFast 透传说明。
+
+## Phase 9 验证记录
+
+- 静态检查：
+  - `node --check src/app.js && node --check src/api.js && node --check src/counter.js && node --check src/data.js && node --check src/pwa.js && node --check src/recommend-hero.js && node --check src/stats.js && node --check src/theme.js && node --check sw.js`
+  - `rg -n "innerHTML" index.html src sw.js manifest.webmanifest README.md` 无命中
+  - `file icons/*.png` 确认 192/512/maskable 均为 PNG image data
+- Headless Chrome/CDP 验收通过：
+  - Manifest 可读且安装字段有效：`name=守望先锋助手`、`display=standalone`、包含 192、512、maskable 图标。
+  - SW 注册成功；`ow-cache-v9` 预缓存包含 `index.html`、`src/app.js`、`src/pwa.js`、`src/styles.css`、`data/heroes.json`、`data/maps_meta.json`、`data/patches.json`、`manifest.webmanifest` 和 3 个 icon；造出的 `ow-cache-old` 在 activate 后被清理。
+  - Cache Storage 中无任何 `overfast-api.tekrop.fr` 条目；在线真实 `fetch('https://overfast-api.tekrop.fr/maps')` 返回 `200` 和 57 张地图，确认 SW 未拦截外部 API。
+  - DevTools offline 后刷新 `#/heroes` 渲染 52 张英雄卡。
+  - DevTools offline 后 `#/counter` 渲染 52 个敌方英雄 chip，克制计算器可用。
+  - DevTools offline 后 `#/compare/genji,ana` 恢复对比表。
+  - DevTools offline 后 `#/meta` 渲染 Meta 表。
+  - DevTools offline 后 `#/updates` 渲染英雄时间线。
+  - DevTools offline 后 `#/maps` 显示本地 `maps_meta` 静态回退数据。
+  - DevTools offline 后 `?overlay=1` 保持 `body.is-overlay`，overlay 可见且有 52 个 chip。
+  - DevTools offline 后 `#/profile` 查询玩家显示中文友好网络错误态，不白屏不崩。
+  - 375px 移动视口 `scrollWidth - innerWidth <= 1`，无横向溢出。
+  - `file://.../index.html` 下不挂载 manifest/app module/PWA 注册脚本，显示 `http.server` 提示。
+  - 应用级 `console.error`/runtime exception 数量为 0。浏览器资源日志中出现的错误来自测试用同源 404 页面和离线时外部图片/头像资源 `ERR_INTERNET_DISCONNECTED`，不属于应用 JS 异常。
+
 ## 已完成
 
 - Phase 8 无障碍全面化已完成，未引入框架/构建/依赖，未提交 git commit。

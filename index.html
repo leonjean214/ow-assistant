@@ -3,8 +3,11 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#5383E8" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#15171C" media="(prefers-color-scheme: dark)">
     <title>守望先锋助手</title>
-    <link rel="icon" href="data:,">
+    <link rel="icon" href="./icons/icon-192.png" sizes="192x192" type="image/png">
+    <link rel="apple-touch-icon" href="./icons/icon-192.png">
     <script>
       (() => {
         try {
@@ -13,6 +16,15 @@
         } catch {
           document.documentElement.dataset.theme = "light";
         }
+      })();
+    </script>
+    <script>
+      (() => {
+        if (window.location.protocol === "file:") return;
+        const manifest = document.createElement("link");
+        manifest.rel = "manifest";
+        manifest.href = "./manifest.webmanifest";
+        document.head.append(manifest);
       })();
     </script>
     <link rel="stylesheet" href="./src/styles.css">
@@ -317,6 +329,25 @@
       </div>
     </aside>
 
-    <script type="module" src="./src/app.js"></script>
+    <script>
+      (() => {
+        if (window.location.protocol === "file:") {
+          const dataMeta = document.getElementById("dataMeta");
+          const heroEmpty = document.getElementById("heroEmpty");
+          if (dataMeta) dataMeta.textContent = "请使用 http.server 从项目根目录打开。";
+          if (heroEmpty) {
+            heroEmpty.hidden = false;
+            heroEmpty.textContent = "file:// 下已跳过应用脚本与 Service Worker 注册。";
+          }
+          return;
+        }
+        ["./src/app.js", "./src/pwa.js"].forEach((src) => {
+          const script = document.createElement("script");
+          script.type = "module";
+          script.src = src;
+          document.body.append(script);
+        });
+      })();
+    </script>
   </body>
 </html>
