@@ -1388,6 +1388,30 @@ input[type="range"] {
 }
 .counter-why strong { color: var(--primary); }
 
+/* 个人中心 */
+.me-content { display: grid; gap: 12px; }
+.me-head { display: grid; grid-template-columns: 56px minmax(0,1fr); gap: 12px; align-items: center; margin-bottom: 10px; }
+.me-head .avatar { width: 56px; height: 56px; }
+.me-head strong { display: block; font-size: 16px; }
+.me-head span { color: var(--text-2); font-size: 12px; }
+.me-form { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+.me-bt-row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 6px; }
+.me-stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; }
+.me-stat {
+  display: grid; gap: 2px; justify-items: start; text-align: left;
+  border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px;
+  background: var(--surface-2); cursor: pointer;
+}
+.me-stat:hover { border-color: var(--primary); }
+.me-stat strong { font-size: 18px; font-variant-numeric: tabular-nums; }
+.me-stat span { color: var(--text-2); font-size: 12px; }
+.me-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+
+@media (max-width: 768px) {
+  .me-form { grid-template-columns: 1fr; }
+  .me-stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+
 .swap-advisor h3,
 .swap-options h4 {
   color: var(--primary);

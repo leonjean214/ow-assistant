@@ -12,6 +12,8 @@
 - **Phase 10**：对局记录器 + 趋势统计（`#/journal`，localStorage session 日志，离线可用）。
 - **Phase 11**：session 增强 —— 记录 JSON 导出/导入、去重合并/替换、战绩分享图卡（canvas PNG，深浅主题，离线可用）。
 - **Phase 14**：工坊代码模块（`#/workshop`，导入指南 + 免责 + 分类代码一键复制 + workshop.codes 实时源）。
+- **Phase 15**：克制「为什么」evergreen 一句话（`data/counter-notes.json`，详情克制区，首批 14 英雄，可扩展）。
+- **Phase 16**：个人中心（`#/me`，本地资料 + 数据概览 + 全量备份导出/导入；`src/profile.js` 可插拔适配器**预留云同步**）。
 - **Phase 12**：队伍构筑 + 阵容分析（`#/team/<ids>`，职业配比/原型/配合/弱点 + 拿威胁去克制计算器，离线可用）。**Codex 额度耗尽期间由 Claude 直接实现**（一额度用完换另一额度继续）。
 
 - **Phase 14**：工坊代码模块（`#/workshop`，导入指南 + 免责 + 分类代码一键复制 + workshop.codes 实时源链接；只收社区多源流行代码并标来源，离线可用）。✅ Claude 实现。
