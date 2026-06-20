@@ -25,6 +25,14 @@ const DEFAULT_VIEW = "heroes";
 const HERO_ROUTE_PREFIX = "#/hero/";
 const COMPARE_ROUTE_PREFIX = "#/compare/";
 const MAX_COMPARE = 4;
+const FOCUSABLE_SELECTOR = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "[tabindex]:not([tabindex='-1'])"
+].join(",");
 
 const state = {
   heroes: [],
@@ -63,11 +71,13 @@ let isRouting = false;
 let overlayMode = false;
 let activeDetailHeroId = "";
 let routeViews = new Set();
+let previousDetailFocus = null;
 
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
   bindElements();
+  setupA11y();
   bindEvents();
   state.favorites = loadFavorites();
   try {
@@ -109,7 +119,7 @@ function bindElements() {
     "latestHeroLine", "updatesTimeline", "patchRoleFilter", "patchTypeFilter", "patchSearchInput", "patchList", "patchEmpty",
     "heroRecommendPanel", "recommendRole", "recommendDifficulty", "recommendDifficultyLabel", "recommendTag", "recommendResults",
     "enemyInput", "currentHeroSelect", "runCounter", "clearCounter", "selectedEnemies", "enemyChips", "counterResults",
-    "banList", "banCount", "detailDrawer", "drawerScrim", "closeDrawer", "detailContent",
+    "banList", "banCount", "detailDrawer", "detailDialog", "drawerScrim", "closeDrawer", "detailContent",
     "profileStatus", "playerSearchInput", "platformTabs", "recentPlayers", "playerSearchState", "playerResults", "playerProfile",
     "mapCount", "mapModeTabs", "mapsState", "mapsGrid", "mapDetail", "tierGrid", "banBoard", "rolePassives",
     "overlayView", "overlayCounterMount", "overlayBan"
@@ -123,6 +133,8 @@ function bindEvents() {
   document.querySelectorAll(".view-tab").forEach((button) => {
     button.addEventListener("click", () => switchView(button.dataset.view));
   });
+  const tablist = document.querySelector(".view-tabs");
+  if (tablist) tablist.addEventListener("keydown", handleViewTabKeydown);
 
   el.roleTabs.addEventListener("click", (event) => {
     const button = event.target.closest("button[data-role]");
@@ -234,6 +246,7 @@ function bindEvents() {
   el.drawerScrim.addEventListener("click", closeDetail);
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeDetail();
+    if (event.key === "Tab") trapDrawerFocus(event);
   });
 
   el.enemyChips.addEventListener("click", (event) => {
@@ -305,6 +318,66 @@ function bindEvents() {
     const map = state.maps.find((item) => item.key === card.dataset.mapKey);
     if (map) renderMapDetail(map);
   });
+}
+
+function setupA11y() {
+  setupNavigationA11y();
+  if (el.detailDrawer) {
+    el.detailDrawer.inert = true;
+    el.detailDrawer.setAttribute("aria-hidden", "true");
+  }
+  [
+    [el.counterResults, "polite"],
+    [el.selectedEnemies, "polite"],
+    [el.playerSearchState, "polite"],
+    [el.mapsState, "polite"],
+    [el.compareContent, "polite"],
+    [el.recommendResults, "polite"],
+    [el.patchList, "polite"]
+  ].forEach(([node, politeness]) => {
+    if (node) node.setAttribute("aria-live", politeness);
+  });
+}
+
+function setupNavigationA11y() {
+  document.querySelectorAll(".view-tab[data-view]").forEach((button) => {
+    const view = button.dataset.view;
+    const panel = document.getElementById(`${view}View`);
+    button.setAttribute("role", "tab");
+    button.setAttribute("aria-controls", `${view}View`);
+    if (!button.id) button.id = `${view}Tab`;
+    if (panel) {
+      panel.setAttribute("role", "tabpanel");
+      panel.setAttribute("aria-labelledby", button.id);
+      panel.tabIndex = -1;
+    }
+  });
+  syncNavigationA11y();
+}
+
+function syncNavigationA11y() {
+  document.querySelectorAll(".view-tab[data-view]").forEach((button) => {
+    const active = button.dataset.view === state.currentView;
+    button.setAttribute("aria-selected", String(active));
+    button.tabIndex = active ? 0 : -1;
+  });
+}
+
+function handleViewTabKeydown(event) {
+  const keys = ["ArrowLeft", "ArrowRight", "Home", "End"];
+  if (!keys.includes(event.key)) return;
+  const tabs = [...document.querySelectorAll(".view-tab[data-view]")];
+  const currentIndex = tabs.indexOf(event.target.closest(".view-tab"));
+  if (currentIndex < 0) return;
+  event.preventDefault();
+  let nextIndex = currentIndex;
+  if (event.key === "ArrowLeft") nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+  if (event.key === "ArrowRight") nextIndex = (currentIndex + 1) % tabs.length;
+  if (event.key === "Home") nextIndex = 0;
+  if (event.key === "End") nextIndex = tabs.length - 1;
+  const nextTab = tabs[nextIndex];
+  nextTab.focus();
+  switchView(nextTab.dataset.view);
 }
 
 function renderMetaText(meta) {
@@ -411,6 +484,7 @@ function switchView(view) {
   if (view === "compare") renderCompareView();
   activeDetailHeroId = "";
   if (!isRouting) closeDetailPanel();
+  syncNavigationA11y();
   syncHashForView(view);
 }
 
@@ -960,6 +1034,9 @@ function renderCompareView() {
   }
   const wrap = create("div", "compare-table-wrap");
   const table = create("table", "compare-table");
+  const caption = create("caption", "sr-only");
+  caption.textContent = "英雄对比表";
+  table.append(caption);
   table.append(createCompareHead(heroes), createCompareBody(heroes));
   wrap.append(table);
   el.compareContent.append(wrap);
@@ -969,10 +1046,12 @@ function createCompareHead(heroes) {
   const thead = document.createElement("thead");
   const row = document.createElement("tr");
   const empty = document.createElement("th");
+  empty.scope = "col";
   empty.textContent = "维度";
   row.append(empty);
   heroes.forEach((hero) => {
     const th = document.createElement("th");
+    th.scope = "col";
     const button = create("button", "compare-hero-head");
     button.type = "button";
     button.dataset.compareDetail = hero.id;
@@ -1091,14 +1170,101 @@ function closeDetail() {
 }
 
 function openDetailPanel(heroId) {
+  if (!el.detailDrawer.classList.contains("is-open")) {
+    const active = document.activeElement;
+    previousDetailFocus = active && !el.detailDrawer.contains(active) ? active : null;
+  }
   activeDetailHeroId = heroId;
+  el.detailDrawer.inert = false;
   el.detailDrawer.classList.add("is-open");
   el.detailDrawer.setAttribute("aria-hidden", "false");
+  setBackgroundInert(true);
+  window.requestAnimationFrame(() => {
+    const focusTarget = el.closeDrawer || el.detailDialog || firstFocusable(el.detailDrawer);
+    if (focusTarget) focusTarget.focus({ preventScroll: true });
+  });
 }
 
 function closeDetailPanel() {
+  const wasOpen = el.detailDrawer.classList.contains("is-open");
   el.detailDrawer.classList.remove("is-open");
   el.detailDrawer.setAttribute("aria-hidden", "true");
+  el.detailDrawer.inert = true;
+  setBackgroundInert(false);
+  if (!wasOpen) return;
+  restoreDetailFocus();
+}
+
+function setBackgroundInert(active) {
+  [
+    document.querySelector(".topbar"),
+    document.querySelector(".view-tabs"),
+    document.getElementById("main"),
+    document.querySelector(".site-footer"),
+    el.compareTray
+  ].forEach((node) => {
+    if (!node) return;
+    node.inert = active;
+    if (active) {
+      node.setAttribute("aria-hidden", "true");
+    } else {
+      node.removeAttribute("aria-hidden");
+    }
+  });
+}
+
+function restoreDetailFocus() {
+  const target = focusRestoreTarget();
+  previousDetailFocus = null;
+  window.requestAnimationFrame(() => {
+    if (target) target.focus({ preventScroll: true });
+  });
+}
+
+function focusRestoreTarget() {
+  if (isFocusable(previousDetailFocus)) return previousDetailFocus;
+  const activeTab = document.querySelector(".view-tab[aria-selected='true']");
+  if (isFocusable(activeTab)) return activeTab;
+  const main = document.getElementById("main");
+  return main || document.body;
+}
+
+function trapDrawerFocus(event) {
+  if (!el.detailDrawer.classList.contains("is-open")) return;
+  const focusables = focusableElements(el.detailDrawer);
+  if (!focusables.length) {
+    event.preventDefault();
+    el.detailDialog?.focus({ preventScroll: true });
+    return;
+  }
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  } else if (!el.detailDrawer.contains(document.activeElement)) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
+function firstFocusable(root) {
+  return focusableElements(root)[0] || null;
+}
+
+function focusableElements(root) {
+  if (!root) return [];
+  return [...root.querySelectorAll(FOCUSABLE_SELECTOR)].filter(isFocusable);
+}
+
+function isFocusable(node) {
+  if (!node || typeof node.focus !== "function") return false;
+  if (node.disabled || node.closest("[inert]")) return false;
+  const style = window.getComputedStyle(node);
+  return style.visibility !== "hidden" && style.display !== "none";
 }
 
 function renderDetail(hero) {
@@ -1657,6 +1823,9 @@ function renderHeroStatsTable() {
     return;
   }
   const table = create("table", "stats-table");
+  const caption = create("caption", "sr-only");
+  caption.textContent = "玩家英雄战绩表";
+  table.append(caption);
   const thead = document.createElement("thead");
   const headRow = document.createElement("tr");
   [
@@ -1664,10 +1833,13 @@ function renderHeroStatsTable() {
     ["damageAvg", "场均伤害"], ["healingAvg", "场均治疗"], ["time", "游戏时长"]
   ].forEach(([key, label]) => {
     const th = document.createElement("th");
+    th.scope = "col";
+    th.setAttribute("aria-sort", sortAriaValue(key));
     if (["games", "winrate", "kda"].includes(key)) {
       const button = create("button", "table-sort");
       button.type = "button";
       button.dataset.sort = key;
+      button.setAttribute("aria-label", `${label}，当前${sortAriaLabel(key)}，点击切换排序`);
       button.textContent = state.heroSort.key === key ? `${label} ${state.heroSort.direction === "desc" ? "↓" : "↑"}` : label;
       th.append(button);
     } else {
@@ -1680,6 +1852,16 @@ function renderHeroStatsTable() {
   rows.forEach((row) => tbody.append(createHeroStatRow(row)));
   table.append(thead, tbody);
   tableWrap.append(table);
+}
+
+function sortAriaValue(key) {
+  if (state.heroSort.key !== key) return "none";
+  return state.heroSort.direction === "asc" ? "ascending" : "descending";
+}
+
+function sortAriaLabel(key) {
+  if (state.heroSort.key !== key) return "未排序";
+  return state.heroSort.direction === "asc" ? "升序" : "降序";
 }
 
 function renderPerformanceCards() {
@@ -1729,7 +1911,8 @@ function cardTitleIcon(kind, title) {
 function createHeroStatRow(row) {
   const tr = document.createElement("tr");
   tr.dataset.statHero = row.id;
-  const heroCell = document.createElement("td");
+  const heroCell = document.createElement("th");
+  heroCell.scope = "row";
   const heroBox = create("button", "stat-hero");
   heroBox.type = "button";
   heroBox.dataset.statHero = row.id;
@@ -1994,9 +2177,32 @@ function renderTierGrid() {
   el.tierGrid.replaceChildren();
   const wrap = create("div", "dashboard-card");
   appendText(wrap, "h3", "Tier 榜");
-  const grid = create("div", "tier-grid");
+  const table = create("table", "meta-table tier-table");
+  const caption = create("caption", "sr-only");
+  caption.textContent = "Meta Tier 榜表";
+  table.append(caption);
+  const thead = document.createElement("thead");
+  const headRow = document.createElement("tr");
+  const roleHead = document.createElement("th");
+  roleHead.scope = "col";
+  roleHead.textContent = "职业";
+  headRow.append(roleHead);
+  ["S", "A", "B", "C"].forEach((tier) => {
+    const th = document.createElement("th");
+    th.scope = "col";
+    th.textContent = `Tier ${tier}`;
+    headRow.append(th);
+  });
+  thead.append(headRow);
+  const tbody = document.createElement("tbody");
   ["tank", "damage", "support"].forEach((role) => {
+    const tr = document.createElement("tr");
+    const rowHead = document.createElement("th");
+    rowHead.scope = "row";
+    rowHead.textContent = ROLE_LABELS[role] || role;
+    tr.append(rowHead);
     ["S", "A", "B", "C"].forEach((tier) => {
+      const td = document.createElement("td");
       const cell = create("div", "tier-cell");
       appendText(cell, "h4", `${ROLE_LABELS[role]} · ${tier}`);
       const row = create("div", "portrait-row");
@@ -2010,10 +2216,13 @@ function renderTierGrid() {
       });
       if (!row.children.length) row.append(textBadge("—"));
       cell.append(row);
-      grid.append(cell);
+      td.append(cell);
+      tr.append(td);
     });
+    tbody.append(tr);
   });
-  wrap.append(grid);
+  table.append(thead, tbody);
+  wrap.append(table);
   el.tierGrid.append(wrap);
 }
 
@@ -2126,6 +2335,7 @@ function renderOverlay() {
 function setApiState(container, type, message = "") {
   container.replaceChildren();
   container.className = type ? `api-state ${type}` : "api-state";
+  container.setAttribute("aria-live", type === "error" ? "assertive" : "polite");
   if (!message) return;
   if (type === "loading") container.append(create("span", "spinner"));
   appendText(container, "span", message);

@@ -2,6 +2,27 @@
 
 审查人：Claude（设计+数据+审查）｜执行：Codex（前端实现）｜日期：2026-06-20
 
+## Phase 8 审查（a11y 全面化 + 详情抽屉焦点陷阱）— 无阻塞，可交付
+执行：Codex｜验证：Codex CDP（含对比度数值）+ Claude 独立复核（+400/-97，6 文件）。
+
+| 级别 | 项 | 结果 |
+|---|---|---|
+| ②回归 | 焦点陷阱真锁住 | ✅ trapDrawerFocus 首尾环绕 + 无可聚焦元素回退 dialog；CDP 连按 24 Tab/Shift+Tab 不逃逸 |
+| ②回归 | 焦点还原（含深链无触发元素）| ✅ focusRestoreTarget: previousFocus→激活tab→main/body；CDP Esc 后回到触发卡片 |
+| ②回归 | inert 别藏抽屉自身 | ✅ setBackgroundInert 只 inert topbar/tabs/main/footer/tray；抽屉自身 open 时非 inert；初始 setupA11y 抽屉 inert |
+| ②回归 | roving tabindex/方向键不破坏点击/路由 | ✅ syncNavigationA11y 在 switchView(487) 每次同步；←/→/Home/End 绑定(137)；点击+hash 路由不变 |
+| ③风险 | overlay 不冲突 | ✅ `?overlay=1` topbar/tabbar 隐藏、路由短路、skip link/tablist 不报错 |
+| ④测试 | aria-sort/caption/scope/aria-live | ✅ 战绩表 aria-sort 随排序更新；三表 caption+scope；动态区 polite、错误态 assertive |
+| ④测试 | 对比度 AA | ✅ CDP 实测：浅色正文16.07/次要4.89/primary5.40/蓝5.93/红4.90；深色均≥5.76，全 AA |
+
+接线复核：setupA11y()@init:80、syncNavigationA11y()@switchView:487、handleViewTabKeydown@137、detailDialog(role=dialog/aria-modal/aria-labelledby)@index.html:314。`node --check` 全过；0 innerHTML。
+
+### 已知风险（非阻塞）
+1. `#heroGrid` 为 aria-live=polite，筛选时整网格重渲染可能播报偏多；polite 可打断、可接受，必要时后续改为只播报计数。
+
+---
+
+
 ## Phase 7 审查（英雄并排对比 + hero-card 改 div 修嵌套 button）— 无阻塞，可交付
 执行：Codex（中途撞 Codex 自身额度墙→恢复后续完成；审查方补了 createHeroCard 改 div + 详情对比按钮 + keydown 已在）｜验证：Codex CDP + Claude 独立复核。
 
