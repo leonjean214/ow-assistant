@@ -81,7 +81,8 @@ body {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -91,7 +92,8 @@ button {
 
 button,
 select,
-input {
+input,
+textarea {
   min-width: 0;
 }
 
@@ -569,7 +571,8 @@ img {
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
   min-height: 36px;
   border: 1px solid var(--border);
@@ -585,9 +588,14 @@ input::placeholder {
 }
 
 input:focus,
-select:focus {
+select:focus,
+textarea:focus {
   border-color: var(--primary);
   box-shadow: var(--focus);
+}
+
+textarea {
+  resize: vertical;
 }
 
 input[type="range"] {
@@ -1283,6 +1291,190 @@ input[type="range"] {
   background-color: var(--surface);
   background-position: center;
   background-size: cover;
+}
+
+.journal-form {
+  display: grid;
+  grid-template-columns: minmax(150px, .7fr) minmax(180px, 1fr) minmax(180px, 1fr);
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  background: var(--surface-2);
+}
+
+.journal-result-field {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.journal-result-field legend {
+  margin-bottom: 6px;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.journal-form .field-grow {
+  grid-column: span 2;
+}
+
+.journal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.journal-summary,
+.journal-tables {
+  display: grid;
+  gap: 10px;
+}
+
+.journal-summary {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin-top: 12px;
+}
+
+.journal-tables {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 16px;
+}
+
+.journal-block {
+  min-width: 0;
+}
+
+.journal-block + .journal-block,
+.journal-tables + .journal-block {
+  margin-top: 16px;
+}
+
+.journal-metric small {
+  color: var(--text-3);
+  font-size: 12px;
+}
+
+.journal-trend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.trend-dot {
+  display: inline-grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--surface);
+  font-size: 11px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.journal-result-badge.result-win {
+  border-color: var(--win);
+  background: color-mix(in srgb, var(--win) 12%, var(--surface));
+  color: var(--win);
+}
+
+.trend-dot.result-win {
+  background: var(--win);
+  color: var(--surface);
+}
+
+.journal-result-badge.result-loss {
+  border-color: var(--loss);
+  background: color-mix(in srgb, var(--loss) 12%, var(--surface));
+  color: var(--loss);
+}
+
+.trend-dot.result-loss {
+  background: var(--loss);
+  color: var(--surface);
+}
+
+.journal-result-badge.result-draw {
+  border-color: var(--text-3);
+  background: var(--surface-3);
+  color: var(--text-2);
+}
+
+.trend-dot.result-draw {
+  background: var(--text-3);
+  color: var(--surface);
+}
+
+.journal-table {
+  min-width: 520px;
+}
+
+.journal-list {
+  display: grid;
+  gap: 8px;
+}
+
+.journal-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px;
+  gap: 10px;
+  align-items: start;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+  border-radius: var(--radius);
+  padding: 10px;
+  background: var(--surface);
+}
+
+.journal-entry.result-win {
+  border-left-color: var(--win);
+}
+
+.journal-entry.result-loss {
+  border-left-color: var(--loss);
+}
+
+.journal-entry.result-draw {
+  border-left-color: var(--text-3);
+}
+
+.journal-entry-body {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.journal-entry-body p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--text-2);
+}
+
+.journal-entry-title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.journal-entry-hero {
+  grid-template-columns: 30px minmax(0, auto);
+}
+
+.journal-entry-hero .avatar {
+  width: 30px;
+  height: 30px;
+}
+
+.journal-delete {
+  width: 28px;
+  height: 28px;
 }
 
 .profile-head {
@@ -2061,15 +2253,22 @@ body.is-overlay .overlay-panel {
   .patch-toolbar,
   .recommend-controls,
   .counter-layout,
+  .journal-form,
+  .journal-tables,
   .profile-search-grid,
   .map-reco-grid,
   .overlay-grid {
     grid-template-columns: 1fr;
   }
 
+  .journal-form .field-grow {
+    grid-column: auto;
+  }
+
   .rank-grid,
   .overview-grid,
   .performance-cards,
+  .journal-summary,
   .tier-grid,
   .ban-columns {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2137,6 +2336,7 @@ body.is-overlay .overlay-panel {
   .rank-grid,
   .overview-grid,
   .performance-cards,
+  .journal-summary,
   .tier-grid,
   .ban-columns {
     grid-template-columns: 1fr;
@@ -2222,8 +2422,21 @@ body.is-overlay .overlay-panel {
   }
 
   .result-row,
-  .position-box {
+  .position-box,
+  .journal-actions {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .journal-form {
+    padding: 10px;
+  }
+
+  .journal-entry {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .journal-delete {
+    justify-self: start;
   }
 }

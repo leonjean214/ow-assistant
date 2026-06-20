@@ -2,6 +2,26 @@
 
 审查人：Claude（设计+数据+审查）｜执行：Codex（前端实现）｜日期：2026-06-20
 
+## Phase 10 审查（对局记录器 + 趋势统计）— 无阻塞，可交付
+执行：Codex｜验证：Codex CDP + journal.js 断言 + Claude 独立复核（新增 src/journal.js）。
+
+| 级别 | 项 | 结果 |
+|---|---|---|
+| ①Bug | 胜率分母(平局排除)/除零 | ✅ countResults 胜/(胜+负)，平局单列；断言 winrate=66.67 验证；0 场不除零 |
+| ①Bug | 连胜/连败方向与边界 | ✅ currentStreak 从 rows[0](最新)向前；断言 streak win/2 通过 |
+| ①Bug | 损坏/超限(1000)容错 | ✅ normalizeJournalEntries 过滤非法 result；断言验证；try/catch 回退空 |
+| ②回归 | 新 tab 被 a11y/路由/roving 覆盖 | ✅ CDP #journalTab role=tab/aria-selected/aria-controls、方向键切换正常 |
+| ②回归 | 地图下拉离线可用 | ✅ 用 data/maps_meta.json 本地数据，不依赖 OverFast /maps |
+| ④测试 | 录入即时更新+刷新持久+离线 | ✅ CDP 4 局→统计/表即时更新、刷新保持、sw v10 预缓存 journal.js |
+
+独立复验：journal.js 纯净导入(无顶层 DOM)，导入时 selfTest 7 断言全过；`node --check` 全过；0 innerHTML。
+
+### 已知风险（非阻塞）
+1. journal.js 在每次 import 都跑 selfTest()(console.assert)，与 counter.js/stats.js 约定一致，仅失败时输出，开销可忽略。
+
+---
+
+
 ## Phase 9 审查（PWA 可安装 + 离线）— 无阻塞，可交付
 执行：Codex｜验证：Codex CDP（含离线模拟）+ Claude 独立复核（新增 manifest/sw.js/pwa.js/3图标）。
 

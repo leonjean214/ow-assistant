@@ -62,6 +62,7 @@
       <button class="view-tab" type="button" data-view="updates" id="updatesTab">更新</button>
       <button class="view-tab" type="button" data-view="counter" id="counterTab">克制计算器</button>
       <button class="view-tab" type="button" data-view="profile" id="profileTab">战绩查询</button>
+      <button class="view-tab" type="button" data-view="journal" id="journalTab">记录</button>
       <button class="view-tab" type="button" data-view="maps" id="mapsTab">地图</button>
       <button class="view-tab" type="button" data-view="meta" id="metaTab">Meta</button>
       <button class="view-tab" type="button" data-view="ban" id="banTab">Ban</button>
@@ -268,6 +269,78 @@
         <div class="api-state" id="playerSearchState" aria-live="polite"></div>
         <div class="player-results" id="playerResults" aria-live="polite"></div>
         <div class="player-profile" id="playerProfile" aria-live="polite"></div>
+      </section>
+
+      <section class="panel view" id="journalView" aria-labelledby="journalTitle">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Session Journal</p>
+            <h2 id="journalTitle">对局记录</h2>
+          </div>
+          <span class="count-pill" id="journalCount">0 局</span>
+        </div>
+
+        <form class="journal-form" id="journalForm">
+          <fieldset class="journal-result-field">
+            <legend>本局结果</legend>
+            <div class="segmented journal-result" id="journalResultGroup" aria-label="选择本局结果">
+              <button class="is-active" type="button" data-journal-result="win" aria-pressed="true">胜</button>
+              <button type="button" data-journal-result="loss" aria-pressed="false">负</button>
+              <button type="button" data-journal-result="draw" aria-pressed="false">平</button>
+            </div>
+          </fieldset>
+          <label class="field">
+            <span>我方英雄</span>
+            <select id="journalHeroSelect" required>
+              <option value="">选择英雄</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>地图</span>
+            <select id="journalMapSelect" required>
+              <option value="">选择地图</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>敌方阵容备注</span>
+            <input id="journalEnemyNote" type="text" maxlength="120" placeholder="例：双飞 / 黑影绕后">
+          </label>
+          <label class="field field-grow">
+            <span>备注</span>
+            <textarea id="journalNote" rows="2" maxlength="240" placeholder="心情、失误点、队伍节奏"></textarea>
+          </label>
+          <div class="journal-actions">
+            <button class="primary-btn" type="submit" id="saveJournal">保存本局</button>
+            <button class="ghost-btn" type="button" id="clearJournal">清空全部</button>
+          </div>
+        </form>
+        <p class="api-state" id="journalStatus" aria-live="polite"></p>
+
+        <div class="journal-summary" id="journalSummary" aria-live="polite"></div>
+
+        <div class="journal-tables">
+          <section class="journal-block" aria-labelledby="journalHeroStatsTitle">
+            <div class="subsection-head">
+              <h3 id="journalHeroStatsTitle">按英雄趋势</h3>
+            </div>
+            <div class="stats-table-wrap" id="journalHeroTable"></div>
+          </section>
+          <section class="journal-block" aria-labelledby="journalMapStatsTitle">
+            <div class="subsection-head">
+              <h3 id="journalMapStatsTitle">按地图趋势</h3>
+            </div>
+            <div class="stats-table-wrap" id="journalMapTable"></div>
+          </section>
+        </div>
+
+        <section class="journal-block" aria-labelledby="journalListTitle">
+          <div class="subsection-head">
+            <h3 id="journalListTitle">最近记录</h3>
+            <span class="badge">平局不计入胜率分母</span>
+          </div>
+          <div class="journal-list" id="journalList"></div>
+          <p class="empty-state" id="journalEmpty" aria-live="polite" hidden>记录你的第一局，长期看胜率趋势。</p>
+        </section>
       </section>
 
       <section class="panel view" id="mapsView" aria-labelledby="mapsTitle">

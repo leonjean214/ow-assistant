@@ -1,5 +1,39 @@
 # Handoff
 
+## Phase 10 已完成
+
+- 已实现「记录」视图 `#/journal`，未引入框架、构建或依赖，未提交 git commit。
+- 新增 `src/journal.js`：导出 `loadJournal/saveJournal/addJournalEntry/removeJournalEntry/clearJournal/summarizeJournal/aggregateByHero/aggregateByMap/normalizeJournalEntries` 等函数；`localStorage` key 为 `ow-journal`；读写 try/catch 容错，损坏数据回退空数组；最多保留 1000 条，按新到旧排序；内置 `console.assert` 自测。
+- `index.html` 主导航新增「记录」tab（`data-view="journal"`）和 `journalView`，自动纳入现有 hash 路由、tablist/tabpanel、roving tabindex 和方向键体系。
+- 记录表单支持胜/负/平、我方英雄、地图、敌方阵容备注和备注；英雄来自本地 `state.heroes`，地图下拉来自本地 `data/maps_meta.json`，离线可用。
+- `src/app.js` 接入记录模块：保存后清表单并即时刷新统计、英雄/地图表和列表；每条记录可删除；清空全部有二次确认；状态通过 `aria-live` 提示。
+- 统计卡展示总场次/总胜率、今日场次/胜率、当前连胜/连败、最近 10 局走势；胜率按 `胜 / (胜 + 负)` 计算，平局单列且在 UI 中说明。
+- 英雄趋势表展示出现过的英雄、场次、胜率、胜/负/平，英雄头像/名称可打开详情；地图趋势表展示出现过的地图、场次、胜率、胜/负/平。
+- `src/styles.css` 新增记录表单、统计卡、走势色块、趋势表和记录列表样式，复用现有 token，并覆盖 920/768/375px 断点。
+- `sw.js` 已升级 `CACHE_NAME` 到 `ow-cache-v10`，并把 `./src/journal.js` 加入 `APP_SHELL` 预缓存。
+- `README.md` 已补充 `#/journal` 深链、记录功能、`src/journal.js` 文件说明和本地记录缓存说明。
+- `docs/ROADMAP.md` 已将 Phase 10「对局记录器 + 趋势统计」标记为已完成，并调整后续 A 线编号。
+
+## Phase 10 验证记录
+
+- 静态检查：
+  - `for f in src/*.js sw.js; do node --check "$f" || exit 1; done`
+  - `node src/journal.js`
+  - `git diff --check`
+  - `rg -n "innerHTML|insertAdjacentHTML|outerHTML" . -g '!node_modules' -g '!*.png'` 无命中
+- Headless Chrome/CDP 验收通过：
+  - `#/journal` 深链直接激活记录视图；`.view-tabs role=tablist`、`#journalTab role=tab aria-selected=true aria-controls=journalView`、`#journalView role=tabpanel aria-labelledby=journalTab` 均正确。
+  - 主导航方向键正常：焦点在「记录」时 ArrowRight 切到 `maps`，ArrowLeft 回到 `journal`。
+  - 表单连续录入 4 局（源氏负、源氏平、安娜胜、安娜胜）后，列表即时为 4 条，`localStorage.ow-journal` 为 4 条；统计显示总场次 4、总胜率 66.7%、今日 4 局 66.7%、当前连胜 2、最近走势 `WWDL`。
+  - 英雄趋势表包含安娜 2 场 100.0%、源氏记录；地图趋势表包含国王大道和伊利奥斯记录。
+  - 刷新页面后 4 条记录和 66.7% 统计保持。
+  - 删除单条后列表和 storage 变为 3 条；清空全部经确认后 storage 移除、列表 0 条、空态显示「记录你的第一局，长期看胜率趋势」。
+  - 损坏 `localStorage.ow-journal` 为 `{bad json` 后刷新，记录页不崩溃，回退 0 局空态。
+  - Service Worker cache keys 包含 `ow-cache-v10`，`ow-cache-v10` 内可匹配 `./src/journal.js`。
+  - DevTools offline 后刷新 `#/journal`，英雄下拉 53 个 option、地图下拉 26 个 option，离线保存 1 局后列表和 storage 均为 1 条。
+  - 375px 移动视口 `documentElement.scrollWidth === innerWidth === 375`，无横向溢出。
+  - 应用级 `console.error`、`console.assert` failure 和 runtime exception 数量为 0。
+
 ## Phase 9 已完成
 
 - 已实现 PWA 可安装与离线 app shell，未引入框架、构建、依赖或 Workbox，未提交 git commit。
