@@ -1339,6 +1339,19 @@ input[type="range"] {
   background: var(--primary-weak);
 }
 
+.enemy-comp {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  background: var(--surface-2);
+}
+
+.enemy-comp h3 { margin: 0; font-size: 14px; }
+.enemy-comp p { margin: 0; color: var(--text-2); font-size: 13px; }
+
 .swap-advisor h3,
 .swap-options h4 {
   color: var(--primary);

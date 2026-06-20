@@ -69,6 +69,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   if (await c.evals(`!!document.querySelector('#teamContent button[data-team-to-counter]')`)) {
     await c.evals(`document.querySelector('#teamContent button[data-team-to-counter]').click(); null`); await sleep(400);
     check("拿去克制→克制视图载入敌方", (await c.evals(`document.querySelectorAll('#selectedEnemies .selected-chip').length`)) >= 1);
+    check("克制结果显示对面阵容原型", (await c.evals(`document.querySelectorAll('#counterResults .enemy-comp').length`)) === 1);
   }
 
   // 英雄详情深链 + 焦点 + 克制上色

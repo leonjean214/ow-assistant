@@ -4,7 +4,7 @@ import { debounce, friendlyApiError, getMaps, getStatsSummary, getSummary, searc
 import { buildPerformanceCards, formatDuration, formatRank, normalizeHeroStats, sortHeroStats, summarizeRoles } from "./stats.js";
 import { recommendHeroes } from "./recommend-hero.js";
 import { addJournalEntry, clearJournal, loadJournal, mergeJournal, parseImportedJournal, removeJournalEntry, saveJournal, serializeJournal, summarizeJournal } from "./journal.js";
-import { analyzeTeam, ROLE_ZH as TEAM_ROLE_ZH } from "./team.js";
+import { analyzeTeam, teamArchetype, teamRoleCount, ROLE_ZH as TEAM_ROLE_ZH } from "./team.js";
 
 const roleNamesZh = { tank: "重装", damage: "输出", support: "支援" };
 const modeLabels = {
@@ -2398,7 +2398,10 @@ function renderCounterResults(container, result) {
     container.append(empty);
     return;
   }
-  if (container === el.counterResults) container.append(createSwapAdvisor(result));
+  if (container === el.counterResults) {
+    container.append(createEnemyCompSummary(result.enemies));
+    container.append(createSwapAdvisor(result));
+  }
   for (const role of ["tank", "damage", "support"]) {
     const section = create("div", "result-role");
     appendText(section, "h3", `${ROLE_LABELS[role]} Top 推荐`);
@@ -2408,6 +2411,32 @@ function renderCounterResults(container, result) {
     section.append(list);
     container.append(section);
   }
+}
+
+const ENEMY_COMP_HINT = {
+  dive: "对面偏突进：抱团站位、留好控制与反手技能等切入者扑上来再打。",
+  poke: "对面偏远程消耗：多利用掩体、缩短距离或绕侧，别在开阔地对枪。",
+  brawl: "对面偏近身缠斗：拉开距离风筝、避免被贴脸群殴，打后排和分割。"
+};
+
+function createEnemyCompSummary(enemies) {
+  const heroes = toArray(enemies).map((id) => state.byId.get(id)).filter(Boolean);
+  const wrap = create("div", "enemy-comp");
+  appendText(wrap, "h3", "对面阵容");
+  if (!heroes.length) {
+    appendText(wrap, "p", "选择敌方英雄后，这里会判断对面的阵容原型与职业配比。");
+    return wrap;
+  }
+  const arche = teamArchetype(heroes);
+  const roleCount = teamRoleCount(heroes);
+  const row = create("div", "tag-row");
+  row.append(textBadge(arche.label, "tag"));
+  ["tank", "damage", "support"].forEach((role) => {
+    if (roleCount[role]) row.append(textBadge(`${TEAM_ROLE_ZH[role]} ${roleCount[role]}`, "tag"));
+  });
+  wrap.append(row);
+  if (arche.primary && ENEMY_COMP_HINT[arche.primary]) appendText(wrap, "p", ENEMY_COMP_HINT[arche.primary]);
+  return wrap;
 }
 
 function createSwapAdvisor(result) {
