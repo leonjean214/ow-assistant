@@ -34,6 +34,7 @@ http://localhost:8000/#/compare/genji,ana
 ## 功能
 
 - 界面：默认 OP.GG / OverHub 式浅色数据门户风，冷灰背景、白色数据卡、蓝色强调、表格斑马行和响应式布局；右上角可切换浅/深主题，使用 `localStorage` 的 `ow-theme` 持久化。
+- 无障碍：主导航使用 tablist/tabpanel 语义并支持方向键、Home/End 切换；详情抽屉为 modal dialog，打开后焦点进入抽屉、Tab 被锁定在抽屉内、Esc/关闭后焦点回到触发元素；页面提供“跳到主内容”链接、统一 `:focus-visible` 焦点样式、表格 caption/scope/aria-sort 和动态区域 `aria-live`。
 - 英雄库：职业、Tier、Ban 优先级和关键词筛选，英雄详情使用本地官方头像字段。
 - 深链路由：使用 `location.hash` 支持 `#/heroes`、`#/counter`、`#/profile`、`#/maps`、`#/meta`、`#/updates`、`#/ban` 和 `#/hero/<id>`；浏览器后退/前进可切换视图并关闭/重开英雄详情。
 - 英雄收藏：英雄卡和详情抽屉均可点 ★ 收藏/取消，使用 `localStorage` 的 `ow-favorites` 持久化；英雄库支持“只看收藏”，未筛选时收藏英雄置顶。

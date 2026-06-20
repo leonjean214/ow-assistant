@@ -1,69 +1,59 @@
-# Task Phase 7：英雄并排对比 + 修复 hero-card 嵌套 button
+# Task Phase 8：无障碍(a11y)全面化 + 详情抽屉焦点陷阱
 
-> Phase 1-6 全部功能须保留不回归。本阶段：①新增「英雄对比」（选 2-4 个英雄并排比数值/克制）②顺手修复 Phase 6 留下的 **hero-card 嵌套 button** 语义问题（卡片是 `<button>`，里面又塞了 ★ button，HTML 不合规）。
+> Phase 1-7 全部功能须保留不回归。本阶段不加新功能，专做**可访问性**：详情抽屉的对话框语义与焦点管理、tab 的 tablist 语义与方向键、表格/动态区的语义、skip link、全站 focus-visible 与深浅主题对比度。
 
 ## Goal
-1. **英雄对比**：用户可把英雄加入「对比盘」（最多 4 个），在对比视图里并排看核心数值（血量/护甲/护盾、职业、tier、难度、DPS/HPS、射程、机动、站位、克制优劣势等），支持深链分享。
-2. **修 hero-card 语义**：把英雄卡从 `<button>` 改为非 button 的可点击容器（`div[role="button"][tabindex="0"]` + Enter/Space 激活），使 ★ 收藏按钮、加对比按钮可合法嵌套，且键盘/读屏正常。
+让全站键盘与读屏可用：详情抽屉成为规范 modal dialog（焦点移入/陷阱/还原）、导航 tab 成为规范 tablist（方向键切换）、数据表有正确语义、动态结果有 aria-live、提供 skip link，焦点样式全站统一。
 
-## Context（现状，必须遵守）
-- 纯静态零构建 SPA：`index.html` + `src/{app,api,stats,data,counter,recommend-hero,theme}.js` + `styles.css`，type=module。
-- 英雄卡：`createHeroCard(hero)`（app.js ~635）目前 `create("button","hero-card")`，里面有 ★（`button[data-favorite-hero]`）、NEW 角标、近期调整角标、头像、名字、tier 等。
-- 卡片点击：`#heroGrid` 委托 → 先判 `button[data-favorite-hero]`（收藏）→ 否则 `closest("[data-hero-id]")` → `openDetail(id)`。
-- 详情：`openDetail(id)` / `closeDetail()` / `openDetailPanel` / `closeDetailPanel`，`#detailDrawer`，详情头部已有 ★。
-- 视图/路由：`switchView(view)` 切 `.view-tab.is-active`+`.view.is-active`（section id=`${view}View`）；`routeViews` 来自 `.view-tab[data-view]`；hash 路由 `#/<view>`、`#/hero/<id>`，`isRouting` guard，`?overlay=1` 短路（`overlayMode`）。新增视图要进 `.view-tab` 与 `.view` 体系才能被路由/切换识别。
-- 英雄数据形状：`normalizeHero`（data.js）产出 `id,name,nameZh,role,subrole,tier,difficulty,tags,health{...},params{primary,range,mobility,dps,healingPerSec,note},counters/克制结构,ban{...}` 等。对比要展示的字段以 `normalizeHero` 实际产出为准（先读 data.js 确认字段名，缺值显示 `—`）。
-- 硬约束：全项目 **0 innerHTML 注入数据**（全 `textContent`/DOM API）。
+## Context（现状）
+- 纯静态零构建 SPA，type=module。`index.html` + `src/{app,api,stats,data,counter,recommend-hero,theme}.js` + `styles.css`。
+- 详情抽屉：`#detailDrawer`（含 `#drawerScrim`、`#closeDrawer`、`#detailContent`），`openDetail`→`openDetailPanel`(加 `.is-open`、`aria-hidden=false`)，`closeDetail`/`closeDetailPanel`，Esc/scrim/关闭按钮已绑 `closeDetail`。详情标题渲染为 `#detailTitle`(在 detailContent 内)。
+- 导航：`.view-tab[data-view]` 按钮 + `.view` section（id=`${view}View`），`switchView` 切 `.is-active`。
+- 表格：战绩英雄表、对比表（`.compare-table`，已有 `th[scope=row]`）、Meta 等用 `<table>` 或网格。
+- 主题：`[data-theme]` 两套 token，`--primary/--win/--loss/--good/--warn` 等。
+- 硬约束：0 innerHTML 注入数据；不引框架/构建/库；不破坏现有 id/class/data-* hook 与功能。
 
 ## Requirements
-
-### A. 修 hero-card 语义（先做，给对比腾出干净结构）
-1. `createHeroCard` 容器从 `button` 改为 `div`，加 `role="button"`、`tabindex="0"`、`data-hero-id` 不变、保留所有现有 class（`hero-card`/`is-new-hero` 等）与子元素。
-2. 键盘可达：在 `#heroGrid` 上加 `keydown` 委托——Enter/Space 且 target 是 `.hero-card`（非内部 ★/对比按钮）时，`preventDefault()` 并 `openDetail(card.dataset.heroId)`。鼠标点击行为保持现状（委托不变）。
-3. 焦点样式：`.hero-card:focus-visible` 给清晰可见的蓝色 outline/边框（用 `--primary`）。★ 与对比按钮各自仍是 `<button>`，现在合法（父级不再是 button）。
-4. 验收：键盘 Tab 能聚焦卡片，Enter/Space 打开详情；★ 与对比按钮可单独 Tab 聚焦、Enter 触发各自动作且不冒泡到卡片；读屏不再出现按钮套按钮。
-
-### B. 英雄对比
-1. **对比状态**：`state.compare`（数组，保序，最多 4 个 hero id），localStorage key `ow-compare` 持久化（try/catch 容错，损坏回退空）。提供 `addToCompare/removeFromCompare/isInCompare/clearCompare` 工具。满 4 个后再加给出提示且不超限。
-2. **入口按钮**：
-   - 英雄卡右上角在 ★ 旁加「对比」切换按钮（`button[data-compare-hero]`，有 `aria-pressed`/`aria-label`「加入/移出对比 <名>」）。点击只切换对比、不冒泡开详情（委托里优先判 `data-compare-hero`）。已选=高亮（`--primary`）。
-   - 详情抽屉头部也加同款对比切换，与卡片同步。
-3. **对比盘（compare tray）**：页面底部或英雄库顶部一个常驻条，显示当前已选英雄头像/名 + 各自移除按钮 + 「清空」+「查看对比」按钮；为空时隐藏。tray 在所有视图可见或至少英雄库可见（自行权衡，英雄库可见即可）。
-4. **对比视图**：新增 `compare` 视图（进 `.view-tab` 导航 + `.view` section `compareView`）。并排表格/卡列：每个英雄一列，行是各维度（头像+名/职业/tier/难度/血量(HP/护甲/护盾)/DPS/HPS/射程/机动/站位/标签/ban 优先级/代表克制）。
-   - 数值行做**高亮对比**：同一行里数值最优的高亮（如最高 HP、最低难度），用 `--good`；缺值 `—` 不参与比较。能数值化的维度才比较，文本维度只并排展示。
-   - 少于 2 个英雄时显示引导空态「至少选择 2 个英雄进行对比，去英雄库点卡片上的『对比』按钮」。
-5. **深链**：`#/compare/<id1>,<id2>,...`（逗号分隔，encodeURIComponent 各 id）。打开后恢复对比集合并切到对比视图；非法/缺失 id 跳过不崩。`switchView('compare')` 与对比集合变化时同步 hash（沿用 Phase 6 的 `isRouting` guard / overlay 短路，避免循环）。点「查看对比」= 切到 compare 视图。
-6. 移动端：对比表横向滚动不溢出页面（容器 `overflow-x:auto`），375px 无横向**页面**溢出。
+1. **详情抽屉 = modal dialog**：
+   - `#detailDrawer` 容器（或其内部面板）加 `role="dialog"` `aria-modal="true"` `aria-labelledby="detailTitle"`（确保 `#detailTitle` 在每次 renderDetail 都存在并先渲染）。
+   - 打开时把焦点移到抽屉内（关闭按钮或标题）；记录打开前的触发元素，关闭后**焦点还原**到它（英雄卡/战绩行等）。
+   - **焦点陷阱**：抽屉打开时 Tab/Shift+Tab 在抽屉内可聚焦元素间循环，不跑到背景。Esc 关闭（已支持，确认仍工作）。
+   - 抽屉关闭时其内容不可被 Tab 聚焦（`.is-open` 才可交互；可用 `inert` 或在关闭时不在 DOM 焦点序列）。背景在抽屉打开时建议 `inert`/`aria-hidden`（若用 aria-hidden 注意不要把抽屉自己也藏了）。
+2. **导航 tablist**：
+   - tab 容器 `role="tablist"`，每个 `.view-tab` `role="tab"` + `aria-selected`（激活 true）+ `aria-controls` 指向对应 `${view}View`，`tabindex` 用 roving（激活项 0 其余 -1）。
+   - 每个 `.view` section `role="tabpanel"` + `aria-labelledby` 指向对应 tab；非激活 panel 不阻断（现有 `.is-active` 控制显隐保留）。
+   - 方向键 ←/→ 在 tab 间移动焦点并切换视图，Home/End 跳首尾。保持现有点击切换与 hash 路由不变。
+3. **数据表语义**：给战绩英雄表、对比表、Meta 表加 `<caption>`（可视觉隐藏 `.sr-only`）；表头 `th` 带 `scope`；可排序列表头加 `aria-sort`（战绩表按当前 `state.heroSort` 设 ascending/descending/none）。
+4. **动态区 aria-live**：克制计算结果、战绩搜索结果/状态、加载与错误态容器加 `aria-live="polite"`（错误态可 `assertive`），让结果变化被读屏播报。
+5. **Skip link**：页面顶部加「跳到主内容」链接（聚焦才显示），指向主内容容器（给主内容加 id 如 `#main`）。
+6. **focus-visible 全站统一**：所有可聚焦控件（tab、卡片、按钮、pill、输入、表格内按钮、抽屉控件）有清晰 `:focus-visible` 轮廓（`--primary`，深浅主题都可见）。补 `.sr-only` 工具类。
+7. **对比度**：检查并（必要时微调 token 或文字色）使正文/次要文字、tier 徽章、胜率蓝红、pill 在浅色与深色主题下达 WCAG AA（正文 4.5:1，大字/UI 3:1）。改动只动 token 或局部色，不破坏视觉风格。
 
 ## Constraints
-- 不改现有 JS 函数对外签名与数据流；可在 `createHeroCard`/`renderDetail`/`switchView`/路由函数内追加逻辑。
+- 不改现有 JS 函数对外签名与数据流；可追加 a11y 相关属性设置与事件（焦点陷阱、roving tabindex、方向键）。
 - 只读 `data/`，不改 `data/`、`docs/`（本 TASK 除外）。不引框架/构建/库。
-- 保持 **0 innerHTML 注入数据**。
-- 复用现有 CSS token 与组件风格（OP.GG 浅色 + 深色主题都要协调）；新增 class，不破坏既有 id/class/data-* hook。
-- Phase 1-6 全部交互（筛选/详情/克制/战绩/地图/Meta/更新/推荐器/overlay/收藏/路由）不回归。
-- `#heroGrid` 现有 click 委托对 ★ 与 `data-hero-id` 的处理保持有效；新增 compare 按钮判断要排在 openDetail 之前。
+- 0 innerHTML 注入数据。复用现有 token，新增 class（如 `.sr-only`、skip-link）。
+- Phase 1-7 全部功能与交互（路由/收藏/对比/overlay/筛选/详情/克制/战绩/地图/Meta/更新/推荐器）不回归。
+- overlay 模式（`?overlay=1`）不被破坏；overlay 下无 topbar，skip link/tablist 不应报错。
 
 ## Implementation Plan（建议）
-1. 改 `createHeroCard` 容器为 `div[role=button][tabindex=0]`；加 keydown 委托；加 `.hero-card:focus-visible` 样式。
-2. 对比数据层：`state.compare` + load/save/add/remove/is/clear + 初始化读 localStorage。
-3. 卡片/详情加「对比」按钮；`#heroGrid` 与 `detailContent` 委托优先处理 `data-compare-hero`。
-4. index.html 加 `compare` 的 `.view-tab` 与空的 `compareView` section + 对比盘 tray 容器。
-5. `renderCompareTray()` + `renderCompareView()`（并排列 + 数值高亮）；对比集合变化后刷新 tray、对比视图、卡片/详情按钮态。
-6. 路由：`#/compare/...` 解析/序列化，纳入 `parseHashRoute`/`switchView`/`applyRouteFromHash`，复用 isRouting guard 与 overlay 短路。
-7. 自测（无头 Chrome）：见验收。更新 `README.md`、`.ai/HANDOFF.md`（补 compare hash 与对比说明）。
+1. 抽屉：renderDetail 确保 `#detailTitle` 先渲染；openDetailPanel 记录 `document.activeElement`、移焦点、设 dialog 语义、背景 inert；closeDetailPanel 还原焦点、解除 inert；加 Tab 陷阱处理（keydown 内首尾元素环绕）。
+2. tablist：bindEvents/初始化里给 tab 与 panel 设 role/aria/roving tabindex；加方向键 keydown 处理；switchView 末尾同步 `aria-selected`/roving tabindex。
+3. 表格 caption/scope/aria-sort；动态容器 aria-live；skip link + `#main`；`.sr-only` 与 `:focus-visible` 样式；对比度微调。
+4. 自测（无头 Chrome + 可用的 a11y 检查）：见验收。更新 README、`.ai/HANDOFF.md`。
 
 ## Acceptance Criteria
-- 英雄卡是 `div[role=button]`，键盘 Tab+Enter/Space 开详情；★ 与对比按钮可单独聚焦触发、不误开详情；DOM 无 button 套 button。
-- 卡片/详情「对比」按钮可加/移英雄，刷新后保持（localStorage `ow-compare`），上限 4。
-- 对比盘显示已选英雄、可逐个移除/清空/查看对比；空时隐藏。
-- 对比视图并排展示 ≥2 英雄的各维度，数值行最优值高亮；<2 个有引导空态；表格横向滚动不致页面横向溢出。
-- `#/compare/genji,ana` 深链恢复对比并落在对比视图；非法 id 跳过不崩；`?overlay=1` 不受影响。
-- Phase 1-6 全功能不回归；`node --check` 全过；console 无报错；375px 无横向溢出；全项目仍 0 innerHTML 注入数据。
+- 详情抽屉：打开焦点入抽屉、Tab 循环不漏到背景、Esc/关闭后焦点回到触发元素；抽屉有 `role=dialog`/`aria-modal`/`aria-labelledby`；关闭时内容不可 Tab 到。
+- 导航：tab 有 tablist/tab/tabpanel 语义与 `aria-selected`；←/→/Home/End 键可切 tab；点击与 hash 路由仍正常。
+- 战绩/对比/Meta 表有 caption 与 scope；战绩可排序列有 `aria-sort` 且随排序更新。
+- 克制结果、战绩结果/状态、错误态有 aria-live。
+- 有可聚焦显示的 skip link 跳到主内容。
+- 全站控件 `:focus-visible` 清晰可见（深浅主题）；关键文字/徽章对比度达 AA。
+- Phase 1-7 全功能不回归；`node --check` 全过；console 无报错；375px 无横向溢出；全项目仍 0 innerHTML 注入数据；`?overlay=1` 正常。
 
 ## Review Focus（Codex 自查）
-- hero-card 从 button 改 div 后：点击委托、键盘激活、焦点可见、★/对比按钮不冒泡是否都对。
-- compare 按钮与 ★ 在委托里的判定顺序（都要排在 openDetail 之前）。
-- 对比深链与 switchView 的 hash 同步是否触发循环（isRouting guard）。
-- localStorage 损坏/超限/不可用容错。
-- 数值高亮：缺值 `—` 不应被当成最优/最差；"最低难度/最高 HP" 方向正确。
-- overlay 模式不被对比/路由污染。
+- 焦点陷阱是否真锁住（含只有 1 个可聚焦元素、动态内容变化后的边界）；关闭后焦点还原是否对（深链直接打开详情时触发元素可能不存在→回退到合理焦点如关闭按钮或 body）。
+- `aria-hidden`/`inert` 别把抽屉自身或可聚焦元素错误隐藏；overlay 模式不冲突。
+- roving tabindex 与方向键不破坏点击/路由；switchView 各入口（点击/路由/深链）都同步 aria-selected。
+- aria-live 容器不要因频繁重渲染导致刷屏播报。
+- 对比度调整不跑偏 OP.GG 视觉风格。

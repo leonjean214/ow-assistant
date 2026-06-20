@@ -2,6 +2,38 @@
 
 ## 已完成
 
+- Phase 8 无障碍全面化已完成，未引入框架/构建/依赖，未提交 git commit。
+- `index.html` 新增 skip link（`#main`）、主导航 `role="tablist"`/tab id、主内容 `tabindex="-1"`、动态区 `aria-live`，并将详情抽屉面板标识为 `#detailDialog role="dialog" aria-modal="true" aria-labelledby="detailTitle"`。
+- `src/app.js` 新增 a11y 初始化与同步：`.view-tab[data-view]` 使用 `role="tab"`、`aria-selected`、`aria-controls`、roving `tabindex`；`.view` 使用 `role="tabpanel"`、`aria-labelledby`；←/→/Home/End 可移动焦点并切换视图，点击与 hash 路由保持不变。
+- 详情抽屉已实现焦点管理：打开时记录触发元素、解除抽屉 `inert`、背景区域 `inert`/`aria-hidden`、焦点移入关闭按钮；Tab/Shift+Tab 在抽屉内循环；Esc/关闭/scrim 关闭后解除背景 inert 并还原焦点，深链打开无触发元素时回退到当前 tab/main。
+- 战绩表、对比表、Meta Tier 表均补 `<caption class="sr-only">`；表头/行头补 `scope`；战绩表按 `state.heroSort` 同步 `aria-sort`，点击排序后 `aria-sort` 跟随更新。
+- 动态结果/状态区域补 `aria-live`：克制结果、已选敌方、战绩搜索/结果、地图状态/详情、推荐器、补丁列表、对比内容、英雄筛选结果；`setApiState(..., "error")` 自动切到 `aria-live="assertive"`。
+- `src/styles.css` 新增 `.sr-only`、`.skip-link`、全站统一 `:focus-visible` 轮廓；浅/深主题 token 小幅加深，正文/次要文字、蓝红胜率、primary、tier/warn/good 等关键颜色达到 AA；Meta 表格在移动端使用卡片内横向滚动，根层禁止页面横向溢出。
+- Overlay 模式保持短路：`?overlay=1` 下 topbar/tabbar 隐藏、overlay 面板显示、路由不打开详情/对比视图，skip link/tablist 不报错。
+
+## Phase 8 验证记录
+
+- 静态检查：
+  - `for f in src/*.js; do node --check "$f" || exit 1; done`
+  - `git diff --check`
+  - `rg -n "innerHTML|insertAdjacentHTML|outerHTML" .` 无命中
+- Headless Chrome/CDP 验收通过：
+  - 首页英雄库渲染 52 张 `.hero-card`，52 个收藏按钮、52 个对比按钮；推荐器初始 8 张推荐卡；克制计算器输入“源氏 ana”渲染 15 条推荐。
+  - 主导航 `role=tablist`，8 个 `.view-tab` 均为 `role=tab`、`aria-controls=${view}View`、roving `tabindex`；8 个 `.view` 均为 `role=tabpanel`、`aria-labelledby`；ArrowRight、End、Home 可切换并同步 `aria-selected`。
+  - skip link 聚焦后可见并指向 `#main`。
+  - 英雄卡键盘 Enter 打开详情抽屉；抽屉 `#detailDialog` 有 `role=dialog`、`aria-modal=true`、`aria-labelledby=detailTitle` 且 `#detailTitle` 存在；打开后焦点位于 `#closeDrawer`，背景 `#main` inert，抽屉自身非 inert。
+  - 抽屉内连续 Tab 24 次和 Shift+Tab 均未逃出；Esc 关闭后 `#detailDrawer inert=true`、`aria-hidden=true`、背景解除 inert，焦点还原到触发英雄卡。
+  - `#/compare/genji,ana` 对比表有 caption，thead `th scope=col`，tbody `th scope=row`，15 行数据正常。
+  - Meta Tier 表有 caption，thead `th scope=col`，tbody `th scope=row`，保留 12 个 `.tier-cell`。
+  - 使用 CDP mock OverFast 响应验证战绩表：caption 为“玩家英雄战绩表”，7 个列头 `scope=col`，3 个英雄行头 `scope=row`；默认 `games` 列 `aria-sort=descending`，点击胜率后 `winrate` 列变为 `aria-sort=descending`。
+  - `#counterResults/#selectedEnemies/#playerSearchState/#mapsState/#compareContent/#heroGrid` 等动态区为 `aria-live=polite`；错误态验证为 `assertive`。
+  - 浅色主题对比度抽样：正文 16.07、次要文字 4.89、primary 5.40、胜率蓝 5.93、失败红 4.90、白字 on primary 5.40，均达 AA。
+  - 深色主题对比度抽样：正文 13.27、次要文字 6.29、primary 6.69、胜率蓝 6.05、失败红 5.76，均达 AA。
+  - 375px 视口检查 `heroes/compare/updates/counter/profile/meta/ban` 视图 `scrollWidth === clientWidth`，无页面横向溢出。
+  - `?overlay=1#/compare/genji,ana` 保持 `body.is-overlay`，topbar 隐藏、tabbar display none、overlay 可见、详情未打开。
+  - console/runtime error 数量为 0。
+- 外部 OverFast 真实 Jay3 请求在一次验收中超时并显示“请求超时，请稍后再试。”；已用 CDP mock 响应覆盖战绩表语义与排序验收，避免将外部 API 抖动误判为本地回归。
+
 - Phase 7 英雄对比已补齐执行方缺口，未引入框架/构建/依赖，未提交 git commit。
 - `index.html` 已有 `data-view="compare"` 导航、`compareView` section、`#compareContent/#compareCount` 和底部 `#compareTray` 容器。
 - `src/app.js` 新增对比数据层：`state.compare` 为有序数组，最多 4 位；`localStorage` key 为 `ow-compare`；读写均有 try/catch 容错，损坏数据回退空集合。
