@@ -99,6 +99,13 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await c.evals(`document.dispatchEvent(new KeyboardEvent('keydown',{key:'b',bubbles:true})); null`); await sleep(200);
   check("快捷键 b 跳英雄库并聚焦筛选", (await c.evals(`document.activeElement && document.activeElement.id === 'searchInput'`)) === true);
 
+  // 工坊代码模块
+  await c.evals(`location.hash='#/workshop'; null`); await sleep(500);
+  check("工坊视图激活", (await c.evals(`document.getElementById('workshopView').classList.contains('is-active')`)) === true);
+  check("工坊渲染分类卡", (await c.evals(`document.querySelectorAll('#workshopContent .workshop-cat').length`)) >= 3);
+  check("工坊有可复制代码按钮", (await c.evals(`document.querySelectorAll('#workshopContent button[data-copy-code]').length`)) >= 5);
+  check("工坊有免责声明", (await c.evals(`document.querySelectorAll('#workshopContent .workshop-disclaimer').length`)) === 1);
+
   // Overwolf 消息桥(W1 SPA 侧)：模拟 overlay 转发本方英雄
   await c.evals(`location.hash='#/counter'; null`); await sleep(200);
   await c.evals(`window.postMessage({source:'owgep',kind:'my-hero',heroId:'genji'},'*'); null`); await sleep(300);
