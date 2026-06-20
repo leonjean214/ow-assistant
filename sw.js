@@ -1,4 +1,4 @@
-const CACHE_NAME = "ow-cache-v9";
+const CACHE_NAME = "ow-cache-v10";
 const OVERFAST_HOST = "overfast-api.tekrop.fr";
 const APP_SHELL = [
   "./",
@@ -8,6 +8,7 @@ const APP_SHELL = [
   "./src/api.js",
   "./src/counter.js",
   "./src/data.js",
+  "./src/journal.js",
   "./src/pwa.js",
   "./src/recommend-hero.js",
   "./src/stats.js",

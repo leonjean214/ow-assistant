@@ -3,6 +3,7 @@ import { recommend, scoreHeroAgainstEnemies } from "./counter.js";
 import { debounce, friendlyApiError, getMaps, getStatsSummary, getSummary, searchPlayers } from "./api.js";
 import { buildPerformanceCards, formatDuration, formatRank, normalizeHeroStats, sortHeroStats, summarizeRoles } from "./stats.js";
 import { recommendHeroes } from "./recommend-hero.js";
+import { addJournalEntry, clearJournal, loadJournal, removeJournalEntry, summarizeJournal } from "./journal.js";
 
 const roleNamesZh = { tank: "重装", damage: "输出", support: "支援" };
 const modeLabels = {
@@ -63,7 +64,9 @@ const state = {
     latestPatch: null,
     latestChangesByHero: new Map()
   },
-  patchFilters: { role: "all", type: "all", search: "" }
+  patchFilters: { role: "all", type: "all", search: "" },
+  journalEntries: [],
+  journalResult: "win"
 };
 
 const el = {};
@@ -91,11 +94,13 @@ async function init() {
     state.compare = loadCompare();
     state.mapMeta = mapMeta;
     state.patches = patches;
+    state.journalEntries = loadJournal();
     renderMetaText(data.meta);
     renderLatestHeroLine();
     renderRecommendControls();
     renderHeroRecommendations();
     renderCurrentHeroOptions();
+    renderJournalOptions();
     renderHeroGrid();
     renderCompareTray();
     renderCompareView();
@@ -105,6 +110,7 @@ async function init() {
     renderBanList();
     renderMetaDashboard();
     renderRecentPlayers();
+    renderJournal();
     applyOverlayMode();
     initRouter();
   } catch (error) {
@@ -125,6 +131,8 @@ function bindElements() {
     "enemyInput", "currentHeroSelect", "runCounter", "clearCounter", "selectedEnemies", "enemyChips", "counterResults",
     "banList", "banCount", "detailDrawer", "detailDialog", "drawerScrim", "closeDrawer", "detailContent",
     "profileStatus", "playerSearchInput", "platformTabs", "recentPlayers", "playerSearchState", "playerResults", "playerProfile",
+    "journalCount", "journalForm", "journalResultGroup", "journalHeroSelect", "journalMapSelect", "journalEnemyNote", "journalNote",
+    "saveJournal", "clearJournal", "journalStatus", "journalSummary", "journalHeroTable", "journalMapTable", "journalList", "journalEmpty",
     "mapCount", "mapModeTabs", "mapsState", "mapsGrid", "mapDetail", "tierGrid", "banBoard", "rolePassives",
     "overlayView", "overlayCounterMount", "overlayBan"
   ]) {
@@ -296,6 +304,36 @@ function bindEvents() {
     if (state.selectedPlayer) selectPlayer(state.selectedPlayer.player_id, { keepResults: true });
   });
 
+  el.journalResultGroup.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-journal-result]");
+    if (!button) return;
+    setJournalResult(button.dataset.journalResult);
+  });
+  el.journalForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    saveJournalForm();
+  });
+  el.clearJournal.addEventListener("click", () => {
+    if (!state.journalEntries.length) return;
+    if (!window.confirm("确定清空全部对局记录？此操作不可撤销。")) return;
+    state.journalEntries = clearJournal();
+    renderJournal("已清空全部记录。");
+  });
+  el.journalList.addEventListener("click", (event) => {
+    const remove = event.target.closest("button[data-journal-delete]");
+    if (remove) {
+      state.journalEntries = removeJournalEntry(state.journalEntries, remove.dataset.journalDelete);
+      renderJournal("已删除 1 条记录。");
+      return;
+    }
+    const hero = event.target.closest("button[data-journal-hero]");
+    if (hero) openDetail(hero.dataset.journalHero);
+  });
+  el.journalHeroTable.addEventListener("click", (event) => {
+    const hero = event.target.closest("button[data-journal-hero]");
+    if (hero) openDetail(hero.dataset.journalHero);
+  });
+
   el.playerProfile.addEventListener("click", (event) => {
     const sort = event.target.closest("button[data-sort]");
     if (sort) {
@@ -337,7 +375,9 @@ function setupA11y() {
     [el.mapsState, "polite"],
     [el.compareContent, "polite"],
     [el.recommendResults, "polite"],
-    [el.patchList, "polite"]
+    [el.patchList, "polite"],
+    [el.journalStatus, "polite"],
+    [el.journalSummary, "polite"]
   ].forEach(([node, politeness]) => {
     if (node) node.setAttribute("aria-live", politeness);
   });
@@ -475,6 +515,274 @@ function renderCurrentHeroOptions() {
   });
 }
 
+function renderJournalOptions() {
+  el.journalHeroSelect.replaceChildren();
+  const heroBlank = document.createElement("option");
+  heroBlank.value = "";
+  heroBlank.textContent = "选择英雄";
+  el.journalHeroSelect.append(heroBlank);
+  ["tank", "damage", "support"].forEach((role) => {
+    const group = document.createElement("optgroup");
+    group.label = roleNamesZh[role] || ROLE_LABELS[role] || role;
+    state.heroes.filter((hero) => hero.role === role).forEach((hero) => {
+      const option = document.createElement("option");
+      option.value = hero.id;
+      option.textContent = `${hero.nameZh} / ${hero.name}`;
+      group.append(option);
+    });
+    el.journalHeroSelect.append(group);
+  });
+
+  el.journalMapSelect.replaceChildren();
+  const mapBlank = document.createElement("option");
+  mapBlank.value = "";
+  mapBlank.textContent = "选择地图";
+  el.journalMapSelect.append(mapBlank);
+  localMapOptions().forEach((map) => {
+    const option = document.createElement("option");
+    option.value = map.key;
+    option.textContent = map.mode ? `${map.name} · ${modeLabels[map.mode] || map.mode}` : map.name;
+    option.dataset.mapName = map.name;
+    el.journalMapSelect.append(option);
+  });
+}
+
+function localMapOptions() {
+  return [...state.mapMeta.entries()]
+    .map(([key, meta]) => ({ key, name: fallback(meta.nameZh, key), mode: meta.mode && meta.mode !== "—" ? meta.mode : "" }))
+    .sort((a, b) => a.name.localeCompare(b.name, "zh-Hans-CN"));
+}
+
+function setJournalResult(result) {
+  if (!["win", "loss", "draw"].includes(result)) return;
+  state.journalResult = result;
+  el.journalResultGroup.querySelectorAll("button[data-journal-result]").forEach((button) => {
+    const active = button.dataset.journalResult === result;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function saveJournalForm() {
+  const hero = state.byId.get(el.journalHeroSelect.value);
+  const mapOption = el.journalMapSelect.selectedOptions[0];
+  const mapKey = el.journalMapSelect.value;
+  if (!hero || !mapKey) {
+    renderJournal("请选择英雄和地图后再保存。");
+    return;
+  }
+  state.journalEntries = addJournalEntry(state.journalEntries, {
+    id: `j-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    ts: Date.now(),
+    result: state.journalResult,
+    heroId: hero.id,
+    role: hero.role,
+    mapKey,
+    mapName: mapOption?.dataset.mapName || mapOption?.textContent || mapKey,
+    enemyNote: el.journalEnemyNote.value,
+    note: el.journalNote.value
+  });
+  el.journalForm.reset();
+  setJournalResult("win");
+  renderJournal("已保存本局记录。");
+}
+
+function renderJournal(message = "") {
+  if (!el.journalSummary) return;
+  const summary = summarizeJournal(state.journalEntries, state.byId);
+  el.journalCount.textContent = `${summary.total.games} 局`;
+  if (message) {
+    el.journalStatus.textContent = message;
+  } else {
+    el.journalStatus.textContent = summary.total.games ? "胜率按 胜 / (胜 + 负) 计算，平局单列。" : "";
+  }
+  renderJournalSummary(summary);
+  renderJournalHeroTable(summary.heroes);
+  renderJournalMapTable(summary.maps);
+  renderJournalList();
+}
+
+function renderJournalSummary(summary) {
+  el.journalSummary.replaceChildren();
+  el.journalSummary.append(
+    createJournalMetric("总场次", `${summary.total.games}`, `胜 ${summary.total.wins} / 负 ${summary.total.losses} / 平 ${summary.total.draws}`),
+    createJournalMetric("总胜率", percentText(summary.total), "平局不计入分母"),
+    createJournalMetric("今日", `${summary.today.games} 局 · ${percentText(summary.today)}`, `胜 ${summary.today.wins} / 负 ${summary.today.losses}`),
+    createJournalMetric("当前趋势", summary.streak.label, "从最近一局往前计算"),
+    createRecentTrend(summary.recent)
+  );
+}
+
+function createJournalMetric(label, value, note) {
+  const card = create("div", "metric journal-metric");
+  appendText(card, "span", label);
+  appendText(card, "strong", value);
+  appendText(card, "small", note);
+  return card;
+}
+
+function createRecentTrend(recent) {
+  const card = create("div", "metric journal-metric journal-trend-card");
+  appendText(card, "span", "最近 10 局");
+  const row = create("div", "journal-trend");
+  if (!recent.length) {
+    row.append(textBadge("暂无记录"));
+  } else {
+    recent.forEach((entry) => {
+      const mark = create("span", `trend-dot result-${entry.result}`);
+      mark.textContent = entry.code;
+      mark.title = entry.label;
+      row.append(mark);
+    });
+  }
+  card.append(row);
+  appendText(card, "small", "左侧为最近一局");
+  return card;
+}
+
+function renderJournalHeroTable(rows) {
+  el.journalHeroTable.replaceChildren();
+  if (!rows.length) {
+    el.journalHeroTable.append(journalEmptyText("暂无英雄趋势。"));
+    return;
+  }
+  const table = createJournalStatsTable("英雄胜率趋势表", ["英雄", "场次", "胜率", "胜", "负", "平"]);
+  const tbody = document.createElement("tbody");
+  rows.forEach((row) => tbody.append(createJournalHeroRow(row)));
+  table.append(tbody);
+  el.journalHeroTable.append(table);
+}
+
+function renderJournalMapTable(rows) {
+  el.journalMapTable.replaceChildren();
+  if (!rows.length) {
+    el.journalMapTable.append(journalEmptyText("暂无地图趋势。"));
+    return;
+  }
+  const table = createJournalStatsTable("地图胜率趋势表", ["地图", "场次", "胜率", "胜", "负", "平"]);
+  const tbody = document.createElement("tbody");
+  rows.forEach((row) => tbody.append(createJournalMapRow(row)));
+  table.append(tbody);
+  el.journalMapTable.append(table);
+}
+
+function createJournalStatsTable(captionText, headings) {
+  const table = create("table", "stats-table journal-table");
+  const caption = create("caption", "sr-only");
+  caption.textContent = captionText;
+  const thead = document.createElement("thead");
+  const tr = document.createElement("tr");
+  headings.forEach((heading) => {
+    const th = document.createElement("th");
+    th.scope = "col";
+    th.textContent = heading;
+    tr.append(th);
+  });
+  thead.append(tr);
+  table.append(caption, thead);
+  return table;
+}
+
+function createJournalHeroRow(row) {
+  const tr = document.createElement("tr");
+  const th = document.createElement("th");
+  th.scope = "row";
+  const button = create("button", "stat-hero");
+  button.type = "button";
+  button.dataset.journalHero = row.heroId;
+  if (row.hero) button.append(createAvatar(row.hero));
+  const name = create("span");
+  name.textContent = row.nameZh;
+  button.append(name);
+  th.append(button);
+  tr.append(th);
+  appendJournalCells(tr, row);
+  return tr;
+}
+
+function createJournalMapRow(row) {
+  const tr = document.createElement("tr");
+  const th = document.createElement("th");
+  th.scope = "row";
+  th.textContent = row.mapName;
+  tr.append(th);
+  appendJournalCells(tr, row);
+  return tr;
+}
+
+function appendJournalCells(tr, row) {
+  appendCell(tr, row.games);
+  appendCell(tr, percentText(row), winrateClass(row.winrate));
+  appendCell(tr, row.wins, "good");
+  appendCell(tr, row.losses, "bad");
+  appendCell(tr, row.draws);
+}
+
+function renderJournalList() {
+  el.journalList.replaceChildren();
+  el.journalEmpty.hidden = state.journalEntries.length !== 0;
+  state.journalEntries.forEach((entry) => el.journalList.append(createJournalEntryRow(entry)));
+}
+
+function createJournalEntryRow(entry) {
+  const hero = state.byId.get(entry.heroId);
+  const item = create("article", `journal-entry result-${entry.result}`);
+  const result = createBadge(resultLabel(entry.result), `journal-result-badge result-${entry.result}`);
+  const heroButton = create("button", "stat-hero journal-entry-hero");
+  heroButton.type = "button";
+  heroButton.dataset.journalHero = entry.heroId;
+  if (hero) heroButton.append(createAvatar(hero));
+  const heroNameNode = create("span");
+  heroNameNode.textContent = hero?.nameZh || entry.heroId;
+  heroButton.append(heroNameNode);
+
+  const body = create("div", "journal-entry-body");
+  const title = create("div", "journal-entry-title");
+  title.append(result, heroButton);
+  body.append(title);
+  const meta = create("div", "hero-meta");
+  meta.append(textBadge(formatJournalDate(entry.ts)), textBadge(entry.mapName || entry.mapKey || "未知地图"));
+  if (entry.role) meta.append(textBadge(ROLE_LABELS[entry.role] || entry.role));
+  body.append(meta);
+  if (entry.enemyNote) appendText(body, "p", `敌方：${entry.enemyNote}`);
+  if (entry.note) appendText(body, "p", entry.note);
+
+  const remove = create("button", "icon-btn journal-delete");
+  remove.type = "button";
+  remove.dataset.journalDelete = entry.id;
+  remove.setAttribute("aria-label", `删除 ${formatJournalDate(entry.ts)} 的记录`);
+  remove.textContent = "×";
+  item.append(body, remove);
+  return item;
+}
+
+function journalEmptyText(text) {
+  const empty = create("p", "empty-state");
+  empty.textContent = text;
+  return empty;
+}
+
+function percentText(row) {
+  return row.decided ? `${row.winrate.toFixed(1)}%` : "—";
+}
+
+function resultLabel(result) {
+  if (result === "win") return "胜";
+  if (result === "loss") return "负";
+  return "平";
+}
+
+function formatJournalDate(ts) {
+  const date = new Date(ts);
+  if (Number.isNaN(date.getTime())) return "未知时间";
+  return new Intl.DateTimeFormat("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
+}
+
 function switchView(view) {
   if (!routeViews.has(view)) view = DEFAULT_VIEW;
   state.currentView = view;
@@ -486,6 +794,7 @@ function switchView(view) {
   });
   if (view === "maps") loadMapsOnce();
   if (view === "compare") renderCompareView();
+  if (view === "journal") renderJournal();
   activeDetailHeroId = "";
   if (!isRouting) closeDetailPanel();
   syncNavigationA11y();
