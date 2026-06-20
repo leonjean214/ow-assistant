@@ -444,7 +444,7 @@ img {
 .profile-search-grid,
 .patch-toolbar {
   display: grid;
-  grid-template-columns: auto minmax(128px, 160px) minmax(150px, 180px) minmax(220px, 1fr);
+  grid-template-columns: auto minmax(128px, 160px) minmax(150px, 180px) minmax(220px, 1fr) auto;
   gap: 10px;
   align-items: end;
   margin-bottom: 14px;
@@ -453,6 +453,10 @@ img {
 .recommend-controls {
   grid-template-columns: minmax(130px, 180px) minmax(180px, 1fr) minmax(150px, 210px);
   padding: 0 12px 12px;
+}
+
+.patch-toolbar {
+  grid-template-columns: minmax(128px, 160px) minmax(150px, 180px) minmax(220px, 1fr);
 }
 
 .profile-search-grid {
@@ -469,6 +473,40 @@ img {
   color: var(--text-2);
   font-size: 12px;
   font-weight: 700;
+}
+
+.favorite-filter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: max-content;
+  min-height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0 12px;
+  background: var(--surface);
+  color: var(--text-2);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.favorite-filter:hover,
+.favorite-filter:has(input:focus-visible) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.favorite-filter:has(input:checked) {
+  border-color: var(--warn);
+  background: color-mix(in srgb, var(--warn) 14%, var(--surface));
+  color: var(--warn);
+}
+
+.favorite-filter input {
+  width: 16px;
+  min-height: 16px;
+  accent-color: var(--warn);
 }
 
 input,
@@ -610,6 +648,39 @@ input[type="range"] {
 
 .hero-card.is-new-hero {
   border-color: var(--primary);
+}
+
+.favorite-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  color: var(--text-3);
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.hero-card .favorite-btn {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  z-index: 3;
+}
+
+.favorite-btn:hover,
+.favorite-btn[aria-pressed="true"] {
+  border-color: var(--warn);
+  background: color-mix(in srgb, var(--warn) 15%, var(--surface));
+  color: var(--warn);
+}
+
+.detail-favorite {
+  flex: 0 0 auto;
 }
 
 .avatar {
@@ -1532,7 +1603,7 @@ body.is-overlay .overlay-panel {
 
 .detail-hero-head {
   display: grid;
-  grid-template-columns: 74px minmax(0, 1fr);
+  grid-template-columns: 74px minmax(0, 1fr) auto;
   gap: 12px;
   align-items: center;
   margin-bottom: 14px;

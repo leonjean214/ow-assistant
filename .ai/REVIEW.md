@@ -2,6 +2,29 @@
 
 审查人：Claude（设计+数据+审查）｜执行：Codex（前端实现）｜日期：2026-06-20
 
+## Phase 6 审查（hash 路由/深链 + 英雄收藏）— 无阻塞，可交付
+执行：Codex｜验证：Codex 无头 Chrome + Claude 独立复核（git diff +390/-47，6 文件）。
+
+按优先级核查：
+| 级别 | 项 | 结果 |
+|---|---|---|
+| ①Bug | hashchange 写读死循环 | ✅ `isRouting` guard + `location.hash!==next` 双重防护，无循环 |
+| ①Bug | ★ 冒泡误开详情 | ✅ `#heroGrid`/`detailContent` 委托里先判 `data-favorite-hero` 再 `return` |
+| ①Bug | 深链 byId 未就绪 | ✅ `initRouter()` 放在数据 `await` 完成后调用 |
+| ②回归 | 收藏置顶污染克制/推荐器 | ✅ `filteredHeroes` 仅 renderHeroGrid 使用；sort 作用于 filter 新数组，不改 state.heroes |
+| ②回归 | overlay 被路由污染 | ✅ `overlayMode` 时 init/apply/sync 全短路；`?overlay=1#/hero/genji` 实测仍是 overlay |
+| ③风险 | localStorage 不可用/损坏 | ✅ load/save try/catch，非数组回退空 Set |
+| ④测试 | node --check / 0 innerHTML / 375px | ✅ 7 JS 全过、0 innerHTML、scrollWidth==clientWidth |
+
+独立复验：`node --check` 全过；`grep innerHTML` 0 命中；`favoriteOnlyToggle` 元素已在 index.html；后退/前进键逐级关详情/退视图（push 开详情 + replace 关详情，历史不堆积）。
+
+### 已知风险（非阻塞）
+1. **嵌套 button**：★ 是 `<button>` 嵌在 hero-card 的 `<button>` 内（HTML 不合规，键盘 Tab/读屏体验欠佳）。功能靠事件委托正常。→ 建议下个 Phase 把 hero-card 改成非 button 容器（div + role/tabindex 或外层不再是 button），或把 ★ 移出卡片按钮语义。
+2. **深链 vs 应用内开详情视图不一致**：`#/hero/x` 深链强制切英雄库；应用内从战绩/更新页开详情保留当前视图——同一 hash 两种背景，纯视觉差异，非 bug。
+3. `openDetail` 触发 hashchange 会二次 `renderDetail`（同英雄重渲一次），性能可忽略。
+
+---
+
 ## 结论：无阻塞，可交付
 
 独立验证 + Codex 自测双重通过。
