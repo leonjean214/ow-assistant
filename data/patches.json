@@ -1,0 +1,64 @@
+{
+  "_meta": {
+    "desc": "更新/补丁追踪数据。timeline=2026英雄发布时间线;patches=补丁逐英雄改动(type: buff强化/nerf削弱/rework重做/adjust调整,kind: hero/perk)。hero字段=heroes.json的id。",
+    "source": "Blizzard 官方补丁说明 overwatch.blizzard.com + Fandom/esports 时间线",
+    "updated": "2026-06-20",
+    "latestHero": "shion",
+    "note": "为 guide/速览级,具体数值以游戏内为准;新补丁按同结构往 patches 数组头部追加即可。"
+  },
+  "timeline": [
+    { "hero": "anran", "nameZh": "安然", "role": "damage", "date": "2026-02-10", "season": "S1", "note": "2026 开年五连发之一" },
+    { "hero": "emre", "nameZh": "埃姆雷", "role": "damage", "date": "2026-02-10", "season": "S1", "note": "2026 开年五连发之一" },
+    { "hero": "domina", "nameZh": "Domina", "role": "tank", "date": "2026-02-10", "season": "S1", "note": "2026 开年五连发之一" },
+    { "hero": "mizuki", "nameZh": "瑞月", "role": "support", "date": "2026-02-10", "season": "S1", "note": "2026 开年五连发之一" },
+    { "hero": "jetpack-cat", "nameZh": "喷气背包猫", "role": "support", "date": "2026-02-10", "season": "S1", "note": "2026 开年五连发之一(Fika)" },
+    { "hero": "freja", "nameZh": "弗蕾娅", "role": "damage", "date": "2026-03", "season": "S1 中期", "note": "弩手,缚索控制" },
+    { "hero": "wuyang", "nameZh": "吴阳", "role": "support", "date": "2026-03", "season": "S1/S2", "note": "国风水系辅助" },
+    { "hero": "sierra", "nameZh": "塞拉", "role": "damage", "date": "2026-04-14", "season": "S2 Summit", "note": "高机动输出,第6名" },
+    { "hero": "shion", "nameZh": "紫苑", "role": "damage", "date": "2026-06-15", "season": "S3 入虎穴", "note": "★最新★ 桥本组高速近战输出" }
+  ],
+  "patches": [
+    {
+      "id": "2026-06-16",
+      "date": "2026-06-16",
+      "season": "Season 3：Into the Tiger's Den（入虎穴）",
+      "title": "S3 大补丁 + Stadium meta 重塑",
+      "headline": "新英雄 Shion(紫苑)上线；Stadium 模式大改、几乎每个英雄都有 perk/数值调整；Stadium 排位取消组队限制。",
+      "newHero": "shion",
+      "newMap": "Anima Strike 活动新增 Hybrid 地图",
+      "changes": [
+        { "hero": "dva", "type": "nerf", "kind": "perk", "text": "护盾系统(大天赋)护盾转化 150→100" },
+        { "hero": "domina", "type": "rework", "kind": "perk", "text": "新增大天赋 Corporate Retreat(护盾阵列可移动一次)；移除 Power Move" },
+        { "hero": "doomfist", "type": "nerf", "kind": "perk", "text": "Power Matrix(大天赋)持续 1→0.8 秒" },
+        { "hero": "hazard", "type": "nerf", "kind": "hero", "text": "尖刺守护时长 3→2.5 秒；天赋重排(Deep Leap 转大/+20%范围, Explosive Impalements 伤害 40→30, Anarchic Zeal 吸血 30→40%)" },
+        { "hero": "ramattra", "type": "buff", "kind": "perk", "text": "Relentless Form 时长 +1→+2 秒；Nanite Repair 治疗 75→100" },
+        { "hero": "reinhardt", "type": "buff", "kind": "hero", "text": "炽焰打击伤害 120→125、弹速 30→33(对250血过双炽焰斩杀线)" },
+        { "hero": "zarya", "type": "buff", "kind": "hero", "text": "能量衰减 2.5→2.0/秒(更易留能量)" },
+        { "hero": "anran", "type": "buff", "kind": "hero", "text": "烈焰冲刺/炽舞后摇降低(连招更顺)" },
+        { "hero": "ashe", "type": "adjust", "kind": "perk", "text": "天赋调整:二连发去击退减免、Viper Sting 去回弹药、Airburst 回弹药 3→6" },
+        { "hero": "bastion", "type": "adjust", "kind": "perk", "text": "移除 Armored Artillery；Smart Bomb 改为自击退+25%且不自伤" },
+        { "hero": "cassidy", "type": "adjust", "kind": "perk", "text": "Even The Odds 治疗 30→40/秒(↑)；Silver Bullet 流血 70→50、时长 2.5→1.5 秒(↓)" },
+        { "hero": "echo", "type": "nerf", "kind": "perk", "text": "Partial Scan 充能 50→30%；Full Salvo 额外弹 3→2" },
+        { "hero": "emre", "type": "nerf", "kind": "hero", "text": "超载协议大招费用 +10%" },
+        { "hero": "genji", "type": "buff", "kind": "hero", "text": "闪格挡 CD 10→8 秒；Meditation 治疗 35→50/秒" },
+        { "hero": "junkrat", "type": "buff", "kind": "perk", "text": "Bomb Voyage 攻速 +25→+35%" },
+        { "hero": "mei", "type": "buff", "kind": "hero", "text": "主武器射程 10→12 米；Deep Freeze 对非坦冻结速率 +30%" },
+        { "hero": "reaper", "type": "nerf", "kind": "hero", "text": "血量 300→275；Lingering Wraith 移速 40→30%" },
+        { "hero": "sierra", "type": "adjust", "kind": "hero", "text": "弹体 0.175→0.15m(降一致性)；锚定无人机部署/钩取范围与速度上调" },
+        { "hero": "sojourn", "type": "buff", "kind": "perk", "text": "Friction Generators 最大能量 50→75" },
+        { "hero": "tracer", "type": "nerf", "kind": "perk", "text": "Kinetic Reload 回弹药 20→12" },
+        { "hero": "vendetta", "type": "buff", "kind": "hero", "text": "裂世之刃大招费用 -15%；Onslaught 每层移速 2→3%、时长 5.5→7.5 秒" },
+        { "hero": "ana", "type": "nerf", "kind": "perk", "text": "Speed Serum 移速 40→30%" },
+        { "hero": "brigitte", "type": "buff", "kind": "perk", "text": "Whiplash 伤害 50→60" },
+        { "hero": "illari", "type": "buff", "kind": "perk", "text": "Rapid Construction 冷却缩减 1.5→2 秒" },
+        { "hero": "jetpack-cat", "type": "adjust", "kind": "hero", "text": "生化爪弹 4→4.5/弹(↑);Lifeline 拖带时燃料回复惩罚 2x→3x、Transport Shielding 护盾 75→50/时长 5→3 秒(↓);Headbutt 伤害 30→50" },
+        { "hero": "juno", "type": "buff", "kind": "perk", "text": "Faster Blaster 射速 20→22 发/秒" },
+        { "hero": "lifeweaver", "type": "nerf", "kind": "hero", "text": "生命之树大招费用 +9%；过量治疗转额外血 100→50%" },
+        { "hero": "mercy", "type": "nerf", "kind": "hero", "text": "蓝光增伤 30→25%；女武神大招费用 +7%；Chain Boost 额外 +5% 增伤" },
+        { "hero": "mizuki", "type": "buff", "kind": "hero", "text": "形代回归 CD 12→11 秒、持续 4.5→5.5 秒" },
+        { "hero": "moira", "type": "buff", "kind": "hero", "text": "生化之球伤害 50→60、治疗 65→75、单球上限 200→250" },
+        { "hero": "wuyang", "type": "buff", "kind": "perk", "text": "Ebb and Flow 回溯治疗 50→100%" }
+      ]
+    }
+  ]
+}

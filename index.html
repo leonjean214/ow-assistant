@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>守望先锋助手</title>
+    <link rel="icon" href="data:,">
+    <script>
+      (() => {
+        try {
+          const theme = window.localStorage.getItem("ow-theme") || "light";
+          document.documentElement.dataset.theme = theme === "dark" ? "dark" : "light";
+        } catch {
+          document.documentElement.dataset.theme = "light";
+        }
+      })();
+    </script>
+    <link rel="stylesheet" href="./src/styles.css">
+    <script defer src="./src/theme.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">OW</div>
+          <div>
+            <h1>OW 助手</h1>
+            <p id="dataMeta">读取英雄数据中...</p>
+          </div>
+        </div>
+        <label class="top-search" aria-label="BattleTag 战绩搜索">
+          <span>BattleTag</span>
+          <input id="playerSearchInput" type="search" placeholder="搜索玩家：Jay3 或 Jay3#1234" autocomplete="off">
+        </label>
+        <div class="top-actions">
+          <button class="theme-toggle" type="button" id="themeToggle" aria-label="切换深浅主题" aria-pressed="false">
+            <span class="theme-toggle-icon" aria-hidden="true"></span>
+            <span class="theme-toggle-text">浅色</span>
+          </button>
+          <span class="season-pill">S16</span>
+          <a class="overlay-link" href="?overlay=1" aria-label="打开 Overlay 模式">Overlay</a>
+        </div>
+      </div>
+    </header>
+
+    <nav class="view-tabs" aria-label="主导航">
+      <button class="view-tab is-active" type="button" data-view="heroes">英雄库</button>
+      <button class="view-tab" type="button" data-view="updates">更新</button>
+      <button class="view-tab" type="button" data-view="counter">克制计算器</button>
+      <button class="view-tab" type="button" data-view="profile">战绩查询</button>
+      <button class="view-tab" type="button" data-view="maps">地图</button>
+      <button class="view-tab" type="button" data-view="meta">Meta</button>
+      <button class="view-tab" type="button" data-view="ban">Ban</button>
+    </nav>
+
+    <main class="app-shell">
+      <section class="overlay-shell" id="overlayView" hidden aria-label="Overlay 精简模式">
+        <div class="overlay-head">
+          <div>
+            <p class="eyebrow">Overlay</p>
+            <h2>对局速查</h2>
+          </div>
+          <a class="ghost-link" href="./">完整模式</a>
+        </div>
+        <div class="overlay-grid">
+          <div class="overlay-counter" id="overlayCounterMount"></div>
+          <div class="overlay-ban" id="overlayBan"></div>
+        </div>
+      </section>
+
+      <section class="panel view is-active" id="heroesView" aria-labelledby="heroesTitle">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Hero Browser</p>
+            <h2 id="heroesTitle">英雄库</h2>
+            <p class="latest-hero-line" id="latestHeroLine">当前最新英雄：读取中...</p>
+          </div>
+          <span class="count-pill" id="heroCount">0 位英雄</span>
+        </div>
+
+        <div class="toolbar" aria-label="英雄筛选">
+          <div class="segmented" id="roleTabs" role="tablist" aria-label="职业筛选">
+            <button class="is-active" type="button" data-role="all">全部</button>
+            <button type="button" data-role="tank">Tank</button>
+            <button type="button" data-role="damage">Damage</button>
+            <button type="button" data-role="support">Support</button>
+          </div>
+          <label class="field">
+            <span>Tier</span>
+            <select id="tierFilter">
+              <option value="all">全部</option>
+              <option value="S">S</option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Ban 优先级</span>
+            <select id="banFilter">
+              <option value="all">全部</option>
+              <option value="high">high</option>
+              <option value="medium">medium</option>
+              <option value="low">low</option>
+            </select>
+          </label>
+          <label class="field field-grow">
+            <span>搜索</span>
+            <input id="searchInput" type="search" placeholder="中文 / English / 标签">
+          </label>
+        </div>
+
+        <details class="advisor-panel" id="heroRecommendPanel">
+          <summary>我该玩谁</summary>
+          <div class="recommend-controls" aria-label="新手英雄推荐器">
+            <label class="field">
+              <span>职业</span>
+              <select id="recommendRole">
+                <option value="all">任意</option>
+                <option value="tank">重装</option>
+                <option value="damage">输出</option>
+                <option value="support">辅助</option>
+              </select>
+            </label>
+            <label class="field">
+              <span id="recommendDifficultyLabel">上手难度 ≤2</span>
+              <input id="recommendDifficulty" type="range" min="1" max="5" value="2">
+            </label>
+            <label class="field">
+              <span>风格标签</span>
+              <select id="recommendTag">
+                <option value="all">不限</option>
+              </select>
+            </label>
+          </div>
+          <div class="recommend-results" id="recommendResults" aria-live="polite"></div>
+        </details>
+
+        <div class="hero-grid" id="heroGrid" aria-live="polite"></div>
+        <p class="empty-state" id="heroEmpty" hidden>没有符合条件的英雄。</p>
+      </section>
+
+      <section class="panel view" id="updatesView" aria-labelledby="updatesTitle">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Updates</p>
+            <h2 id="updatesTitle">更新</h2>
+          </div>
+          <span class="count-pill">2026 英雄与补丁</span>
+        </div>
+
+        <section class="updates-section" aria-labelledby="timelineTitle">
+          <div class="subsection-head">
+            <h3 id="timelineTitle">英雄时间线</h3>
+            <span class="badge">2026 新英雄</span>
+          </div>
+          <div class="timeline-grid" id="updatesTimeline" aria-live="polite"></div>
+        </section>
+
+        <section class="updates-section" aria-labelledby="patchLogTitle">
+          <div class="subsection-head">
+            <h3 id="patchLogTitle">补丁日志</h3>
+          </div>
+          <div class="toolbar patch-toolbar" aria-label="补丁筛选">
+            <label class="field">
+              <span>职业</span>
+              <select id="patchRoleFilter">
+                <option value="all">全部</option>
+                <option value="tank">重装</option>
+                <option value="damage">输出</option>
+                <option value="support">支援</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>类型</span>
+              <select id="patchTypeFilter">
+                <option value="all">全部</option>
+              </select>
+            </label>
+            <label class="field field-grow">
+              <span>搜索</span>
+              <input id="patchSearchInput" type="search" placeholder="英雄名 / 改动文本">
+            </label>
+          </div>
+          <div class="patch-list" id="patchList" aria-live="polite"></div>
+          <p class="empty-state" id="patchEmpty" hidden>暂无补丁日志。</p>
+        </section>
+      </section>
+
+      <section class="panel view" id="counterView" aria-labelledby="counterTitle">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Counter Calculator</p>
+            <h2 id="counterTitle">克制计算器</h2>
+          </div>
+          <span class="count-pill">1-5 个敌方英雄</span>
+        </div>
+        <div class="counter-layout">
+          <div class="counter-picker">
+            <label class="field">
+              <span>输入敌方阵容</span>
+              <input id="enemyInput" type="text" placeholder="例：D.Va, 法老之鹰, ana">
+            </label>
+            <label class="field">
+              <span>我当前英雄</span>
+              <select id="currentHeroSelect">
+                <option value="">先选一个本方英雄</option>
+              </select>
+            </label>
+            <div class="mini-actions">
+              <button class="primary-btn" type="button" id="runCounter">计算推荐</button>
+              <button class="ghost-btn" type="button" id="clearCounter">清空</button>
+            </div>
+            <div class="selected-list" id="selectedEnemies" aria-live="polite"></div>
+            <div class="chip-grid" id="enemyChips" aria-label="选择敌方英雄"></div>
+          </div>
+          <div class="counter-results" id="counterResults" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section class="panel view" id="profileView" aria-labelledby="profileTitle">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Player Search</p>
+            <h2 id="profileTitle">战绩查询</h2>
+          </div>
+          <span class="count-pill" id="profileStatus">OverFast API</span>
+        </div>
+        <div class="profile-search-grid">
+          <div class="field">
+            <span>平台</span>
+            <div class="segmented" id="platformTabs" aria-label="平台切换">
+              <button class="is-active" type="button" data-platform="pc">PC</button>
+              <button type="button" data-platform="console">主机</button>
+            </div>
+          </div>
+        </div>
+        <div class="recent-row" id="recentPlayers"></div>
+        <div class="api-state" id="playerSearchState" aria-live="polite"></div>
+        <div class="player-results" id="playerResults"></div>
+        <div class="player-profile" id="playerProfile"></div>
+      </section>
+
+      <section class="panel view" id="mapsView" aria-labelledby="mapsTitle">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Maps</p>
+            <h2 id="mapsTitle">地图</h2>
+          </div>
+          <span class="count-pill" id="mapCount">0 张地图</span>
+        </div>
+        <div class="toolbar maps-toolbar">
+          <div class="segmented" id="mapModeTabs" aria-label="地图模式筛选">
+            <button class="is-active" type="button" data-mode="all">全部</button>
+          </div>
+        </div>
+        <div class="api-state" id="mapsState" aria-live="polite"></div>
+        <div class="maps-grid" id="mapsGrid"></div>
+        <div class="map-detail" id="mapDetail"></div>
+      </section>
+
+      <section class="panel view" id="metaView" aria-labelledby="metaTitle">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Meta Dashboard</p>
+            <h2 id="metaTitle">Meta 仪表盘</h2>
+          </div>
+          <span class="count-pill">本地英雄数据聚合</span>
+        </div>
+        <div class="meta-layout">
+          <div id="tierGrid"></div>
+          <div id="banBoard"></div>
+          <div id="rolePassives"></div>
+        </div>
+      </section>
+
+      <section class="panel view" id="banView" aria-labelledby="banTitle">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Ban Assistant</p>
+            <h2 id="banTitle">当前建议 Ban 名单</h2>
+          </div>
+          <span class="count-pill" id="banCount">0 条建议</span>
+        </div>
+        <div class="ban-list" id="banList"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>功能源于社区需求调研：Reddit r/Overwatch、贴吧、OverHub 等；未伪造 workshop 代码或不存在的数据。</p>
+    </footer>
+
+    <aside class="drawer" id="detailDrawer" aria-hidden="true" aria-label="英雄详情">
+      <div class="drawer-scrim" id="drawerScrim"></div>
+      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+        <button class="icon-btn close-btn" type="button" id="closeDrawer" aria-label="关闭详情">×</button>
+        <div id="detailContent"></div>
+      </div>
+    </aside>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>

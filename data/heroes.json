@@ -1,0 +1,5975 @@
+{
+  "meta": {
+    "game": "Overwatch (2026, 去掉 \"2\"，6v6 回归)",
+    "season": "Season 2 / 2026-06",
+    "note": "evergreen 字段=英雄基础kit与经典克制(稳定)；tier/ban/分段=当前meta(随补丁变，见 docs/SOURCES.md)。Perk为2选1天赋。",
+    "updated": "2026-06-20"
+  },
+  "heroes": [
+    {
+      "id": "reinhardt",
+      "name": "Reinhardt",
+      "nameZh": "莱因哈特",
+      "role": "tank",
+      "subrole": "main-tank",
+      "difficulty": 2,
+      "health": {
+        "hp": 350,
+        "armor": 300,
+        "shield": 0
+      },
+      "params": {
+        "primary": "近战大锤 85/挥",
+        "range": "melee",
+        "mobility": 2,
+        "dps": "约 100 近身",
+        "note": "1600 有效血量，靠护盾吃伤害"
+      },
+      "abilities": {
+        "passive": "坦克职业被动：减少击退与暴击伤害25%、大招充能-40%",
+        "weapon": {
+          "name": "Rocket Hammer",
+          "nameZh": "火箭重锤",
+          "desc": "大范围近战横扫"
+        },
+        "actives": [
+          {
+            "name": "Barrier Field",
+            "nameZh": "能量护盾",
+            "cooldown": 0,
+            "desc": "1400血正面护盾，破碎后回充"
+          },
+          {
+            "name": "Charge",
+            "nameZh": "冲锋",
+            "cooldown": 7,
+            "desc": "撞墙秒杀，可拽走一名敌人"
+          },
+          {
+            "name": "Fire Strike",
+            "nameZh": "炽焰打击",
+            "cooldown": 6,
+            "desc": "穿透火焰飞弹100伤"
+          }
+        ],
+        "ultimate": {
+          "name": "Earthshatter",
+          "nameZh": "大地粉碎",
+          "cost": 0,
+          "desc": "正面锥形击倒，开团核心"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "炽焰双发",
+            "desc": "炽焰打击可存2发"
+          },
+          {
+            "nameZh": "护盾回充更快",
+            "desc": "护盾再生速率提升"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "冲锋转向",
+            "desc": "冲锋中可大幅转向、撞击范围加大"
+          },
+          {
+            "nameZh": "震荡强化",
+            "desc": "大地粉碎范围/眩晕时长提升"
+          }
+        ],
+        "recommended": "近战缠斗选冲锋转向，开团节奏选震荡强化"
+      },
+      "position": {
+        "zh": "最前排顶盾，贴掩体推进，护盾管理决定团队空间",
+        "depth": "front"
+      },
+      "counters": {
+        "strongAgainst": [
+          "mei",
+          "reaper",
+          "mercy"
+        ],
+        "weakAgainst": [
+          "pharah",
+          "echo",
+          "sigma",
+          "orisa",
+          "sombra"
+        ],
+        "synergy": [
+          "zarya",
+          "lucio",
+          "ana"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "近距离推车/控制图：国王大道、漓江塔夜市、伊利奥斯灯塔"
+        ],
+        "weak": [
+          "开阔长视野图：花村一塔、circuit royal"
+        ],
+        "note": "怕空中与远程poke，需掩体推进"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "近战主坦在poke强势的当前meta吃亏，禁用价值低"
+      },
+      "rankPlay": {
+        "bronzeGold": "护盾别一直举，挡关键技能；冲锋别孤身上头",
+        "platDiamond": "护盾给队伍开视野，炽焰找软辅消耗，配合辅助节奏震荡",
+        "masterGM": "极限护盾管理+空护盾走位，震荡接队友秒杀，避免被环境针对"
+      },
+      "tier": "B",
+      "tags": [
+        "主坦",
+        "近战",
+        "开团"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/551fbe070c16fdfcc17f7f1de63af22c53e7d2f1340fc2f3172441504527bc4e.png",
+      "officialSubrole": "stalwart"
+    },
+    {
+      "id": "dva",
+      "name": "D.Va",
+      "nameZh": "D.Va",
+      "role": "tank",
+      "subrole": "dive-tank",
+      "difficulty": 3,
+      "health": {
+        "hp": 350,
+        "armor": 300,
+        "shield": 0
+      },
+      "params": {
+        "primary": "近距离散射机炮（移动不减速）",
+        "range": "short",
+        "mobility": 5,
+        "dps": "约 119 贴脸",
+        "note": "机甲被破后驾驶员状态 150血"
+      },
+      "abilities": {
+        "passive": "坦克职业被动",
+        "weapon": {
+          "name": "Fusion Cannons",
+          "nameZh": "聚变机炮",
+          "desc": "近距离高伤散射"
+        },
+        "actives": [
+          {
+            "name": "Boosters",
+            "nameZh": "推进器",
+            "cooldown": 4,
+            "desc": "高速冲刺，撞击伤害与切入/逃生"
+          },
+          {
+            "name": "Defense Matrix",
+            "nameZh": "防御矩阵",
+            "cooldown": 1,
+            "desc": "吸收前方弹道(限时充能)"
+          },
+          {
+            "name": "Micro Missiles",
+            "nameZh": "微型导弹",
+            "cooldown": 7,
+            "desc": "齐射额外爆发伤害"
+          }
+        ],
+        "ultimate": {
+          "name": "Self-Destruct",
+          "nameZh": "自毁",
+          "cost": 0,
+          "desc": "弹射机甲范围秒杀，逼走位"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "导弹强化",
+            "desc": "微型导弹数量/伤害提升"
+          },
+          {
+            "nameZh": "推进冷却",
+            "desc": "推进器CD降低"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "Power Block",
+            "desc": "防御矩阵首秒可吸收并蓄力反打"
+          },
+          {
+            "nameZh": "二段推进",
+            "desc": "推进器可存两段"
+          }
+        ],
+        "recommended": "进攻切后排选导弹强化，机动游走选二段推进"
+      },
+      "position": {
+        "zh": "前排偏游走，矩阵保关键队友/吃大招，推进切后排再撤",
+        "depth": "front"
+      },
+      "counters": {
+        "strongAgainst": [
+          "pharah",
+          "echo",
+          "ashe",
+          "widowmaker",
+          "mercy"
+        ],
+        "weakAgainst": [
+          "zarya",
+          "roadhog",
+          "junkrat",
+          "mei",
+          "symmetra"
+        ],
+        "synergy": [
+          "genji",
+          "tracer",
+          "kiriko"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "竖向空间大、有空中目标的图：观测站、暴雪世界"
+        ],
+        "weak": [
+          "狭窄走廊(束能/钩易抓)：国王大道室内"
+        ],
+        "note": "对空与吃大招价值高，怕能量型与高伤近战"
+      },
+      "ban": {
+        "priority": "high",
+        "reason": "当前S级，矩阵吃技能+机动切入太全能，开团/保人/对空一把抓"
+      },
+      "rankPlay": {
+        "bronzeGold": "别一头扎进去，矩阵优先吃敌方大招(开花/狂鼠雷)",
+        "platDiamond": "推进点切后排打节奏，矩阵保软辅，导弹补伤",
+        "masterGM": "极限矩阵管理(吃关键技能不浪费)，配dps一波带走，自毁逼大"
+      },
+      "tier": "S",
+      "tags": [
+        "突进坦",
+        "对空",
+        "吃技能"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/df5a5532862d9292634fb3dc0e51a4705aa601de65e5e815513ccc663d84de56.png",
+      "officialSubrole": "initiator"
+    },
+    {
+      "id": "sigma",
+      "name": "Sigma",
+      "nameZh": "西格玛",
+      "role": "tank",
+      "subrole": "poke-tank",
+      "difficulty": 3,
+      "health": {
+        "hp": 350,
+        "armor": 0,
+        "shield": 200
+      },
+      "params": {
+        "primary": "双发引力弹(远程poke)",
+        "range": "mid",
+        "mobility": 2,
+        "dps": "约 110 远程",
+        "note": "靠护盾再生与吸收维持续航"
+      },
+      "abilities": {
+        "passive": "坦克职业被动",
+        "weapon": {
+          "name": "Hyperspheres",
+          "nameZh": "超能球",
+          "desc": "可弹跳的双发引力弹"
+        },
+        "actives": [
+          {
+            "name": "Experimental Barrier",
+            "nameZh": "实验性屏障",
+            "cooldown": 1,
+            "desc": "可收放/移动的护盾"
+          },
+          {
+            "name": "Kinetic Grasp",
+            "nameZh": "动能吸收",
+            "cooldown": 12,
+            "desc": "吸收正面弹道转护盾"
+          },
+          {
+            "name": "Accretion",
+            "nameZh": "重力坍缩",
+            "cooldown": 10,
+            "desc": "巨石击倒一名敌人"
+          }
+        ],
+        "ultimate": {
+          "name": "Gravitic Flux",
+          "nameZh": "引力乱流",
+          "cost": 0,
+          "desc": "范围浮空砸地高伤，开团/反开"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "超能球强化",
+            "desc": "超能球伤害/弹道提升"
+          },
+          {
+            "nameZh": "护盾再生",
+            "desc": "护盾再生更快"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "动能转伤",
+            "desc": "动能吸收结束释放伤害冲击"
+          },
+          {
+            "nameZh": "引力强化",
+            "desc": "大招范围/伤害提升"
+          }
+        ],
+        "recommended": "poke消耗选超能球强化，团战爆发选动能转伤"
+      },
+      "position": {
+        "zh": "中排灵活poke，护盾分段保护，吸收吃对方爆发再续航",
+        "depth": "mid"
+      },
+      "counters": {
+        "strongAgainst": [
+          "reinhardt",
+          "pharah",
+          "junkrat",
+          "mauga"
+        ],
+        "weakAgainst": [
+          "winston",
+          "genji",
+          "tracer",
+          "sombra"
+        ],
+        "synergy": [
+          "ashe",
+          "ana",
+          "baptiste"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "开阔中远距离图：花村、circuit royal、numbani"
+        ],
+        "weak": [
+          "狭窄突进图：国王大道室内、好莱坞内场"
+        ],
+        "note": "远程消耗强，怕近身突进与扰乱"
+      },
+      "ban": {
+        "priority": "high",
+        "reason": "当前S级poke核心，护盾+吸收+石头控制全能，对线压制强"
+      },
+      "rankPlay": {
+        "bronzeGold": "护盾别贪举，石头优先砸突进或落单",
+        "platDiamond": "超能球持续消耗对面坦克，吸收吃爆发，石头接队友秒杀",
+        "masterGM": "护盾走位极限拉扯，引力乱流配合反开团，吸收时机化解对面combo"
+      },
+      "tier": "S",
+      "tags": [
+        "poke坦",
+        "护盾",
+        "控制"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/a4c032fa466c9a6d9c6974747635d7ef910027f91cd58892af0c899db565f92d.png",
+      "officialSubrole": "stalwart"
+    },
+    {
+      "id": "winston",
+      "name": "Winston",
+      "nameZh": "温斯顿",
+      "role": "tank",
+      "subrole": "dive-tank",
+      "difficulty": 2,
+      "health": {
+        "hp": 350,
+        "armor": 150,
+        "shield": 0
+      },
+      "params": {
+        "primary": "特斯拉电枪(锥形必中、近距离)",
+        "range": "short",
+        "mobility": 5,
+        "dps": "约 60 持续",
+        "note": "切后排、骚扰、保护队友"
+      },
+      "abilities": {
+        "passive": "坦克职业被动",
+        "weapon": {
+          "name": "Tesla Cannon",
+          "nameZh": "特斯拉电枪",
+          "desc": "近距锥形必中电击"
+        },
+        "actives": [
+          {
+            "name": "Jump Pack",
+            "nameZh": "跳跃背包",
+            "cooldown": 6,
+            "desc": "跳向目标点切入/逃生"
+          },
+          {
+            "name": "Barrier Projector",
+            "nameZh": "护盾发生器",
+            "cooldown": 13,
+            "desc": "放置球形护盾"
+          }
+        ],
+        "ultimate": {
+          "name": "Primal Rage",
+          "nameZh": "原始暴怒",
+          "cost": 0,
+          "desc": "高血量近战击退，搅乱后排/保命"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "电枪强化",
+            "desc": "电枪伤害/范围提升"
+          },
+          {
+            "nameZh": "跳跃冷却",
+            "desc": "跳跃CD降低"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "二段跳跃",
+            "desc": "跳跃背包可存两段"
+          },
+          {
+            "nameZh": "护盾治疗",
+            "desc": "护盾内队友获治疗"
+          }
+        ],
+        "recommended": "切入游走选二段跳跃，团队保护选护盾治疗"
+      },
+      "position": {
+        "zh": "围绕敌方后排游走，跳进打软辅再跳出，护盾保自己/队友",
+        "depth": "flank"
+      },
+      "counters": {
+        "strongAgainst": [
+          "widowmaker",
+          "ashe",
+          "ana",
+          "zenyatta",
+          "sombra"
+        ],
+        "weakAgainst": [
+          "reaper",
+          "mei",
+          "zarya",
+          "brigitte",
+          "bastion"
+        ],
+        "synergy": [
+          "dva",
+          "genji",
+          "kiriko"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "多高台/竖向图：观测站、伊利奥斯、漓江塔"
+        ],
+        "weak": [
+          "开阔无掩体长直线图：circuit royal"
+        ],
+        "note": "dive体系核心，怕近战反手与束能"
+      },
+      "ban": {
+        "priority": "medium",
+        "reason": "dive体系强势时威胁大，但被近战克制明显，禁用看版本"
+      },
+      "rankPlay": {
+        "bronzeGold": "跳进去先打软辅，血少果断跳走别恋战",
+        "platDiamond": "和队友同步dive一个目标，护盾保关键，暴怒保命或分割",
+        "masterGM": "精确跳点切残/打断，配合dps秒杀后排，暴怒反手化解对面combo"
+      },
+      "tier": "A",
+      "tags": [
+        "突进坦",
+        "切后排",
+        "dive核心"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/46a10db3aa908c590ddc4e7606376a88143d1f1306ecfbea043263040f9529a5.png",
+      "officialSubrole": "initiator"
+    },
+    {
+      "id": "hazard",
+      "name": "Hazard",
+      "nameZh": "Hazard",
+      "role": "tank",
+      "subrole": "bruiser-tank",
+      "difficulty": 3,
+      "health": {
+        "hp": 350,
+        "armor": 175,
+        "shield": 0
+      },
+      "params": {
+        "primary": "Bonespur 骨刺爆发",
+        "range": "short",
+        "mobility": 4,
+        "dps": "近距高爆发",
+        "note": "苏格兰改造人，近身缠斗型坦克，可攀爬矮墙抓边缘"
+      },
+      "abilities": {
+        "passive": "坦克职业被动 + 可攀爬矮墙/抓取边缘",
+        "weapon": {
+          "name": "Bonespur",
+          "nameZh": "骨刺",
+          "desc": "发射一束尖刺"
+        },
+        "actives": [
+          {
+            "name": "Jagged Wall",
+            "nameZh": "尖刺墙",
+            "cooldown": 12,
+            "desc": "升起尖刺墙，伤害并击退附近敌人、可阻挡/位移自己"
+          },
+          {
+            "name": "Spike Guard",
+            "nameZh": "尖刺守护",
+            "cooldown": 10,
+            "desc": "护体期间减伤、自动向附近敌人发射追踪尖刺并回充弹药"
+          },
+          {
+            "name": "Violent Leap",
+            "nameZh": "暴烈跃击",
+            "cooldown": 8,
+            "desc": "向前跃出，再次激活斩击并击退"
+          }
+        ],
+        "ultimate": {
+          "name": "Downpour",
+          "nameZh": "尖刺倾泻",
+          "cost": 0,
+          "desc": "大范围尖刺洪流，禁锢范围内敌人"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "Off the Top",
+            "desc": "跃击斩击对250血以上敌人多30%伤害"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "Anarchic Zeal",
+            "desc": "尖刺守护尖刺获25%吸血"
+          },
+          {
+            "nameZh": "Deep Leap",
+            "desc": "暴烈跃击距离+20%"
+          }
+        ],
+        "recommended": "续航选 Anarchic Zeal，切入选 Deep Leap"
+      },
+      "position": {
+        "zh": "前中排近身缠斗，用尖刺墙分割战场、跃击切入软目标",
+        "depth": "front"
+      },
+      "counters": {
+        "strongAgainst": [
+          "reinhardt",
+          "mei",
+          "reaper"
+        ],
+        "weakAgainst": [
+          "pharah",
+          "echo",
+          "ana",
+          "zarya"
+        ],
+        "synergy": [
+          "kiriko",
+          "lucio",
+          "juno"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "近身缠斗/转角多的图：国王大道、好莱坞"
+        ],
+        "weak": [
+          "开阔长视野poke图"
+        ],
+        "note": "尖刺墙在狭窄地形分割收益最大"
+      },
+      "ban": {
+        "priority": "medium",
+        "reason": "A级，缠斗与分割能力强，但被空中与远程消耗针对"
+      },
+      "rankPlay": {
+        "bronzeGold": "尖刺墙挡身后退路或断敌人，别瞎跃击送人头",
+        "platDiamond": "墙分割对面阵型，跃击切软辅再回撤，守护吃爆发",
+        "masterGM": "墙的角度极限运用(隔断治疗/封走位)，大招接队友收割"
+      },
+      "tier": "A",
+      "tags": [
+        "缠斗坦",
+        "分割",
+        "近战"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/ca48b96dbae6ea7f58ce8a5e73513c8c62b1685bdbf258020fb78bb21a008b5f.png",
+      "officialSubrole": "initiator"
+    },
+    {
+      "id": "domina",
+      "name": "Domina",
+      "nameZh": "Domina",
+      "role": "tank",
+      "subrole": "poke-tank",
+      "difficulty": 3,
+      "health": {
+        "hp": 350,
+        "armor": 0,
+        "shield": 175
+      },
+      "params": {
+        "primary": "Photon Magnum 光子手炮",
+        "range": "mid",
+        "mobility": 2,
+        "dps": "中远程",
+        "note": "2026新坦，护盾阵列+音波排斥+水晶冲锋"
+      },
+      "abilities": {
+        "passive": "坦克职业被动",
+        "weapon": {
+          "name": "Photon Magnum",
+          "nameZh": "光子手炮",
+          "desc": "中远距能量射击"
+        },
+        "actives": [
+          {
+            "name": "Barrier Array",
+            "nameZh": "护盾阵列",
+            "cooldown": 10,
+            "desc": "部署护盾阵列提供掩护"
+          },
+          {
+            "name": "Sonic Repulsors",
+            "nameZh": "音波排斥",
+            "cooldown": 9,
+            "desc": "释放音波击退/扰乱靠近的敌人"
+          },
+          {
+            "name": "Crystal Charge",
+            "nameZh": "水晶冲锋",
+            "cooldown": 8,
+            "desc": "向前冲锋切入或拉开距离"
+          }
+        ],
+        "ultimate": {
+          "name": "—",
+          "nameZh": "（大招待补充核对）",
+          "cost": 0,
+          "desc": "数据待核对"
+        }
+      },
+      "position": {
+        "zh": "中排，靠护盾阵列建立空间、音波防突进、冲锋调整身位",
+        "depth": "mid"
+      },
+      "counters": {
+        "strongAgainst": [
+          "reinhardt",
+          "pharah"
+        ],
+        "weakAgainst": [
+          "winston",
+          "sombra",
+          "genji"
+        ],
+        "synergy": [
+          "ana",
+          "ashe"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "开阔中距离控制图"
+        ],
+        "weak": [
+          "狭窄突进图"
+        ],
+        "note": "数据为2026新英雄，随补丁调整大，需核对"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "新英雄强度未稳定，按当前补丁评估"
+      },
+      "rankPlay": {
+        "bronzeGold": "护盾建立空间，音波留给突进英雄",
+        "platDiamond": "阵列分段保护，冲锋调整poke身位",
+        "masterGM": "技能链衔接控制突进，配合poke消耗"
+      },
+      "tier": "B",
+      "tags": [
+        "新英雄",
+        "poke坦",
+        "护盾"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/1161c112292c56c052c0ae711792fcde06e3251b98bc9709e582dd7585b5dcd6.png",
+      "officialSubrole": "stalwart"
+    },
+    {
+      "id": "soldier76",
+      "name": "Soldier: 76",
+      "nameZh": "士兵：76",
+      "role": "damage",
+      "subrole": "hitscan",
+      "difficulty": 1,
+      "health": {
+        "hp": 250,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "脉冲步枪 19/发 hitscan",
+        "range": "mid",
+        "mobility": 3,
+        "dps": "约 171",
+        "note": "全能基准DPS，自带回血+冲刺"
+      },
+      "abilities": {
+        "passive": "伤害职业被动：消灭/助攻后短暂加速",
+        "weapon": {
+          "name": "Pulse Rifle",
+          "nameZh": "脉冲步枪",
+          "desc": "稳定hitscan+螺旋火箭"
+        },
+        "actives": [
+          {
+            "name": "Sprint",
+            "nameZh": "冲刺",
+            "cooldown": 0,
+            "desc": "持续疾跑"
+          },
+          {
+            "name": "Biotic Field",
+            "nameZh": "生物力场",
+            "cooldown": 15,
+            "desc": "范围自/队友治疗"
+          },
+          {
+            "name": "Helix Rockets",
+            "nameZh": "螺旋飞弹",
+            "cooldown": 8,
+            "desc": "爆发飞弹"
+          }
+        ],
+        "ultimate": {
+          "name": "Tactical Visor",
+          "nameZh": "战术目镜",
+          "cost": 0,
+          "desc": "自动锁定瞄准"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "螺旋飞弹强化",
+            "desc": "螺旋飞弹伤害/CD优化"
+          },
+          {
+            "nameZh": "生物力场增强",
+            "desc": "力场治疗量提升"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "目镜延长",
+            "desc": "战术目镜时长提升"
+          },
+          {
+            "nameZh": "飞弹双发",
+            "desc": "螺旋飞弹可存两发"
+          }
+        ],
+        "recommended": "对抗坦克选飞弹双发，团队续航选生物力场增强"
+      },
+      "position": {
+        "zh": "中排稳定输出，借掩体点射，力场给自己/队友续航",
+        "depth": "mid"
+      },
+      "counters": {
+        "strongAgainst": [
+          "pharah",
+          "echo",
+          "winston",
+          "dva"
+        ],
+        "weakAgainst": [
+          "genji",
+          "tracer",
+          "sombra",
+          "widowmaker"
+        ],
+        "synergy": [
+          "ana",
+          "lucio"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "中距离对枪图：通用性强，多数图可用"
+        ],
+        "weak": [
+          "极近身缠斗或超长视野(被狙压制)"
+        ],
+        "note": "万金油，无明显短板也无极强项"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "强度均衡、无bug级机制，几乎不被ban"
+      },
+      "rankPlay": {
+        "bronzeGold": "练好后坐力点射，力场放脚下保命，别乱冲",
+        "platDiamond": "稳定消耗+对空，飞弹补近身，目镜配合开团",
+        "masterGM": "极致点射效率，目镜时机配队友强开，走位躲突进"
+      },
+      "tier": "B",
+      "tags": [
+        "hitscan",
+        "全能",
+        "新手友好"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/c93b5f0a528c40473188f77cc2a267aee7d5b6cf5c9e104105d634b4388674e2.png",
+      "officialSubrole": "specialist"
+    },
+    {
+      "id": "ashe",
+      "name": "Ashe",
+      "nameZh": "艾什",
+      "role": "damage",
+      "subrole": "hitscan",
+      "difficulty": 3,
+      "health": {
+        "hp": 250,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "开镜半自动步枪(高爆发)",
+        "range": "long",
+        "mobility": 2,
+        "dps": "开镜85/发",
+        "note": "中远程poke核心，配B.O.B"
+      },
+      "abilities": {
+        "passive": "伤害职业被动",
+        "weapon": {
+          "name": "The Viper",
+          "nameZh": "毒蛇",
+          "desc": "腰射快速/开镜高伤"
+        },
+        "actives": [
+          {
+            "name": "Coach Gun",
+            "nameZh": "短管枪",
+            "cooldown": 9,
+            "desc": "击退自己/敌人，走位与逃生"
+          },
+          {
+            "name": "Dynamite",
+            "nameZh": "炸药",
+            "cooldown": 10,
+            "desc": "范围点燃持续伤害"
+          }
+        ],
+        "ultimate": {
+          "name": "B.O.B.",
+          "nameZh": "鲍勃",
+          "cost": 0,
+          "desc": "召唤机器人冲撞+扫射"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "炸药强化",
+            "desc": "炸药燃烧伤害/范围提升"
+          },
+          {
+            "nameZh": "短管枪冷却",
+            "desc": "短管枪CD降低"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "B.O.B.强化",
+            "desc": "鲍勃血量/伤害提升"
+          },
+          {
+            "nameZh": "开镜增伤",
+            "desc": "开镜爆头收益提升"
+          }
+        ],
+        "recommended": "团战开团选B.O.B.强化，对枪选开镜增伤"
+      },
+      "position": {
+        "zh": "后排高台poke，短管枪保持距离，掩体后开镜输出",
+        "depth": "back"
+      },
+      "counters": {
+        "strongAgainst": [
+          "pharah",
+          "echo",
+          "reinhardt",
+          "zenyatta"
+        ],
+        "weakAgainst": [
+          "genji",
+          "tracer",
+          "winston",
+          "dva"
+        ],
+        "synergy": [
+          "sigma",
+          "ana",
+          "baptiste"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "开阔长视野/高台图：花村、circuit royal、numbani"
+        ],
+        "weak": [
+          "狭窄缠斗图被突进抓"
+        ],
+        "note": "poke体系核心，怕突进切入"
+      },
+      "ban": {
+        "priority": "medium",
+        "reason": "S级poke，B.O.B开团+远程压制强，dive弱版本ban价值高"
+      },
+      "rankPlay": {
+        "bronzeGold": "稳腰射别强行开镜，短管枪推突进的人",
+        "platDiamond": "开镜poke对面软目标，炸药配队友爆发，B.O.B开/反团",
+        "masterGM": "极致开镜爆头，短管枪走位躲dive，B.O.B时机决定团战"
+      },
+      "tier": "S",
+      "tags": [
+        "hitscan",
+        "poke",
+        "开团"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/4076bbaa2eb52a0bfe612434071e56e7702d5454473dbbea2f9e392a9d997a94.png",
+      "officialSubrole": "sharpshooter"
+    },
+    {
+      "id": "genji",
+      "name": "Genji",
+      "nameZh": "源氏",
+      "role": "damage",
+      "subrole": "flanker",
+      "difficulty": 4,
+      "health": {
+        "hp": 250,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "手里剑(三连/扇形)",
+        "range": "mid",
+        "mobility": 5,
+        "dps": "爆发型",
+        "note": "高机动flanker，二段跳+蹬墙"
+      },
+      "abilities": {
+        "passive": "伤害职业被动 + 蹬墙、二段跳",
+        "weapon": {
+          "name": "Shuriken",
+          "nameZh": "手里剑",
+          "desc": "直线三连/扇形三连"
+        },
+        "actives": [
+          {
+            "name": "Swift Strike",
+            "nameZh": "疾风步",
+            "cooldown": 8,
+            "desc": "突进斩击，击杀重置CD"
+          },
+          {
+            "name": "Deflect",
+            "nameZh": "闪格挡",
+            "cooldown": 8,
+            "desc": "反弹正面弹道"
+          }
+        ],
+        "ultimate": {
+          "name": "Dragonblade",
+          "nameZh": "龙刃",
+          "cost": 0,
+          "desc": "近战秒杀斩击"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "闪格挡强化",
+            "desc": "格挡时长/范围提升"
+          },
+          {
+            "nameZh": "手里剑强化",
+            "desc": "手里剑伤害提升"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "疾风步穿透",
+            "desc": "疾风步可穿过敌人并多段"
+          },
+          {
+            "nameZh": "龙刃延长",
+            "desc": "龙刃时长/疾风重置强化"
+          }
+        ],
+        "recommended": "切入收割选疾风步穿透，大招体系选龙刃延长"
+      },
+      "position": {
+        "zh": "侧翼游走找落单/软辅，剑气消耗后疾风步切入，格挡吃爆发",
+        "depth": "flank"
+      },
+      "counters": {
+        "strongAgainst": [
+          "ana",
+          "zenyatta",
+          "widowmaker",
+          "sigma",
+          "winston"
+        ],
+        "weakAgainst": [
+          "mei",
+          "brigitte",
+          "moira",
+          "symmetra",
+          "cassidy"
+        ],
+        "synergy": [
+          "nano(ana)",
+          "lucio",
+          "kiriko"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "多路线/高台flank图：好莱坞、漓江塔、王者大道"
+        ],
+        "weak": [
+          "单线狭窄无侧路图"
+        ],
+        "note": "需要侧路与高台，被近战辅助克制"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "操作上限高但被多名辅助克制，团队ban价值一般"
+      },
+      "rankPlay": {
+        "bronzeGold": "先剑气消耗别急切，格挡别浪，疾风步留撤退",
+        "platDiamond": "找落单后排切，剑气清线，龙刃配纳米",
+        "masterGM": "极限剑气combo秒残，格挡吃关键技能，龙刃疾风重置连杀"
+      },
+      "tier": "B",
+      "tags": [
+        "flanker",
+        "高机动",
+        "高技巧"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/156b12c20b1aea872c1eeb5bb37a7de1047b2ab30ecefd0663a8925badde1ea8.png",
+      "officialSubrole": "flanker"
+    },
+    {
+      "id": "tracer",
+      "name": "Tracer",
+      "nameZh": "猎空",
+      "role": "damage",
+      "subrole": "flanker",
+      "difficulty": 4,
+      "health": {
+        "hp": 175,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "双脉冲手枪(近距高射速)",
+        "range": "short",
+        "mobility": 5,
+        "dps": "约 240 贴脸",
+        "note": "闪现+回溯，极限游走骚扰"
+      },
+      "abilities": {
+        "passive": "伤害职业被动",
+        "weapon": {
+          "name": "Pulse Pistols",
+          "nameZh": "脉冲手枪",
+          "desc": "近距高射速双枪"
+        },
+        "actives": [
+          {
+            "name": "Blink",
+            "nameZh": "闪现",
+            "cooldown": 0,
+            "desc": "三层瞬移(充能)"
+          },
+          {
+            "name": "Recall",
+            "nameZh": "闪回",
+            "cooldown": 12,
+            "desc": "回到3秒前位置+回血"
+          }
+        ],
+        "ultimate": {
+          "name": "Pulse Bomb",
+          "nameZh": "脉冲炸弹",
+          "cost": 0,
+          "desc": "粘弹高爆发秒杀"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "闪现充能",
+            "desc": "闪现充能更快"
+          },
+          {
+            "nameZh": "脉冲炸弹强化",
+            "desc": "炸弹伤害/范围提升"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "闪回保留",
+            "desc": "闪回额外效果/CD优化"
+          },
+          {
+            "nameZh": "弹匣强化",
+            "desc": "弹匣容量提升"
+          }
+        ],
+        "recommended": "骚扰续航选闪回保留，输出选弹匣强化"
+      },
+      "position": {
+        "zh": "后排骚扰软辅与残血，打了就闪/闪回，逼对面回防",
+        "depth": "flank"
+      },
+      "counters": {
+        "strongAgainst": [
+          "ana",
+          "zenyatta",
+          "ashe",
+          "widowmaker",
+          "mercy"
+        ],
+        "weakAgainst": [
+          "brigitte",
+          "cassidy",
+          "mei",
+          "moira",
+          "torbjorn"
+        ],
+        "synergy": [
+          "lucio",
+          "kiriko",
+          "zarya"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "多路线短距离图：国王大道、好莱坞、漓江塔"
+        ],
+        "weak": [
+          "开阔无掩体长距离图"
+        ],
+        "note": "近身骚扰之王，被近战辅助与扇形伤害克制"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "上限高但门槛高且被多辅克制，ban价值一般"
+      },
+      "rankPlay": {
+        "bronzeGold": "保住175血别送，闪回当后悔药，专杀残血软辅",
+        "platDiamond": "持续骚扰逼对面回防，弹匣管理，炸弹粘坦/秒辅",
+        "masterGM": "极限闪走拉扯，炸弹时机一波带走，逼出对面所有保人技能"
+      },
+      "tier": "A",
+      "tags": [
+        "flanker",
+        "骚扰",
+        "高机动"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/4504f6f15cb3feaa92ecd38e01dcf751cb5abdac2e0bb52d0555727e53277502.png",
+      "officialSubrole": "flanker"
+    },
+    {
+      "id": "pharah",
+      "name": "Pharah",
+      "nameZh": "法老之鹰",
+      "role": "damage",
+      "subrole": "projectile-air",
+      "difficulty": 3,
+      "health": {
+        "hp": 250,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "火箭发射器(溅射)",
+        "range": "mid",
+        "mobility": 5,
+        "dps": "空中压制",
+        "note": "空中单位，逼对面切hitscan"
+      },
+      "abilities": {
+        "passive": "伤害职业被动",
+        "weapon": {
+          "name": "Rocket Launcher",
+          "nameZh": "火箭发射器",
+          "desc": "直击+溅射火箭"
+        },
+        "actives": [
+          {
+            "name": "Jump Jet",
+            "nameZh": "腾空",
+            "cooldown": 10,
+            "desc": "快速升空"
+          },
+          {
+            "name": "Fuel Boost / Hover",
+            "nameZh": "燃料推进/悬浮",
+            "cooldown": 0,
+            "desc": "燃料管理悬停与机动"
+          },
+          {
+            "name": "Concussive Blast",
+            "nameZh": "震荡爆破",
+            "cooldown": 8,
+            "desc": "击退敌人/位移自己"
+          }
+        ],
+        "ultimate": {
+          "name": "Barrage",
+          "nameZh": "火箭弹幕",
+          "cost": 0,
+          "desc": "持续火箭洗地"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "燃料强化",
+            "desc": "悬浮燃料更持久"
+          },
+          {
+            "nameZh": "震荡冷却",
+            "desc": "震荡爆破CD降低"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "弹幕机动",
+            "desc": "弹幕期间可移动"
+          },
+          {
+            "nameZh": "直击增伤",
+            "desc": "火箭直击伤害提升"
+          }
+        ],
+        "recommended": "团战选弹幕机动，对枪选直击增伤"
+      },
+      "position": {
+        "zh": "高空压制地面，借建筑/掩体探头打了就躲，燃料管理决定生死",
+        "depth": "back"
+      },
+      "counters": {
+        "strongAgainst": [
+          "reinhardt",
+          "junkrat",
+          "mei",
+          "reaper",
+          "moira"
+        ],
+        "weakAgainst": [
+          "soldier76",
+          "ashe",
+          "cassidy",
+          "widowmaker",
+          "dva"
+        ],
+        "synergy": [
+          "mercy",
+          "baptiste",
+          "kiriko"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "开阔有竖向空间图：watchpoint、numbani、circuit royal"
+        ],
+        "weak": [
+          "室内/低天花板图：国王大道室内、好莱坞内场"
+        ],
+        "note": "高度=安全，被hitscan硬克"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "强弱看对面是否有hitscan，单ban价值低"
+      },
+      "rankPlay": {
+        "bronzeGold": "保持高度躲地面，直击打坦练手感，别贪",
+        "platDiamond": "探头打软目标，燃料留逃生，被hitscan就绕掩体",
+        "masterGM": "极限燃料+掩体管理躲hitscan，弹幕配合开团，pharmercy施压"
+      },
+      "tier": "B",
+      "tags": [
+        "空中",
+        "溅射",
+        "压制"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/60ac2d5de4a6d34644d8872233da402f1436c87f804bb11a21661bb30bf4a51f.png",
+      "officialSubrole": "recon"
+    },
+    {
+      "id": "sojourn",
+      "name": "Sojourn",
+      "nameZh": "索杰恩",
+      "role": "damage",
+      "subrole": "hitscan",
+      "difficulty": 3,
+      "health": {
+        "hp": 250,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "轨道步枪(蓄能充能轨道炮)",
+        "range": "mid",
+        "mobility": 4,
+        "dps": "高爆发",
+        "note": "命中蓄能，蓄满轨道炮一枪秒脆皮"
+      },
+      "abilities": {
+        "passive": "伤害职业被动",
+        "weapon": {
+          "name": "Railgun",
+          "nameZh": "轨道步枪",
+          "desc": "主火蓄能、副火高伤蓄力弹"
+        },
+        "actives": [
+          {
+            "name": "Power Slide",
+            "nameZh": "动力滑行",
+            "cooldown": 7,
+            "desc": "滑行+可取消跳跃，走位"
+          },
+          {
+            "name": "Disruptor Shot",
+            "nameZh": "干扰射击",
+            "cooldown": 9,
+            "desc": "范围减速+持续伤害"
+          }
+        ],
+        "ultimate": {
+          "name": "Overclock",
+          "nameZh": "超载",
+          "cost": 0,
+          "desc": "副火自动蓄满+穿透，高输出窗口"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "滑行冷却",
+            "desc": "动力滑行CD降低"
+          },
+          {
+            "nameZh": "干扰强化",
+            "desc": "干扰射击范围/减速提升"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "蓄能保留",
+            "desc": "蓄能衰减更慢"
+          },
+          {
+            "nameZh": "超载延长",
+            "desc": "超载时长提升"
+          }
+        ],
+        "recommended": "对枪选蓄能保留，团战选超载延长"
+      },
+      "position": {
+        "zh": "中排借掩体探头，主火攒能量、滑行走位，蓄满轨道炮秒人",
+        "depth": "mid"
+      },
+      "counters": {
+        "strongAgainst": [
+          "pharah",
+          "echo",
+          "winston",
+          "ashe",
+          "zenyatta"
+        ],
+        "weakAgainst": [
+          "genji",
+          "tracer",
+          "sombra",
+          "dva"
+        ],
+        "synergy": [
+          "ana",
+          "kiriko",
+          "lucio"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "中距离对枪+掩体图：通用性强"
+        ],
+        "weak": [
+          "极近身被突进抓"
+        ],
+        "note": "S级hitscan，对空对脆皮全能"
+      },
+      "ban": {
+        "priority": "high",
+        "reason": "S级，轨道炮秒脆+对空+续航，团队ban高优先"
+      },
+      "rankPlay": {
+        "bronzeGold": "主火攒能量别浪轨道炮，滑行躲突进",
+        "platDiamond": "探头攒能、蓄满秒软目标，干扰封走位",
+        "masterGM": "极限能量管理一枪一个脆皮，超载团战爆发，滑行拉扯dive"
+      },
+      "tier": "S",
+      "tags": [
+        "hitscan",
+        "爆发",
+        "对空"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/82b8c1b8765dcb9a0ba16e343c3516bf324c771ac81e9878473280216e70a889.png",
+      "officialSubrole": "sharpshooter"
+    },
+    {
+      "id": "ana",
+      "name": "Ana",
+      "nameZh": "安娜",
+      "role": "support",
+      "subrole": "main-heal",
+      "difficulty": 4,
+      "health": {
+        "hp": 200,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "生物步枪 75/发(命中队友治疗)",
+        "range": "long",
+        "mobility": 1,
+        "dps": "约 70",
+        "healingPerSec": "约 70 直射",
+        "note": "大额单体治疗+反治疗+控制"
+      },
+      "abilities": {
+        "passive": "辅助职业被动：脱战回血",
+        "weapon": {
+          "name": "Biotic Rifle",
+          "nameZh": "生物步枪",
+          "desc": "命中队友治疗/命中敌人伤害，可开镜"
+        },
+        "actives": [
+          {
+            "name": "Sleep Dart",
+            "nameZh": "麻醉镖",
+            "cooldown": 14,
+            "desc": "命中沉睡5秒，受击即醒"
+          },
+          {
+            "name": "Biotic Grenade",
+            "nameZh": "生物手雷",
+            "cooldown": 10,
+            "desc": "范围治疗+增疗/对敌反治疗"
+          }
+        ],
+        "ultimate": {
+          "name": "Nano Boost",
+          "nameZh": "纳米激素",
+          "cost": 0,
+          "desc": "目标减伤50%增伤50%"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "手雷强化",
+            "desc": "生物手雷范围/效果提升"
+          },
+          {
+            "nameZh": "睡镖冷却",
+            "desc": "麻醉镖CD降低"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "纳米回血",
+            "desc": "纳米激素附带治疗"
+          },
+          {
+            "nameZh": "反治疗增强",
+            "desc": "手雷反治疗时长提升"
+          }
+        ],
+        "recommended": "团队强开选纳米回血，打消耗选反治疗增强"
+      },
+      "position": {
+        "zh": "中后排借高台/掩体，远离前线但保持队友视野，反手控突进",
+        "depth": "back"
+      },
+      "counters": {
+        "strongAgainst": [
+          "pharah",
+          "echo",
+          "roadhog",
+          "mauga"
+        ],
+        "weakAgainst": [
+          "genji",
+          "tracer",
+          "winston",
+          "sombra",
+          "dva"
+        ],
+        "synergy": [
+          "reinhardt",
+          "zarya",
+          "mauga"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "有高台/长视野图：花村、阿努比斯、漓江塔"
+        ],
+        "weak": [
+          "近身缠斗/转角多图被突进抓"
+        ],
+        "note": "需视野射程，狭窄图被dive针对"
+      },
+      "ban": {
+        "priority": "medium",
+        "reason": "高分段反治疗+睡眠+纳米价值极高，但操作门槛使低分段威胁有限"
+      },
+      "rankPlay": {
+        "bronzeGold": "先保治疗量，睡镖留突进别贪，站后排",
+        "platDiamond": "主动反治疗打节奏，睡镖打断大招，纳米给输出点",
+        "masterGM": "预瞄睡镖反开团，反治疗化解对面combo，纳米一波带走"
+      },
+      "tier": "A",
+      "tags": [
+        "主奶",
+        "反治疗",
+        "控制",
+        "高技巧"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/985b06beae46b7ba3ca87d1512d0fc62ca7f206ceca58ef16fc44d43a1cc84ed.png",
+      "officialSubrole": "tactician"
+    },
+    {
+      "id": "kiriko",
+      "name": "Kiriko",
+      "nameZh": "雾子",
+      "role": "support",
+      "subrole": "flex-heal",
+      "difficulty": 4,
+      "health": {
+        "hp": 200,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "护身符(治疗)/苦无(爆头伤害)",
+        "range": "mid",
+        "mobility": 4,
+        "dps": "苦无爆头高",
+        "healingPerSec": "中等",
+        "note": "解控+瞬移+群体加速大招"
+      },
+      "abilities": {
+        "passive": "辅助职业被动 + 爬墙",
+        "weapon": {
+          "name": "Kunai / Healing Ofuda",
+          "nameZh": "苦无/护身符",
+          "desc": "治疗符追踪/苦无爆头"
+        },
+        "actives": [
+          {
+            "name": "Protection Suzu",
+            "nameZh": "御币",
+            "cooldown": 14,
+            "desc": "范围解控+短暂无敌+治疗"
+          },
+          {
+            "name": "Swift Step",
+            "nameZh": "瞬步",
+            "cooldown": 7,
+            "desc": "瞬移到队友身边"
+          }
+        ],
+        "ultimate": {
+          "name": "Kitsune Rush",
+          "nameZh": "狐灵突进",
+          "cost": 0,
+          "desc": "通道内队友加速攻速/移速/CD"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "瞬步冷却",
+            "desc": "瞬步CD降低"
+          },
+          {
+            "nameZh": "苦无强化",
+            "desc": "苦无伤害提升"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "御币强化",
+            "desc": "御币范围/无敌时长提升"
+          },
+          {
+            "nameZh": "狐灵延长",
+            "desc": "狐灵突进时长提升"
+          }
+        ],
+        "recommended": "保人选御币强化，开团选狐灵延长"
+      },
+      "position": {
+        "zh": "中排灵活游走，瞬步保人/换位，苦无补输出，关键时御币救命",
+        "depth": "mid"
+      },
+      "counters": {
+        "strongAgainst": [
+          "genji",
+          "tracer",
+          "sombra",
+          "ana"
+        ],
+        "weakAgainst": [
+          "widowmaker",
+          "ashe",
+          "tracer(对枪)",
+          "nano combo"
+        ],
+        "synergy": [
+          "dva",
+          "winston",
+          "genji",
+          "raptor"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "多数图通用，多路线图瞬步价值高"
+        ],
+        "weak": [
+          "无明显短板"
+        ],
+        "note": "万金油辅助，御币解控价值版本顶级"
+      },
+      "ban": {
+        "priority": "high",
+        "reason": "御币解控+无敌+狐灵开团太全能，几乎必抢/必ban级强度"
+      },
+      "rankPlay": {
+        "bronzeGold": "御币别浪，留解控/救命，瞬步保被切的人",
+        "platDiamond": "苦无补足输出，御币吃关键控制(钩/睡/大招)，狐灵配开团",
+        "masterGM": "御币时机化解对面整套combo，狐灵接队友强开一波，苦无打输出位"
+      },
+      "tier": "S",
+      "tags": [
+        "万金油奶",
+        "解控",
+        "开团"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/408603fe037e8576078eaac5eab2fb251489ced4003b11f5f522776d43d0b83d.png",
+      "officialSubrole": "medic"
+    },
+    {
+      "id": "lucio",
+      "name": "Lúcio",
+      "nameZh": "卢西奥",
+      "role": "support",
+      "subrole": "off-heal-speed",
+      "difficulty": 3,
+      "health": {
+        "hp": 250,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "声波(无需弹药)",
+        "range": "short",
+        "mobility": 5,
+        "dps": "中低",
+        "healingPerSec": "群体光环",
+        "note": "群体加速/治疗光环+滑墙机动"
+      },
+      "abilities": {
+        "passive": "辅助职业被动 + 滑墙",
+        "weapon": {
+          "name": "Sonic Amplifier",
+          "nameZh": "音波枪",
+          "desc": "声波弹+击退"
+        },
+        "actives": [
+          {
+            "name": "Crossfade",
+            "nameZh": "切换光环",
+            "cooldown": 0,
+            "desc": "治疗/加速光环切换"
+          },
+          {
+            "name": "Amp It Up",
+            "nameZh": "强音",
+            "cooldown": 12,
+            "desc": "增强当前光环效果"
+          },
+          {
+            "name": "Soundwave",
+            "nameZh": "声波冲击",
+            "cooldown": 4,
+            "desc": "近距击退"
+          }
+        ],
+        "ultimate": {
+          "name": "Sound Barrier",
+          "nameZh": "音障",
+          "cost": 0,
+          "desc": "范围大额临时护盾"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "声波冷却",
+            "desc": "声波冲击CD降低"
+          },
+          {
+            "nameZh": "强音延长",
+            "desc": "强音时长提升"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "光环范围",
+            "desc": "光环作用范围扩大"
+          },
+          {
+            "nameZh": "音障强化",
+            "desc": "音障护盾量提升"
+          }
+        ],
+        "recommended": "队伍机动选光环范围，团战保人选音障强化"
+      },
+      "position": {
+        "zh": "贴队伍游走，加速带节奏/治疗光环维持，滑墙骚扰与逃生",
+        "depth": "mid"
+      },
+      "counters": {
+        "strongAgainst": [
+          "tracer",
+          "genji",
+          "winston",
+          "doomfist"
+        ],
+        "weakAgainst": [
+          "sombra",
+          "widowmaker",
+          "ana(反治疗)"
+        ],
+        "synergy": [
+          "reinhardt",
+          "winston",
+          "dva",
+          "genji"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "多墙面/竖向图滑墙强：漓江塔、尼泊尔、伊利奥斯"
+        ],
+        "weak": [
+          "开阔无墙面图机动受限"
+        ],
+        "note": "速度带节奏，dive/缠斗体系万金油"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "团队价值高但非强度爆点，几乎不被ban"
+      },
+      "rankPlay": {
+        "bronzeGold": "默认加速光环跟队伍，被打切治疗，音障保团",
+        "platDiamond": "光环切换看局势，声波击退保软辅/打断切入，音障吃大招",
+        "masterGM": "极限滑墙走位+光环管理，音障精确化解对面团战爆发"
+      },
+      "tier": "A",
+      "tags": [
+        "副奶",
+        "加速",
+        "机动",
+        "万金油"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/040bb13f5123ab93faad2f95627ba184608aef4b2469a4d3003859c7087df044.png",
+      "officialSubrole": "tactician"
+    },
+    {
+      "id": "baptiste",
+      "name": "Baptiste",
+      "nameZh": "巴蒂斯特",
+      "role": "support",
+      "subrole": "main-heal-poke",
+      "difficulty": 4,
+      "health": {
+        "hp": 250,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "三连发步枪(高伤)+治疗榴弹",
+        "range": "mid",
+        "mobility": 3,
+        "dps": "三连发高",
+        "healingPerSec": "中高",
+        "note": "免死光环+poke能力强的主奶"
+      },
+      "abilities": {
+        "passive": "辅助职业被动",
+        "weapon": {
+          "name": "Biotic Launcher",
+          "nameZh": "生化发射器",
+          "desc": "三连发伤害/治疗榴弹"
+        },
+        "actives": [
+          {
+            "name": "Regenerative Burst",
+            "nameZh": "回复力场",
+            "cooldown": 13,
+            "desc": "范围持续治疗自己/队友"
+          },
+          {
+            "name": "Immortality Field",
+            "nameZh": "不死图腾",
+            "cooldown": 25,
+            "desc": "范围内队友不会死亡(可被破坏)"
+          },
+          {
+            "name": "Exo Boots",
+            "nameZh": "外骨骼跳跃",
+            "cooldown": 0,
+            "desc": "蓄力高跳上高台"
+          }
+        ],
+        "ultimate": {
+          "name": "Amplification Matrix",
+          "nameZh": "增幅矩阵",
+          "cost": 0,
+          "desc": "穿过矩阵的伤害/治疗翻倍"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "图腾强化",
+            "desc": "不死图腾血量提升"
+          },
+          {
+            "nameZh": "回复增强",
+            "desc": "回复力场治疗提升"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "矩阵延长",
+            "desc": "增幅矩阵时长提升"
+          },
+          {
+            "nameZh": "三连发强化",
+            "desc": "主武器伤害提升"
+          }
+        ],
+        "recommended": "团队爆发选矩阵延长，对枪选三连发强化"
+      },
+      "position": {
+        "zh": "中排借高台与外骨骼探头，三连发参与poke，图腾保团",
+        "depth": "mid"
+      },
+      "counters": {
+        "strongAgainst": [
+          "pharah",
+          "echo",
+          "reinhardt"
+        ],
+        "weakAgainst": [
+          "genji",
+          "tracer",
+          "sombra",
+          "winston",
+          "ana(反治疗)"
+        ],
+        "synergy": [
+          "ashe",
+          "sojourn",
+          "sigma"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "有高台的poke图：花村、阿努比斯、numbani"
+        ],
+        "weak": [
+          "近身缠斗被dive抓"
+        ],
+        "note": "免死+矩阵增幅，poke/吊命体系核心"
+      },
+      "ban": {
+        "priority": "medium",
+        "reason": "免死图腾化解爆发+矩阵翻倍输出，强开/吊命体系里ban价值高"
+      },
+      "rankPlay": {
+        "bronzeGold": "图腾别乱放，留爆发时刻；练好三连发别只奶",
+        "platDiamond": "图腾吃对面combo，矩阵配队友爆发开团，高台探头poke",
+        "masterGM": "图腾/矩阵时机决定团战，外骨骼极限走位躲dive，poke贡献伤害"
+      },
+      "tier": "A",
+      "tags": [
+        "主奶",
+        "免死",
+        "poke"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/d4e6f1ca45d9f88fa89260787397f141a6f007b14e5b26698883b6a17bab9680.png",
+      "officialSubrole": "tactician"
+    },
+    {
+      "id": "moira",
+      "name": "Moira",
+      "nameZh": "莫伊拉",
+      "role": "support",
+      "subrole": "off-heal-brawl",
+      "difficulty": 2,
+      "health": {
+        "hp": 200,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "生化之手(锁定吸血)/治疗喷射",
+        "range": "short",
+        "mobility": 4,
+        "dps": "持续吸血",
+        "healingPerSec": "群体高(限资源)",
+        "note": "自带续航/位移，新手友好但无外部增益"
+      },
+      "abilities": {
+        "passive": "辅助职业被动",
+        "weapon": {
+          "name": "Biotic Grasp",
+          "nameZh": "生化之手",
+          "desc": "锁定吸血/喷射治疗(消耗能量)"
+        },
+        "actives": [
+          {
+            "name": "Biotic Orb",
+            "nameZh": "生化之球",
+            "cooldown": 7,
+            "desc": "弹射治疗球/伤害球"
+          },
+          {
+            "name": "Fade",
+            "nameZh": "消散",
+            "cooldown": 6,
+            "desc": "短暂隐身高速移动、免伤换位"
+          }
+        ],
+        "ultimate": {
+          "name": "Coalescence",
+          "nameZh": "凝聚射线",
+          "cost": 0,
+          "desc": "穿透射线同时治疗队友/伤害敌人"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "消散冷却",
+            "desc": "消散CD降低"
+          },
+          {
+            "nameZh": "球强化",
+            "desc": "生化之球持续/伤害提升"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "凝聚增益",
+            "desc": "大招期间加速/增益"
+          },
+          {
+            "nameZh": "吸血强化",
+            "desc": "伤害之手吸血提升"
+          }
+        ],
+        "recommended": "缠斗续航选吸血强化，团战选凝聚增益"
+      },
+      "position": {
+        "zh": "贴队伍中近距离，吸血续航+治疗喷射，消散保命/换位",
+        "depth": "mid"
+      },
+      "counters": {
+        "strongAgainst": [
+          "genji",
+          "tracer",
+          "winston",
+          "doomfist",
+          "reaper"
+        ],
+        "weakAgainst": [
+          "ana(反治疗)",
+          "widowmaker",
+          "ashe",
+          "sombra"
+        ],
+        "synergy": [
+          "reinhardt",
+          "mauga",
+          "junker queen"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "近身缠斗brawl图：国王大道、好莱坞、漓江塔"
+        ],
+        "weak": [
+          "远程poke图(无射程无外部增益)"
+        ],
+        "note": "缠斗体系强，怕反治疗与远程消耗"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "对低分段统治力强但高分段被反治疗/poke压制，少被ban"
+      },
+      "rankPlay": {
+        "bronzeGold": "黄手吸血保命别莽，球先治疗再伤害，消散逃生",
+        "platDiamond": "管理资源别空奶，黄手骚扰dive，凝聚续航团战",
+        "masterGM": "极限资源管理，消散吃关键技能，黄手反dive，凝聚拉团战续航"
+      },
+      "tier": "B",
+      "tags": [
+        "副奶",
+        "缠斗",
+        "新手友好",
+        "自给续航"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/f48f8485056d5d00dad195859188d23e50f7126b8b08b5646f46ef1b42f5e1de.png",
+      "officialSubrole": "medic"
+    },
+    {
+      "id": "zarya",
+      "name": "Zarya",
+      "nameZh": "查莉娅",
+      "role": "tank",
+      "subrole": "bruiser-tank",
+      "difficulty": 3,
+      "health": {
+        "hp": 250,
+        "armor": 0,
+        "shield": 200
+      },
+      "params": {
+        "primary": "粒子炮(护盾蓄能越高伤害越高)",
+        "range": "short",
+        "mobility": 1,
+        "dps": "随能量0-100%翻倍",
+        "note": "靠双护盾吃伤害涨能量，高能量近身碾压"
+      },
+      "abilities": {
+        "passive": "坦克职业被动",
+        "weapon": {
+          "name": "Particle Cannon",
+          "nameZh": "粒子炮",
+          "desc": "近距光束/榴弹，能量越高越疼"
+        },
+        "actives": [
+          {
+            "name": "Particle Barrier",
+            "nameZh": "粒子护盾",
+            "cooldown": 10,
+            "desc": "给自己护盾，吸伤涨能量(2层)"
+          },
+          {
+            "name": "Projected Barrier",
+            "nameZh": "投射护盾",
+            "cooldown": 10,
+            "desc": "给队友护盾，同样涨能量"
+          }
+        ],
+        "ultimate": {
+          "name": "Graviton Surge",
+          "nameZh": "重力喷涌",
+          "cost": 0,
+          "desc": "范围禁锢拉聚，配合AOE秒团"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "护盾冷却",
+            "desc": "护盾CD降低"
+          },
+          {
+            "nameZh": "榴弹强化",
+            "desc": "副火榴弹伤害提升"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "束能强化",
+            "desc": "粒子炮高能量伤害提升"
+          },
+          {
+            "nameZh": "束能大招",
+            "desc": "重力喷涌范围/时长提升"
+          }
+        ],
+        "recommended": "缠斗选束能强化，开团选束能大招"
+      },
+      "position": {
+        "zh": "前中排，给突进队友贴护盾涨能量，高能量近身碾压",
+        "depth": "front"
+      },
+      "counters": {
+        "strongAgainst": [
+          "reinhardt",
+          "dva",
+          "winston",
+          "mei"
+        ],
+        "weakAgainst": [
+          "sombra",
+          "ana(反治疗)",
+          "pharah",
+          "echo",
+          "bastion"
+        ],
+        "synergy": [
+          "genji",
+          "tracer",
+          "winston",
+          "mei"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "近身缠斗brawl图：国王大道、好莱坞、漓江塔"
+        ],
+        "weak": [
+          "远程poke图(无远程无机动)"
+        ],
+        "note": "护盾给突进队友是涨能量核心，怕远程消耗与反治疗"
+      },
+      "ban": {
+        "priority": "medium",
+        "reason": "dive/缠斗体系核心，护盾保突进+重力开团强，版本契合时ban价值高"
+      },
+      "rankPlay": {
+        "bronzeGold": "护盾别一起交，留着吃伤害涨能量；高能量再上去打",
+        "platDiamond": "给dive队友贴盾保切入，维持能量，重力配队友AOE",
+        "masterGM": "极限能量管理(不掉能量)，护盾保关键切入，重力时机一波团灭"
+      },
+      "tier": "A",
+      "tags": [
+        "缠斗坦",
+        "护盾保人",
+        "开团"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/9b6f63cc66ddf9d5e0862173c733cc0d2e574c5c89357798d91b93b2f95a7080.png",
+      "officialSubrole": "bruiser"
+    },
+    {
+      "id": "orisa",
+      "name": "Orisa",
+      "nameZh": "奥丽莎",
+      "role": "tank",
+      "subrole": "anchor-tank",
+      "difficulty": 2,
+      "health": {
+        "hp": 275,
+        "armor": 275,
+        "shield": 0
+      },
+      "params": {
+        "primary": "强能矛(过热机制)",
+        "range": "mid",
+        "mobility": 2,
+        "dps": "中距稳定",
+        "note": "高血量站桩锚点坦，自带减伤与净化"
+      },
+      "abilities": {
+        "passive": "坦克职业被动",
+        "weapon": {
+          "name": "Augmented Fusion Driver",
+          "nameZh": "强能聚变矛",
+          "desc": "中距连射，过热需散热"
+        },
+        "actives": [
+          {
+            "name": "Energy Javelin",
+            "nameZh": "能量标枪",
+            "cooldown": 7,
+            "desc": "投掷标枪击退/钉墙眩晕"
+          },
+          {
+            "name": "Fortify",
+            "nameZh": "强化",
+            "cooldown": 14,
+            "desc": "减伤+免控+不过热"
+          },
+          {
+            "name": "Javelin Spin",
+            "nameZh": "旋转标枪",
+            "cooldown": 7,
+            "desc": "格挡正面弹道+击退+前冲"
+          }
+        ],
+        "ultimate": {
+          "name": "Terra Surge",
+          "nameZh": "大地激涌",
+          "cost": 0,
+          "desc": "吸聚+蓄力范围爆发"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "强化延长",
+            "desc": "Fortify时长提升"
+          },
+          {
+            "nameZh": "旋转冷却",
+            "desc": "旋转标枪CD降低"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "标枪强化",
+            "desc": "能量标枪伤害/眩晕提升"
+          },
+          {
+            "nameZh": "激涌强化",
+            "desc": "大地激涌伤害/范围提升"
+          }
+        ],
+        "recommended": "对抗突进选旋转冷却，团战选激涌强化"
+      },
+      "position": {
+        "zh": "前排锚点站桩，强化吃爆发，标枪点控，控制热量持续输出",
+        "depth": "front"
+      },
+      "counters": {
+        "strongAgainst": [
+          "pharah",
+          "echo",
+          "genji",
+          "winston",
+          "doomfist"
+        ],
+        "weakAgainst": [
+          "zarya",
+          "sombra",
+          "ana(反治疗)",
+          "mei",
+          "symmetra"
+        ],
+        "synergy": [
+          "ana",
+          "baptiste",
+          "kiriko"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "需站桩守点图：推车/占点二阶段、国王大道"
+        ],
+        "weak": [
+          "需机动追击/突进图"
+        ],
+        "note": "反dive强(强化吃爆发)，怕能量与反治疗拉锯"
+      },
+      "ban": {
+        "priority": "medium",
+        "reason": "反dive+难击杀+点控，针对突进体系时强势"
+      },
+      "rankPlay": {
+        "bronzeGold": "管理热量别打空，强化吃对面爆发/大招，别离队友太远",
+        "platDiamond": "标枪点控关键目标，旋转挡技能+反dive，激涌配AOE",
+        "masterGM": "强化/旋转时机化解对面combo，热量管理打满输出，激涌反开团"
+      },
+      "tier": "A",
+      "tags": [
+        "锚点坦",
+        "反dive",
+        "站桩"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/a73958a28551f5254f3ab3f97c5f5f8d698a95c0b6a515d1a2b1caac169205a6.png",
+      "officialSubrole": "bruiser"
+    },
+    {
+      "id": "mauga",
+      "name": "Mauga",
+      "nameZh": "毛加",
+      "role": "tank",
+      "subrole": "brawl-tank",
+      "difficulty": 2,
+      "health": {
+        "hp": 350,
+        "armor": 150,
+        "shield": 0
+      },
+      "params": {
+        "primary": "双机枪(点燃+暴击转化)",
+        "range": "short",
+        "mobility": 3,
+        "dps": "持续高",
+        "note": "高血量缠斗坦，双枪点燃后暴击吸血"
+      },
+      "abilities": {
+        "passive": "坦克职业被动",
+        "weapon": {
+          "name": "Gunny & Cha-Cha",
+          "nameZh": "双机枪",
+          "desc": "一把点燃、一把对燃烧目标暴击"
+        },
+        "actives": [
+          {
+            "name": "Overrun",
+            "nameZh": "冲撞",
+            "cooldown": 8,
+            "desc": "免控冲锋+践踏击倒"
+          },
+          {
+            "name": "Cardiac Overdrive",
+            "nameZh": "强心过载",
+            "cooldown": 12,
+            "desc": "范围减伤+伤害吸血"
+          }
+        ],
+        "ultimate": {
+          "name": "Cage Fight",
+          "nameZh": "牢笼格斗",
+          "cost": 0,
+          "desc": "落下牢笼困住敌人单挑+无限弹药"
+        }
+      },
+      "position": {
+        "zh": "前排缠斗，贴脸点燃+暴击吸血，过载维持团队续航",
+        "depth": "front"
+      },
+      "counters": {
+        "strongAgainst": [
+          "reinhardt",
+          "winston",
+          "dva(大体型)"
+        ],
+        "weakAgainst": [
+          "ana(反治疗)",
+          "zarya",
+          "pharah",
+          "echo",
+          "sombra"
+        ],
+        "synergy": [
+          "ana",
+          "kiriko",
+          "lucio"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "近身缠斗brawl图"
+        ],
+        "weak": [
+          "远程poke图被消耗"
+        ],
+        "note": "缠斗续航强，反治疗硬克其吸血"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "易被反治疗与poke针对，强度看版本，少被ban"
+      },
+      "rankPlay": {
+        "bronzeGold": "先点燃再暴击，过载保命别莽，冲撞别孤身",
+        "platDiamond": "贴大体型坦克吸血滚雪球，过载吃爆发，牢笼隔离关键目标",
+        "masterGM": "过载时机管理续航，牢笼1v1选软目标，规避反治疗"
+      },
+      "tier": "B",
+      "tags": [
+        "缠斗坦",
+        "吸血",
+        "续航"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/33d39bb439c08975197fc52eff4874716839711b5356c4fdc174f9c24bac1d0e.png",
+      "officialSubrole": "bruiser"
+    },
+    {
+      "id": "reaper",
+      "name": "Reaper",
+      "nameZh": "死神",
+      "role": "damage",
+      "subrole": "brawl-dps",
+      "difficulty": 2,
+      "health": {
+        "hp": 250,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "双霰弹枪(近距高伤)",
+        "range": "short",
+        "mobility": 3,
+        "dps": "贴脸爆发极高",
+        "note": "伤害吸血自给续航，近身坦克杀手"
+      },
+      "abilities": {
+        "passive": "伤害职业被动",
+        "weapon": {
+          "name": "Hellfire Shotguns",
+          "nameZh": "地狱火霰弹枪",
+          "desc": "近距双枪高伤(造成伤害回血)"
+        },
+        "actives": [
+          {
+            "name": "Wraith Form",
+            "nameZh": "幽灵形态",
+            "cooldown": 8,
+            "desc": "免伤高速移动(不能开火)"
+          },
+          {
+            "name": "Shadow Step",
+            "nameZh": "暗影步",
+            "cooldown": 9,
+            "desc": "传送到指定点"
+          }
+        ],
+        "ultimate": {
+          "name": "Death Blossom",
+          "nameZh": "死亡绽放",
+          "cost": 0,
+          "desc": "范围旋转高伤，秒近身敌人"
+        }
+      },
+      "position": {
+        "zh": "贴近敌方坦克/绕后切软辅，吸血续航，幽灵形态进退",
+        "depth": "flank"
+      },
+      "counters": {
+        "strongAgainst": [
+          "reinhardt",
+          "winston",
+          "dva",
+          "zarya",
+          "roadhog"
+        ],
+        "weakAgainst": [
+          "pharah",
+          "echo",
+          "ashe",
+          "widowmaker",
+          "cassidy"
+        ],
+        "synergy": [
+          "reinhardt",
+          "mei",
+          "lucio"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "近身缠斗/转角多图：国王大道、好莱坞、漓江塔"
+        ],
+        "weak": [
+          "开阔长距离图(无射程)"
+        ],
+        "note": "近身坦克杀手，被空中与远程hitscan硬克"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "近身强但射程短易被风筝，几乎不被ban"
+      },
+      "rankPlay": {
+        "bronzeGold": "贴坦克输出回血，血少幽灵跑，别站远处打不到",
+        "platDiamond": "绕后切软辅或贴脸秒坦，暗影步找角度，绽放贴脸开",
+        "masterGM": "走位贴脸最大化吸血，绽放配控制(重力/震荡)，规避hitscan视野"
+      },
+      "tier": "B",
+      "tags": [
+        "近身爆发",
+        "坦克杀手",
+        "吸血"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/dc6ff07ac790c00dc95a40882449617bb6e0e38906b353a630cffe0c815270a9.png",
+      "officialSubrole": "flanker"
+    },
+    {
+      "id": "cassidy",
+      "name": "Cassidy",
+      "nameZh": "卡西迪",
+      "role": "damage",
+      "subrole": "hitscan",
+      "difficulty": 2,
+      "health": {
+        "hp": 250,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "维和者左轮(中距高伤)",
+        "range": "mid",
+        "mobility": 2,
+        "dps": "中距稳定高",
+        "note": "手雷+翻滚的反突进hitscan"
+      },
+      "abilities": {
+        "passive": "伤害职业被动",
+        "weapon": {
+          "name": "Peacekeeper",
+          "nameZh": "维和者",
+          "desc": "单发高伤/扇射连发"
+        },
+        "actives": [
+          {
+            "name": "Combat Roll",
+            "nameZh": "战斗翻滚",
+            "cooldown": 8,
+            "desc": "翻滚+快速换弹+短暂减伤"
+          },
+          {
+            "name": "Magnetic Grenade",
+            "nameZh": "磁吸手雷",
+            "cooldown": 10,
+            "desc": "吸附敌人爆炸高伤"
+          }
+        ],
+        "ultimate": {
+          "name": "Deadeye",
+          "nameZh": "神射手",
+          "cost": 0,
+          "desc": "蓄力锁定视野内敌人秒杀"
+        }
+      },
+      "position": {
+        "zh": "中排借掩体点射，手雷反突进，翻滚换位/续战",
+        "depth": "mid"
+      },
+      "counters": {
+        "strongAgainst": [
+          "genji",
+          "tracer",
+          "winston",
+          "pharah",
+          "echo"
+        ],
+        "weakAgainst": [
+          "widowmaker",
+          "ashe(远程对枪)",
+          "sombra",
+          "dva"
+        ],
+        "synergy": [
+          "reinhardt",
+          "ana",
+          "zarya"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "中距离对枪图通用"
+        ],
+        "weak": [
+          "超长狙击距离被压制"
+        ],
+        "note": "反dive强，磁雷+翻滚专治突进"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "强度均衡，反dive好用但非bug级，少被ban"
+      },
+      "rankPlay": {
+        "bronzeGold": "练点射别扇飞，磁雷贴突进的人，翻滚保命",
+        "platDiamond": "中距消耗+反dive，磁雷配队友爆发，神射手逼走位",
+        "masterGM": "极致点射效率，磁雷预判粘切入，神射手卡视野收割"
+      },
+      "tier": "B",
+      "tags": [
+        "hitscan",
+        "反突进",
+        "稳定"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/9240cd64cc8ef58df9acbf55204ab1b5d8578f743fda5931f0dbccbd75ab841b.png",
+      "officialSubrole": "sharpshooter"
+    },
+    {
+      "id": "widowmaker",
+      "name": "Widowmaker",
+      "nameZh": "黑百合",
+      "role": "damage",
+      "subrole": "sniper",
+      "difficulty": 5,
+      "health": {
+        "hp": 175,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "狙击/腰射(开镜蓄力一枪秒脆)",
+        "range": "long",
+        "mobility": 3,
+        "dps": "一枪致命",
+        "note": "175血极脆，靠抓钩占点位拉远距离"
+      },
+      "abilities": {
+        "passive": "伤害职业被动",
+        "weapon": {
+          "name": "Widow's Kiss",
+          "nameZh": "蜘蛛之吻",
+          "desc": "开镜蓄力狙/腰射连发"
+        },
+        "actives": [
+          {
+            "name": "Grappling Hook",
+            "nameZh": "抓钩",
+            "cooldown": 8,
+            "desc": "钩到高点/拉开距离"
+          },
+          {
+            "name": "Venom Mine",
+            "nameZh": "毒液诡雷",
+            "cooldown": 10,
+            "desc": "侦测+持续毒伤，防侧翼"
+          }
+        ],
+        "ultimate": {
+          "name": "Infra-Sight",
+          "nameZh": "红外侦测",
+          "cost": 0,
+          "desc": "全队透视敌人位置"
+        }
+      },
+      "position": {
+        "zh": "远端高台狙击位，抓钩切换sightline，诡雷防侧翼，打了换位",
+        "depth": "back"
+      },
+      "counters": {
+        "strongAgainst": [
+          "ashe",
+          "pharah",
+          "ana",
+          "zenyatta",
+          "支援站桩"
+        ],
+        "weakAgainst": [
+          "genji",
+          "tracer",
+          "winston",
+          "sombra",
+          "dva"
+        ],
+        "synergy": [
+          "sombra",
+          "sigma",
+          "ana"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "开阔长视野图：花村、circuit royal、numbani、havana"
+        ],
+        "weak": [
+          "狭窄无长sightline图：国王大道室内、好莱坞内场"
+        ],
+        "note": "长视野图统治力，被dive硬克"
+      },
+      "ban": {
+        "priority": "medium",
+        "reason": "高手一枪秒人改变团战，长视野图+高分段ban价值高(否则压制感太强)"
+      },
+      "rankPlay": {
+        "bronzeGold": "练稳开镜爆头，诡雷防身后，被切就钩走别恋战",
+        "platDiamond": "卡sightline点射软目标，频繁换位躲dive，红外配队友开团",
+        "masterGM": "极限快狙+换位，抓钩拉扯dive，一枪定团战节奏"
+      },
+      "tier": "A",
+      "tags": [
+        "狙击",
+        "一枪致命",
+        "极脆",
+        "高技巧"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/6e4702b45f196aaf51555cf57327322721f45458b17f5f0643ed008a88378259.png",
+      "officialSubrole": "sharpshooter"
+    },
+    {
+      "id": "echo",
+      "name": "Echo",
+      "nameZh": "回声",
+      "role": "damage",
+      "subrole": "projectile-air",
+      "difficulty": 4,
+      "health": {
+        "hp": 200,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "三联粘弹+集束火箭",
+        "range": "mid",
+        "mobility": 5,
+        "dps": "处决+爆发高",
+        "note": "飞行单位，对残血处决加速，大招复制对手"
+      },
+      "abilities": {
+        "passive": "伤害职业被动 + 飞行/滑翔",
+        "weapon": {
+          "name": "Tri-Shot",
+          "nameZh": "三联发射器",
+          "desc": "三联粘性弹"
+        },
+        "actives": [
+          {
+            "name": "Sticky Bombs",
+            "nameZh": "集束炸弹",
+            "cooldown": 6,
+            "desc": "粘性炸弹齐爆"
+          },
+          {
+            "name": "Flight",
+            "nameZh": "飞行",
+            "cooldown": 8,
+            "desc": "高速飞行机动"
+          },
+          {
+            "name": "Focusing Beam",
+            "nameZh": "聚焦光束",
+            "cooldown": 8,
+            "desc": "对半血以下目标超高伤"
+          }
+        ],
+        "ultimate": {
+          "name": "Duplicate",
+          "nameZh": "复制",
+          "cost": 0,
+          "desc": "复制敌方英雄并快速充其大招"
+        }
+      },
+      "position": {
+        "zh": "空中机动poke，借飞行卡角度，残血用聚焦光束处决",
+        "depth": "back"
+      },
+      "counters": {
+        "strongAgainst": [
+          "reinhardt",
+          "roadhog",
+          "大体型坦克",
+          "zenyatta"
+        ],
+        "weakAgainst": [
+          "soldier76",
+          "ashe",
+          "cassidy",
+          "widowmaker",
+          "dva"
+        ],
+        "synergy": [
+          "mercy",
+          "nano(ana)",
+          "zarya"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "开阔有竖向空间图：watchpoint、numbani、circuit royal"
+        ],
+        "weak": [
+          "室内低天花板图"
+        ],
+        "note": "空中机动+处决强，被hitscan克(200血空中靶子)"
+      },
+      "ban": {
+        "priority": "medium",
+        "reason": "复制偷对面大招+空中处决，团战影响大，部分版本ban价值高"
+      },
+      "rankPlay": {
+        "bronzeGold": "飞起来poke别贴脸，光束补残血，复制找强力大招",
+        "platDiamond": "粘弹光束combo秒脆，飞行卡hitscan视野，复制偷开团大招",
+        "masterGM": "极限combo秒杀+飞行走位躲hitscan，复制时机翻盘团战"
+      },
+      "tier": "B",
+      "tags": [
+        "空中",
+        "处决",
+        "复制大招"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/d4f2d5b0c2b7e82d61353186c5f23152ccba9d3569b50839aa580dca3e9114ba.png",
+      "officialSubrole": "recon"
+    },
+    {
+      "id": "mei",
+      "name": "Mei",
+      "nameZh": "美",
+      "role": "damage",
+      "subrole": "brawl-control",
+      "difficulty": 2,
+      "health": {
+        "hp": 250,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "冰霜冲击(减速)+冰柱",
+        "range": "short",
+        "mobility": 2,
+        "dps": "近距+控制",
+        "note": "减速+冰墙分割+冰冻自保的反突进控制位"
+      },
+      "abilities": {
+        "passive": "伤害职业被动 + 主武器减速",
+        "weapon": {
+          "name": "Endothermic Blaster",
+          "nameZh": "冷冻枪",
+          "desc": "近距减速喷射/远程冰柱"
+        },
+        "actives": [
+          {
+            "name": "Cryo-Freeze",
+            "nameZh": "急速冷冻",
+            "cooldown": 11,
+            "desc": "冰冻自己免伤回血"
+          },
+          {
+            "name": "Ice Wall",
+            "nameZh": "寒冰墙",
+            "cooldown": 13,
+            "desc": "升起冰墙分割战场/封路"
+          }
+        ],
+        "ultimate": {
+          "name": "Blizzard",
+          "nameZh": "暴雪",
+          "cost": 0,
+          "desc": "范围减速+冻结，开团神技"
+        }
+      },
+      "position": {
+        "zh": "前中排近身缠斗，减速粘突进，冰墙分割/封钩,关键冷冻保命",
+        "depth": "front"
+      },
+      "counters": {
+        "strongAgainst": [
+          "genji",
+          "tracer",
+          "winston",
+          "doomfist",
+          "reaper"
+        ],
+        "weakAgainst": [
+          "pharah",
+          "echo",
+          "ashe",
+          "widowmaker",
+          "sigma"
+        ],
+        "synergy": [
+          "reinhardt",
+          "reaper",
+          "zarya"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "近身缠斗/狭窄图：国王大道、好莱坞、漓江塔"
+        ],
+        "weak": [
+          "开阔远程poke图"
+        ],
+        "note": "反突进+分割之王，被空中与远程消耗克"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "团队向工具人，强度非爆点，少被ban"
+      },
+      "rankPlay": {
+        "bronzeGold": "减速粘突进队友帮杀，冷冻保命别浪，冰墙别坑队友",
+        "platDiamond": "冰墙分割对面阵型/断退路，减速点杀，暴雪配队友AOE",
+        "masterGM": "冰墙极限分割+救人，暴雪时机开团，冷冻吃关键技能"
+      },
+      "tier": "B",
+      "tags": [
+        "控制",
+        "分割",
+        "反突进"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/4a55ced3bd597fb08e0fde9dc007f8543ac616ba98ca3db9b0e4d871a8ae17f8.png",
+      "officialSubrole": "specialist"
+    },
+    {
+      "id": "sombra",
+      "name": "Sombra",
+      "nameZh": "黑影",
+      "role": "damage",
+      "subrole": "flanker-disruptor",
+      "difficulty": 4,
+      "health": {
+        "hp": 200,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "冲锋枪+黑客(干扰技能)",
+        "range": "short",
+        "mobility": 4,
+        "dps": "黑客后高爆发",
+        "note": "隐身潜入+黑客封技能，专治后排与脆皮"
+      },
+      "abilities": {
+        "passive": "伤害职业被动 + 看见残血敌人",
+        "weapon": {
+          "name": "Machine Pistol",
+          "nameZh": "冲锋枪",
+          "desc": "近距全自动"
+        },
+        "actives": [
+          {
+            "name": "Hack",
+            "nameZh": "黑客",
+            "cooldown": 5,
+            "desc": "封锁目标技能+额外伤害(EMP后机制)"
+          },
+          {
+            "name": "Stealth/Translocator",
+            "nameZh": "隐身/传送信标",
+            "cooldown": 6,
+            "desc": "隐身潜入+传送逃生"
+          }
+        ],
+        "ultimate": {
+          "name": "EMP",
+          "nameZh": "电磁脉冲",
+          "cost": 0,
+          "desc": "范围破盾+黑客所有敌人，开团神技"
+        }
+      },
+      "position": {
+        "zh": "侧翼隐身潜入，黑客封关键技能后集火软目标，打完传送撤",
+        "depth": "flank"
+      },
+      "counters": {
+        "strongAgainst": [
+          "winston",
+          "wreckingball",
+          "genji",
+          "tracer",
+          "重技能英雄"
+        ],
+        "weakAgainst": [
+          "mei",
+          "moira",
+          "brigitte",
+          "cassidy",
+          "torbjorn"
+        ],
+        "synergy": [
+          "widowmaker",
+          "genji",
+          "reaper"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "多侧路/绕后图：好莱坞、漓江塔、王者大道"
+        ],
+        "weak": [
+          "单线无侧路图"
+        ],
+        "note": "封技能价值高，被近战辅助与AOE驱散克"
+      },
+      "ban": {
+        "priority": "medium",
+        "reason": "黑客封大招/突进+EMP开团，针对dive与重技能阵容时强，体验向ban常见"
+      },
+      "rankPlay": {
+        "bronzeGold": "别裸冲，黑客残血再杀，传送留逃生",
+        "platDiamond": "黑客封关键(跳/大招/位移)，配队友集火，EMP开团",
+        "masterGM": "信息差潜入封核心技能，EMP接队友combo团灭，极限传送拉扯"
+      },
+      "tier": "B",
+      "tags": [
+        "flanker",
+        "封技能",
+        "开团",
+        "扰乱"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/47727b02a16e3bd7b2447d86ae1edf11587bc320b2aecb4f2f16a7ca4ad4e8a0.png",
+      "officialSubrole": "recon"
+    },
+    {
+      "id": "junkrat",
+      "name": "Junkrat",
+      "nameZh": "狂鼠",
+      "role": "damage",
+      "subrole": "spam-zone",
+      "difficulty": 2,
+      "health": {
+        "hp": 250,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "榴弹发射器(弹跳溅射)",
+        "range": "mid",
+        "mobility": 3,
+        "dps": "封锁/溅射高",
+        "note": "弹道封锁狭窄区域，反坦克溅射强"
+      },
+      "abilities": {
+        "passive": "伤害职业被动 + 死亡掉雷",
+        "weapon": {
+          "name": "Frag Launcher",
+          "nameZh": "榴弹发射器",
+          "desc": "弹跳爆炸榴弹"
+        },
+        "actives": [
+          {
+            "name": "Concussion Mine",
+            "nameZh": "震荡地雷",
+            "cooldown": 8,
+            "desc": "炸飞自己/敌人+伤害(2层)"
+          },
+          {
+            "name": "Steel Trap",
+            "nameZh": "捕兽夹",
+            "cooldown": 9,
+            "desc": "夹住敌人定身"
+          }
+        ],
+        "ultimate": {
+          "name": "RIP-Tire",
+          "nameZh": "灭世轮胎",
+          "cost": 0,
+          "desc": "遥控炸弹轮胎范围秒杀"
+        }
+      },
+      "position": {
+        "zh": "中排隔掩体抛射封锁路口/点位，地雷自保位移，夹子守侧翼",
+        "depth": "mid"
+      },
+      "counters": {
+        "strongAgainst": [
+          "reinhardt",
+          "winston",
+          "大体型坦克",
+          "近身缠斗阵容"
+        ],
+        "weakAgainst": [
+          "pharah",
+          "echo",
+          "widowmaker",
+          "ashe",
+          "空中与远程"
+        ],
+        "synergy": [
+          "mei",
+          "reinhardt",
+          "junker queen"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "狭窄走廊/守点图：国王大道室内、好莱坞内场、占点二阶段"
+        ],
+        "weak": [
+          "开阔远距离图(够不到+无对空)"
+        ],
+        "note": "区域封锁王，怕空中单位与远程"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "守点恶心但易被空中与远程针对，少被ban"
+      },
+      "rankPlay": {
+        "bronzeGold": "抛射封口炸坦克练手感，地雷保命，轮胎别太明显",
+        "platDiamond": "封关键路口/楼梯，夹子配队友杀，轮胎绕后开团",
+        "masterGM": "弹道预判封走位，地雷连跳走位，轮胎卡视野秒后排"
+      },
+      "tier": "B",
+      "tags": [
+        "区域封锁",
+        "反坦克",
+        "守点"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/7660b9fc6f25f30858fdd8797fe0d52b2306f1e78fef99843f58a274e69af046.png",
+      "officialSubrole": "specialist"
+    },
+    {
+      "id": "roadhog",
+      "name": "Roadhog",
+      "nameZh": "路霸",
+      "role": "tank",
+      "subrole": "off-tank-pick",
+      "difficulty": 2,
+      "health": {
+        "hp": 700,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "铁砂枪(近距高伤)",
+        "range": "short",
+        "mobility": 2,
+        "dps": "钩拉combo秒脆",
+        "note": "超高血量+自疗，钩中combo一套秒脆皮"
+      },
+      "abilities": {
+        "passive": "坦克职业被动",
+        "weapon": {
+          "name": "Scrap Gun",
+          "nameZh": "铁砂枪",
+          "desc": "近距霰弹/远程弹团"
+        },
+        "actives": [
+          {
+            "name": "Chain Hook",
+            "nameZh": "锁链钩",
+            "cooldown": 8,
+            "desc": "钩中拉到面前接combo"
+          },
+          {
+            "name": "Take a Breather",
+            "nameZh": "调整呼吸",
+            "cooldown": 8,
+            "desc": "大额自我治疗+减伤"
+          }
+        ],
+        "ultimate": {
+          "name": "Whole Hog",
+          "nameZh": "嗜血",
+          "cost": 0,
+          "desc": "持续击退高伤洗地"
+        }
+      },
+      "position": {
+        "zh": "前侧排找钩子机会，钩中秒脆皮，呼吸续航，自给自足",
+        "depth": "front"
+      },
+      "counters": {
+        "strongAgainst": [
+          "脆皮dps",
+          "ana",
+          "zenyatta",
+          "kiriko(钩中)"
+        ],
+        "weakAgainst": [
+          "ana(反治疗)",
+          "zarya",
+          "sombra",
+          "pharah",
+          "echo"
+        ],
+        "synergy": [
+          "ana",
+          "kiriko",
+          "baptiste"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "有钩子角度/转角图：国王大道、好莱坞"
+        ],
+        "weak": [
+          "开阔远程poke图(自疗被反治疗克)"
+        ],
+        "note": "抓单能力强，反治疗硬克其续航"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "抓单恶心但提供空间少、易被反治疗与能量克，少被ban"
+      },
+      "rankPlay": {
+        "bronzeGold": "钩中再开枪练combo，呼吸保命别浪，别孤身被集火",
+        "platDiamond": "钩软辅/残血换人，呼吸吃爆发，注意反治疗时机",
+        "masterGM": "钩子选目标(切关键)，呼吸资源管理，规避反治疗与能量喂养"
+      },
+      "tier": "B",
+      "tags": [
+        "抓单",
+        "高血量",
+        "自给续航"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/89ddf07e4b619ed96169042e296a1b8856d102746f35add88284b44a9a5a6a03.png",
+      "officialSubrole": "bruiser"
+    },
+    {
+      "id": "doomfist",
+      "name": "Doomfist",
+      "nameZh": "末日铁拳",
+      "role": "tank",
+      "subrole": "dive-tank",
+      "difficulty": 4,
+      "health": {
+        "hp": 450,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "手炮(近距自动填弹)",
+        "range": "short",
+        "mobility": 5,
+        "dps": "切入爆发",
+        "note": "高机动突进坦，格挡涨能量，连招切后排"
+      },
+      "abilities": {
+        "passive": "坦克职业被动",
+        "weapon": {
+          "name": "Hand Cannon",
+          "nameZh": "手炮",
+          "desc": "近距霰射，自动填弹"
+        },
+        "actives": [
+          {
+            "name": "Power Block",
+            "nameZh": "蓄能格挡",
+            "cooldown": 0,
+            "desc": "正面减伤，吃够伤害强化重拳"
+          },
+          {
+            "name": "Rocket Punch",
+            "nameZh": "火箭重拳",
+            "cooldown": 4,
+            "desc": "蓄力冲撞，撞墙眩晕高伤"
+          },
+          {
+            "name": "Seismic Slam",
+            "nameZh": "震荡重踏",
+            "cooldown": 7,
+            "desc": "跃起砸地范围伤害+减速"
+          }
+        ],
+        "ultimate": {
+          "name": "Meteor Strike",
+          "nameZh": "流星飞拳",
+          "cost": 0,
+          "desc": "飞天指定落点范围伤害+切入"
+        }
+      },
+      "position": {
+        "zh": "侧翼切入敌方后排，格挡涨拳，重拳接重踏combo打软目标再撤",
+        "depth": "flank"
+      },
+      "counters": {
+        "strongAgainst": [
+          "ana",
+          "zenyatta",
+          "widowmaker",
+          "ashe",
+          "脆皮后排"
+        ],
+        "weakAgainst": [
+          "mei",
+          "cassidy",
+          "sombra",
+          "orisa",
+          "reaper"
+        ],
+        "synergy": [
+          "lucio",
+          "kiriko",
+          "genji"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "多高台/竖向图便于切入：观测站、漓江塔、好莱坞"
+        ],
+        "weak": [
+          "开阔无掩体图(切入即暴露)"
+        ],
+        "note": "dive切后排强，被点控(冰冻/磁雷)与近身克制"
+      },
+      "ban": {
+        "priority": "medium",
+        "reason": "高机动切后排压制软辅体验差，dive体系强时ban价值高"
+      },
+      "rankPlay": {
+        "bronzeGold": "格挡满了再重拳combo，切进去打软辅别贪，留重踏撤退",
+        "platDiamond": "找切入角度秒后排，格挡吃伤害强化，combo衔接精准",
+        "masterGM": "极限连招(拳-踏-枪)秒杀+走位拉扯，流星配队友强开/反开"
+      },
+      "tier": "B",
+      "tags": [
+        "突进坦",
+        "切后排",
+        "高技巧"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/ff5c54f43ad253c7faeda9c4ed31d42582ea6b19205d197866f3dd0c0aa14c16.png",
+      "officialSubrole": "initiator"
+    },
+    {
+      "id": "ramattra",
+      "name": "Ramattra",
+      "nameZh": "拉玛刹",
+      "role": "tank",
+      "subrole": "brawl-poke-tank",
+      "difficulty": 3,
+      "health": {
+        "hp": 350,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "全能形态远程杖/邪魔形态近战",
+        "range": "mid",
+        "mobility": 2,
+        "dps": "双形态切换",
+        "note": "远程护盾形态poke + 近战邪魔形态缠斗"
+      },
+      "abilities": {
+        "passive": "坦克职业被动",
+        "weapon": {
+          "name": "Void Accelerator / Pummel",
+          "nameZh": "虚空加速杖/痛击",
+          "desc": "全能远程连射 / 邪魔近战穿盾"
+        },
+        "actives": [
+          {
+            "name": "Void Barrier",
+            "nameZh": "虚空屏障",
+            "cooldown": 13,
+            "desc": "放置临时护盾"
+          },
+          {
+            "name": "Ravenous Vortex",
+            "nameZh": "贪噬漩涡",
+            "cooldown": 10,
+            "desc": "范围减速+下拉+持续伤害"
+          },
+          {
+            "name": "Nemesis Form",
+            "nameZh": "邪魔形态",
+            "cooldown": 8,
+            "desc": "变身近战减伤大体型"
+          }
+        ],
+        "ultimate": {
+          "name": "Annihilation",
+          "nameZh": "湮灭",
+          "cost": 0,
+          "desc": "持续范围伤害(有敌人则延长)"
+        }
+      },
+      "position": {
+        "zh": "全能形态远程护盾poke，接战切邪魔形态缠斗，漩涡控空中/拉敌",
+        "depth": "mid"
+      },
+      "counters": {
+        "strongAgainst": [
+          "pharah",
+          "echo",
+          "reinhardt",
+          "winston"
+        ],
+        "weakAgainst": [
+          "zarya",
+          "ana(反治疗)",
+          "sombra",
+          "bastion"
+        ],
+        "synergy": [
+          "ana",
+          "kiriko",
+          "lucio"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "攻防转换灵活的图：多数推车/占点图通用"
+        ],
+        "weak": [
+          "需极致机动追击图"
+        ],
+        "note": "双形态适应poke与brawl，漩涡对空中单位强"
+      },
+      "ban": {
+        "priority": "medium",
+        "reason": "双形态全能+漩涡控制+湮灭团战，版本契合时ban价值中上"
+      },
+      "rankPlay": {
+        "bronzeGold": "远程形态消耗，接战再变邪魔，漩涡拉空中/减速",
+        "platDiamond": "形态切换吃节奏，护盾保关键，湮灭配队友团战",
+        "masterGM": "形态/护盾/漩涡时机化解对面，湮灭极限续航逼大"
+      },
+      "tier": "A",
+      "tags": [
+        "双形态",
+        "poke+缠斗",
+        "控制"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/ddef7c9fb8ce4256e8508196b486f81950efe7aaa6cf27fec4668beb4cd15774.png",
+      "officialSubrole": "stalwart"
+    },
+    {
+      "id": "junkerqueen",
+      "name": "Junker Queen",
+      "nameZh": "渣客女王",
+      "role": "tank",
+      "subrole": "brawl-tank",
+      "difficulty": 3,
+      "health": {
+        "hp": 425,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "霰弹枪+小刀(流血)",
+        "range": "short",
+        "mobility": 3,
+        "dps": "流血缠斗",
+        "note": "流血伤害+群体反治疗大招的缠斗坦"
+      },
+      "abilities": {
+        "passive": "坦克职业被动 + 造成流血时自我治疗",
+        "weapon": {
+          "name": "Scattergun",
+          "nameZh": "霰弹枪",
+          "desc": "近距霰射"
+        },
+        "actives": [
+          {
+            "name": "Jagged Blade",
+            "nameZh": "锯齿之刃",
+            "cooldown": 6,
+            "desc": "投掷小刀流血，可拉回敌人"
+          },
+          {
+            "name": "Commanding Shout",
+            "nameZh": "战吼",
+            "cooldown": 12,
+            "desc": "范围加血量+加速队友"
+          }
+        ],
+        "ultimate": {
+          "name": "Rampage",
+          "nameZh": "横扫千军",
+          "cost": 0,
+          "desc": "冲锋范围流血+阻止治疗"
+        }
+      },
+      "position": {
+        "zh": "前排缠斗，刀拉/流血滚雪球，战吼加血开团，自带续航",
+        "depth": "front"
+      },
+      "counters": {
+        "strongAgainst": [
+          "reinhardt",
+          "winston",
+          "近身缠斗阵容"
+        ],
+        "weakAgainst": [
+          "pharah",
+          "echo",
+          "ana(反治疗)",
+          "zarya",
+          "sombra"
+        ],
+        "synergy": [
+          "reaper",
+          "mei",
+          "lucio",
+          "moira"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "近身缠斗brawl图：国王大道、好莱坞、漓江塔"
+        ],
+        "weak": [
+          "远程poke图"
+        ],
+        "note": "缠斗滚雪球强，大招群体反治疗团战价值高"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "缠斗强但被poke与反治疗针对，少被ban"
+      },
+      "rankPlay": {
+        "bronzeGold": "刀拉残血+流血回血，战吼别空放，横扫开团",
+        "platDiamond": "流血滚雪球，战吼配队友切入，横扫反治疗团灭",
+        "masterGM": "刀拉关键目标+续航管理，横扫时机封对面治疗一波团"
+      },
+      "tier": "B",
+      "tags": [
+        "缠斗坦",
+        "流血",
+        "反治疗大招"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/06eeecb359f311f43a8f5121d4f9f3a93c565d70b30e94ef543c05596c9a39dc.png",
+      "officialSubrole": "stalwart"
+    },
+    {
+      "id": "wreckingball",
+      "name": "Wrecking Ball",
+      "nameZh": "破坏球",
+      "role": "tank",
+      "subrole": "dive-disruptor-tank",
+      "difficulty": 4,
+      "health": {
+        "hp": 450,
+        "armor": 150,
+        "shield": 0
+      },
+      "params": {
+        "primary": "双速射机枪",
+        "range": "short",
+        "mobility": 5,
+        "dps": "撞击+骚扰",
+        "note": "钩爪摆荡高机动滚球，骚扰打乱阵型"
+      },
+      "abilities": {
+        "passive": "坦克职业被动",
+        "weapon": {
+          "name": "Quad Cannons",
+          "nameZh": "四管机炮",
+          "desc": "持续扫射"
+        },
+        "actives": [
+          {
+            "name": "Grappling Claw",
+            "nameZh": "钩爪",
+            "cooldown": 5,
+            "desc": "摆荡蓄速、滚球撞击击飞"
+          },
+          {
+            "name": "Adaptive Shield",
+            "nameZh": "自适应护盾",
+            "cooldown": 11,
+            "desc": "按周围敌人数量获临时护盾"
+          },
+          {
+            "name": "Piledriver",
+            "nameZh": "桩击",
+            "cooldown": 8,
+            "desc": "空中砸地范围击飞"
+          }
+        ],
+        "ultimate": {
+          "name": "Minefield",
+          "nameZh": "雷区",
+          "cost": 0,
+          "desc": "布满地雷范围封锁/秒杀"
+        }
+      },
+      "position": {
+        "zh": "绕大圈摆荡切入，撞击打乱后排+护盾续航，搅完就滚走",
+        "depth": "flank"
+      },
+      "counters": {
+        "strongAgainst": [
+          "widowmaker",
+          "ashe",
+          "ana",
+          "zenyatta",
+          "脆皮后排"
+        ],
+        "weakAgainst": [
+          "sombra",
+          "mei",
+          "reaper",
+          "zarya",
+          "cassidy"
+        ],
+        "synergy": [
+          "lucio",
+          "kiriko",
+          "genji"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "开阔有摆荡空间/高低差图：观测站、暴雪世界、numbani"
+        ],
+        "weak": [
+          "狭窄无摆荡空间图"
+        ],
+        "note": "高机动骚扰，被定身(冰冻/黑客)硬克"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "搅乱强但不提供正面空间、上手难，少被ban"
+      },
+      "rankPlay": {
+        "bronzeGold": "摆荡练熟，护盾在人堆里开，别滚进去出不来",
+        "platDiamond": "切后排打乱阵型+护盾续航，桩击配队友，雷区封点",
+        "masterGM": "极限摆荡走位调动对面，护盾时机最大化，雷区团战封走位"
+      },
+      "tier": "B",
+      "tags": [
+        "突进坦",
+        "骚扰",
+        "高机动",
+        "高技巧"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/9ef1d58867136e0b26f928d896000b9dab216118f6e2f59e53f2e975e1e27afa.png",
+      "officialSubrole": "initiator"
+    },
+    {
+      "id": "hanzo",
+      "name": "Hanzo",
+      "nameZh": "半藏",
+      "role": "damage",
+      "subrole": "projectile-sniper",
+      "difficulty": 4,
+      "health": {
+        "hp": 250,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "弓箭(蓄力一箭高伤)",
+        "range": "long",
+        "mobility": 3,
+        "dps": "一箭爆发高",
+        "note": "弹道狙击，爬墙机动，侦测箭开视野"
+      },
+      "abilities": {
+        "passive": "伤害职业被动 + 蹬墙",
+        "weapon": {
+          "name": "Storm Bow",
+          "nameZh": "风暴之弓",
+          "desc": "蓄力弓箭"
+        },
+        "actives": [
+          {
+            "name": "Sonic Arrow",
+            "nameZh": "音波箭",
+            "cooldown": 12,
+            "desc": "范围侦测敌人位置"
+          },
+          {
+            "name": "Storm Arrows",
+            "nameZh": "风暴之箭",
+            "cooldown": 8,
+            "desc": "快速连射多支固定伤害箭"
+          }
+        ],
+        "ultimate": {
+          "name": "Dragonstrike",
+          "nameZh": "龙击波",
+          "cost": 0,
+          "desc": "穿墙双龙穿透高伤，封锁/开团"
+        }
+      },
+      "position": {
+        "zh": "中远端借高台/掩体探头蓄力射，音波箭开视野，风暴箭近身自保",
+        "depth": "back"
+      },
+      "counters": {
+        "strongAgainst": [
+          "reinhardt",
+          "大体型坦克",
+          "winston",
+          "pharah(近)"
+        ],
+        "weakAgainst": [
+          "genji",
+          "tracer",
+          "sombra",
+          "dva",
+          "widowmaker"
+        ],
+        "synergy": [
+          "sigma",
+          "ana",
+          "zarya"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "有掩体/角度的图：花村、好莱坞、漓江塔"
+        ],
+        "weak": [
+          "开阔无掩体图被狙压制"
+        ],
+        "note": "弹道无弹道下坠考验预瞄，被dive克"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "上限高但弹道难命中、被dive克，少被ban"
+      },
+      "rankPlay": {
+        "bronzeGold": "音波箭开视野再射，风暴箭防突进，别只对着坦克",
+        "platDiamond": "蓄力射软目标，音波情报配团，龙击波封路口/开团",
+        "masterGM": "极限预瞄爆头+蹬墙走位，龙击波时机封点配combo"
+      },
+      "tier": "B",
+      "tags": [
+        "弹道狙",
+        "爆发",
+        "侦测",
+        "高技巧"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/78b61c3e806fb26b02b8980fba62189155074fc15bd865b0883268e546030be5.png",
+      "officialSubrole": "sharpshooter"
+    },
+    {
+      "id": "bastion",
+      "name": "Bastion",
+      "nameZh": "堡垒",
+      "role": "damage",
+      "subrole": "turret-burst",
+      "difficulty": 1,
+      "health": {
+        "hp": 250,
+        "armor": 100,
+        "shield": 0
+      },
+      "params": {
+        "primary": "侦察突击步枪/侦测炮台机枪",
+        "range": "mid",
+        "mobility": 2,
+        "dps": "炮台形态极高",
+        "note": "炮台形态高额持续伤害融坦，限时"
+      },
+      "abilities": {
+        "passive": "伤害职业被动",
+        "weapon": {
+          "name": "Configuration: Assault/Recon",
+          "nameZh": "突击/侦察形态",
+          "desc": "侦察步枪 / 炮台机枪"
+        },
+        "actives": [
+          {
+            "name": "Assault (Turret)",
+            "nameZh": "炮台形态",
+            "cooldown": 12,
+            "desc": "限时高伤机枪(可移动)"
+          },
+          {
+            "name": "Tactical Grenade",
+            "nameZh": "战术手雷",
+            "cooldown": 10,
+            "desc": "弹跳粘附爆炸"
+          }
+        ],
+        "ultimate": {
+          "name": "Configuration: Artillery",
+          "nameZh": "炮击形态",
+          "cost": 0,
+          "desc": "三发远程炮击轰炸"
+        }
+      },
+      "position": {
+        "zh": "中排借掩体/坦克盾后开炮台融坦，手雷反突进，打完撤",
+        "depth": "mid"
+      },
+      "counters": {
+        "strongAgainst": [
+          "reinhardt",
+          "大体型坦克",
+          "winston",
+          "wreckingball",
+          "orisa"
+        ],
+        "weakAgainst": [
+          "genji",
+          "tracer",
+          "sombra",
+          "widowmaker",
+          "flanker"
+        ],
+        "synergy": [
+          "reinhardt",
+          "orisa",
+          "zarya"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "守点/狭窄推车图：占点二阶段、好莱坞"
+        ],
+        "weak": [
+          "多侧路被绕后图"
+        ],
+        "note": "融坦神器但站桩怕被侧翼切，靠队友保护"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "针对坦克强但机动差易被flank，少被ban"
+      },
+      "rankPlay": {
+        "bronzeGold": "炮台躲盾后/掩体打坦克，被切就退形态，手雷防身后",
+        "platDiamond": "炮台时机融坦/守点，注意侧翼，炮击封点配开团",
+        "masterGM": "炮台走位+时机最大化输出，规避flank，炮击配控制秒团"
+      },
+      "tier": "B",
+      "tags": [
+        "融坦",
+        "炮台",
+        "守点"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/4ede795c2a681aaccfa72d0c901cba0cb8a2c292fd6a97b2ba9faed161c2d184.png",
+      "officialSubrole": "specialist"
+    },
+    {
+      "id": "symmetra",
+      "name": "Symmetra",
+      "nameZh": "秩序之光",
+      "role": "damage",
+      "subrole": "setup-zone",
+      "difficulty": 2,
+      "health": {
+        "hp": 250,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "光子射线(锁定蓄能)+蓄力球",
+        "range": "short",
+        "mobility": 2,
+        "dps": "蓄满射线融坦",
+        "note": "炮台减速+传送门+大护盾，守点与机动支援"
+      },
+      "abilities": {
+        "passive": "伤害职业被动",
+        "weapon": {
+          "name": "Photon Projector",
+          "nameZh": "光子发射器",
+          "desc": "锁定蓄能射线/穿透蓄力球"
+        },
+        "actives": [
+          {
+            "name": "Sentry Turret",
+            "nameZh": "哨卫炮台",
+            "cooldown": 9,
+            "desc": "部署减速炮台(3个)"
+          },
+          {
+            "name": "Teleporter",
+            "nameZh": "传送面板",
+            "cooldown": 13,
+            "desc": "放置传送门快速调兵/绕后"
+          }
+        ],
+        "ultimate": {
+          "name": "Photon Barrier",
+          "nameZh": "光子护壁",
+          "cost": 0,
+          "desc": "横跨地图的巨型移动护盾"
+        }
+      },
+      "position": {
+        "zh": "近中距离借炮台区域控制，蓄满射线融坦/破盾，传送门搞偷袭与转点",
+        "depth": "mid"
+      },
+      "counters": {
+        "strongAgainst": [
+          "reinhardt",
+          "winston",
+          "wreckingball",
+          "genji",
+          "tracer"
+        ],
+        "weakAgainst": [
+          "pharah",
+          "echo",
+          "widowmaker",
+          "ashe",
+          "远程"
+        ],
+        "synergy": [
+          "reinhardt",
+          "mei",
+          "junkrat"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "守点/狭窄角落多图：国王大道、好莱坞、占点图"
+        ],
+        "weak": [
+          "开阔远程图(射程短)"
+        ],
+        "note": "区域控制与传送战术价值，怕远程消耗"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "战术工具人，强度非爆点，少被ban"
+      },
+      "rankPlay": {
+        "bronzeGold": "炮台卡转角，蓄满射线融坦，传送门省走路",
+        "platDiamond": "炮台控区域+减速突进，射线破盾，传送门绕后/转点偷袭",
+        "masterGM": "炮台布置卡视野，射线时机融坦，传送门战术调兵翻盘"
+      },
+      "tier": "B",
+      "tags": [
+        "区域控制",
+        "传送",
+        "守点"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/ebec57e8bd68b3d4383edfeb34f8f52dd0b94a6467d594c2fee722e8a97c32aa.png",
+      "officialSubrole": "specialist"
+    },
+    {
+      "id": "torbjorn",
+      "name": "Torbjörn",
+      "nameZh": "托比昂",
+      "role": "damage",
+      "subrole": "turret-zone",
+      "difficulty": 2,
+      "health": {
+        "hp": 250,
+        "armor": 50,
+        "shield": 0
+      },
+      "params": {
+        "primary": "铆钉枪+熔炉(近距)",
+        "range": "mid",
+        "mobility": 1,
+        "dps": "炮台+热熔高",
+        "note": "自动炮台区域控制+护甲自保的守点位"
+      },
+      "abilities": {
+        "passive": "伤害职业被动",
+        "weapon": {
+          "name": "Rivet Gun",
+          "nameZh": "铆钉枪",
+          "desc": "远程铆钉/近距熔炉"
+        },
+        "actives": [
+          {
+            "name": "Deploy Turret",
+            "nameZh": "部署炮台",
+            "cooldown": 8,
+            "desc": "放置自动炮台"
+          },
+          {
+            "name": "Overload",
+            "nameZh": "超负荷",
+            "cooldown": 12,
+            "desc": "护甲+攻速移速提升"
+          }
+        ],
+        "ultimate": {
+          "name": "Molten Core",
+          "nameZh": "熔火核心",
+          "cost": 0,
+          "desc": "地面熔岩范围封锁/逼走位"
+        }
+      },
+      "position": {
+        "zh": "中排守点，炮台卡转角分担火力，超负荷续战，熔火封点",
+        "depth": "mid"
+      },
+      "counters": {
+        "strongAgainst": [
+          "genji",
+          "tracer",
+          "winston",
+          "doomfist",
+          "近身突进"
+        ],
+        "weakAgainst": [
+          "pharah",
+          "echo",
+          "widowmaker",
+          "ashe",
+          "远程"
+        ],
+        "synergy": [
+          "reinhardt",
+          "mei",
+          "symmetra"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "守点/狭窄角落图：占点二阶段、好莱坞内场"
+        ],
+        "weak": [
+          "开阔远程图(射程机动差)"
+        ],
+        "note": "守点与反突进强，怕空中与远程poke"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "守点工具人，强度非爆点，几乎不被ban"
+      },
+      "rankPlay": {
+        "bronzeGold": "炮台放转角自己别站炮台旁，超负荷打架别逃命用",
+        "platDiamond": "炮台分担+卡视野，超负荷换血,熔火封点配开团",
+        "masterGM": "炮台布置最大化区域控制，超负荷时机1v1，熔火封走位团灭"
+      },
+      "tier": "B",
+      "tags": [
+        "炮台",
+        "守点",
+        "反突进"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/ce17118cedc29b0d2ac1e059666bed36b9531c85079b0b894bb402d12c917ba9.png",
+      "officialSubrole": "specialist"
+    },
+    {
+      "id": "anran",
+      "name": "Anran",
+      "nameZh": "安然",
+      "role": "damage",
+      "subrole": "brawl-dps",
+      "difficulty": 3,
+      "health": {
+        "hp": 225,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "朱雀扇(火焰叠加)",
+        "range": "mid",
+        "mobility": 4,
+        "dps": "火焰持续叠加",
+        "note": "2026新dps，火扇叠加燃烧+机动，双形态大招可自动复活"
+      },
+      "abilities": {
+        "passive": "伤害职业被动",
+        "weapon": {
+          "name": "Zhuque Fans",
+          "nameZh": "朱雀扇",
+          "desc": "投掷火扇造成并叠加燃烧"
+        },
+        "actives": [
+          {
+            "name": "Fan the Flames",
+            "nameZh": "煽风点火",
+            "cooldown": 8,
+            "desc": "引爆/强化目标身上的燃烧叠层"
+          },
+          {
+            "name": "Inferno Rush",
+            "nameZh": "烈焰冲刺",
+            "cooldown": 7,
+            "desc": "火焰冲刺位移"
+          },
+          {
+            "name": "Dancing Blaze",
+            "nameZh": "炽舞",
+            "cooldown": 9,
+            "desc": "灵动机动+火焰输出"
+          }
+        ],
+        "ultimate": {
+          "name": "Dual Ultimate",
+          "nameZh": "双重终极(待核对)",
+          "cost": 0,
+          "desc": "可主动触发，或满能量阵亡时自动复活(数据待官方核对)"
+        }
+      },
+      "position": {
+        "zh": "中近距离游走，火扇叠层+煽风引爆，机动技能保持身位",
+        "depth": "mid"
+      },
+      "counters": {
+        "strongAgainst": [
+          "reinhardt",
+          "winston",
+          "近身缠斗"
+        ],
+        "weakAgainst": [
+          "widowmaker",
+          "ashe",
+          "ana(反治疗灭燃烧续航)",
+          "dva"
+        ],
+        "synergy": [
+          "lucio",
+          "kiriko",
+          "zarya"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "近身缠斗brawl图"
+        ],
+        "weak": [
+          "开阔远程poke图"
+        ],
+        "note": "2026新英雄,数值随补丁变动大,需核对官方"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "新英雄强度未稳定，按当前补丁评估"
+      },
+      "rankPlay": {
+        "bronzeGold": "先叠燃烧再煽风引爆，机动别莽，活着输出",
+        "platDiamond": "火扇叠层集火，煽风时机引爆，机动拉扯",
+        "masterGM": "叠层管理+煽风爆发秒目标，双形态大招博弈"
+      },
+      "tier": "B",
+      "tags": [
+        "新英雄",
+        "燃烧叠加",
+        "机动"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/2c38b41d79a1ce9a08b9ad8eb7edf3ff819bd448af16a5815be8c7fdb7203aa0.png",
+      "officialSubrole": "flanker"
+    },
+    {
+      "id": "vendetta",
+      "name": "Vendetta",
+      "nameZh": "Vendetta",
+      "role": "damage",
+      "subrole": "melee-bruiser-dps",
+      "difficulty": 4,
+      "health": {
+        "hp": 250,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "Palatine Fang 巨剑(近战)",
+        "range": "melee",
+        "mobility": 4,
+        "dps": "近战爆发高",
+        "note": "2026新dps，巨剑近战，格挡反击+突进，大招穿防御"
+      },
+      "abilities": {
+        "passive": "伤害职业被动",
+        "weapon": {
+          "name": "Palatine Fang",
+          "nameZh": "帕拉丁之牙",
+          "desc": "巨剑近战横扫高伤"
+        },
+        "actives": [
+          {
+            "name": "Warding Stance",
+            "nameZh": "守御架势",
+            "cooldown": 8,
+            "desc": "格挡正面伤害并反击"
+          },
+          {
+            "name": "Soaring Slice",
+            "nameZh": "翔斩",
+            "cooldown": 7,
+            "desc": "瞬间突进拉近距离"
+          }
+        ],
+        "ultimate": {
+          "name": "Sundering Blade",
+          "nameZh": "裂世之刃",
+          "cost": 0,
+          "desc": "穿透多数防御技能的致命一击"
+        }
+      },
+      "position": {
+        "zh": "侧翼/前压近战切入，翔斩贴目标，守御架势吃爆发反打",
+        "depth": "flank"
+      },
+      "counters": {
+        "strongAgainst": [
+          "脆皮后排",
+          "reinhardt",
+          "护盾型坦克(大招穿防)"
+        ],
+        "weakAgainst": [
+          "pharah",
+          "echo",
+          "mei",
+          "cassidy",
+          "ana"
+        ],
+        "synergy": [
+          "lucio",
+          "kiriko",
+          "zarya"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "近身缠斗/转角多图：国王大道、好莱坞"
+        ],
+        "weak": [
+          "开阔远程图(近战够不到)"
+        ],
+        "note": "2026新英雄,数值待官方核对,大招穿防御机制独特"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "新英雄强度未稳定，近战易被风筝，按补丁评估"
+      },
+      "rankPlay": {
+        "bronzeGold": "翔斩切软目标，守御吃爆发，别裸冲被集火",
+        "platDiamond": "翔斩切后排，守御反打突进，裂世穿盾秒关键",
+        "masterGM": "翔斩-守御-大招连招博弈,大招穿防御斩杀核心目标"
+      },
+      "tier": "B",
+      "tags": [
+        "新英雄",
+        "近战",
+        "突进",
+        "穿防御"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/cf8ffb52b6f315546d5e94e9d6defad5a2c570798776956de23f47536f9529da.png",
+      "officialSubrole": "flanker"
+    },
+    {
+      "id": "mercy",
+      "name": "Mercy",
+      "nameZh": "天使",
+      "role": "support",
+      "subrole": "pocket-heal",
+      "difficulty": 2,
+      "health": {
+        "hp": 225,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "治疗/增伤光束(单体)",
+        "range": "mid",
+        "mobility": 5,
+        "dps": "手枪自保",
+        "note": "单体续航+增伤+复活,飞天机动极强但只能盯一个"
+      },
+      "abilities": {
+        "passive": "辅助职业被动 + 滞空下落缓降 + 视野外自愈",
+        "weapon": {
+          "name": "Caduceus Staff / Pistol",
+          "nameZh": "守护权杖/手枪",
+          "desc": "治疗或增伤光束 / 自保手枪"
+        },
+        "actives": [
+          {
+            "name": "Guardian Angel",
+            "nameZh": "守护天使",
+            "cooldown": 2.5,
+            "desc": "飞向队友,可取消跳跃/超级跳走位"
+          },
+          {
+            "name": "Resurrect",
+            "nameZh": "复活",
+            "cooldown": 30,
+            "desc": "复活一名死亡队友(读条)"
+          }
+        ],
+        "ultimate": {
+          "name": "Valkyrie",
+          "nameZh": "女武神",
+          "cost": 0,
+          "desc": "全光束扩散+自由飞行+强化"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "GA冷却",
+            "desc": "守护天使CD降低"
+          },
+          {
+            "nameZh": "增伤强化",
+            "desc": "蓝光束增伤提升"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "瞬复",
+            "desc": "复活读条更快/可移动"
+          },
+          {
+            "nameZh": "女武神延长",
+            "desc": "女武神时长提升"
+          }
+        ],
+        "recommended": "保飞机动选GA冷却，体系增伤选增伤强化"
+      },
+      "position": {
+        "zh": "贴一名核心输出/坦克续航或增伤,借GA超跳在掩体间穿梭躲伤害",
+        "depth": "back"
+      },
+      "counters": {
+        "strongAgainst": [
+          "持续战需续航的体系"
+        ],
+        "weakAgainst": [
+          "widowmaker",
+          "ashe",
+          "sombra",
+          "tracer",
+          "dva",
+          "所有切辅英雄"
+        ],
+        "synergy": [
+          "pharah",
+          "ashe",
+          "soldier76",
+          "echo"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "有竖向空间便于GA超跳躲狙的图"
+        ],
+        "weak": [
+          "开阔被狙图(易被秒)"
+        ],
+        "note": "pharmercy/pocket体系核心,治疗量偏低靠续航,怕被针对切"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "团队工具人,强度看体系搭配,几乎不被ban"
+      },
+      "rankPlay": {
+        "bronzeGold": "黄光续航主力,蓝光给输出,复活别裸站读条,GA别乱飞送死",
+        "platDiamond": "蓝光给carry放大输出,GA走位躲狙,复活找安全时机",
+        "masterGM": "极限GA超跳走位不可秒,蓝光最大化carry,女武神/复活时机翻盘"
+      },
+      "tier": "B",
+      "tags": [
+        "单体续航",
+        "增伤",
+        "复活",
+        "高机动"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/3bfb8bd8ec827e53d870f1238ab73d8aa1f5dbfbcfaaf7f96ffcd35b5c6102ab.png",
+      "officialSubrole": "medic"
+    },
+    {
+      "id": "zenyatta",
+      "name": "Zenyatta",
+      "nameZh": "禅雅塔",
+      "role": "support",
+      "subrole": "poke-debuff",
+      "difficulty": 3,
+      "health": {
+        "hp": 75,
+        "armor": 0,
+        "shield": 175
+      },
+      "params": {
+        "primary": "和谐/乱七谐球(增益/虚弱)",
+        "range": "mid",
+        "mobility": 1,
+        "dps": "球+蓄力高",
+        "note": "增伤debuff+高输出但极脆无位移,后排怕被切"
+      },
+      "abilities": {
+        "passive": "辅助职业被动 + 空中跳跃(Snap Kick)",
+        "weapon": {
+          "name": "Orbs of Destruction",
+          "nameZh": "毁灭之球",
+          "desc": "单发/蓄力齐射高伤"
+        },
+        "actives": [
+          {
+            "name": "Orb of Harmony",
+            "nameZh": "和谐之球",
+            "cooldown": 0,
+            "desc": "给队友持续治疗"
+          },
+          {
+            "name": "Orb of Discord",
+            "nameZh": "乱七之球",
+            "cooldown": 0,
+            "desc": "标记敌人使其受到额外伤害"
+          }
+        ],
+        "ultimate": {
+          "name": "Transcendence",
+          "nameZh": "超凡入圣",
+          "cost": 0,
+          "desc": "范围大额治疗+自身免伤,化解团灭"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "球强化",
+            "desc": "毁灭之球伤害提升"
+          },
+          {
+            "nameZh": "和谐增强",
+            "desc": "和谐之球治疗提升"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "乱七强化",
+            "desc": "乱七之球增伤效果提升"
+          },
+          {
+            "nameZh": "入圣延长",
+            "desc": "超凡入圣时长/范围提升"
+          }
+        ],
+        "recommended": "团队爆发选乱七强化，保团选入圣延长"
+      },
+      "position": {
+        "zh": "中后排靠队友保护,乱七标记目标放大集火,球poke输出,极脆需站位谨慎",
+        "depth": "back"
+      },
+      "counters": {
+        "strongAgainst": [
+          "大体型坦克(乱七放大)",
+          "持续poke战"
+        ],
+        "weakAgainst": [
+          "genji",
+          "tracer",
+          "winston",
+          "doomfist",
+          "sombra",
+          "所有dive"
+        ],
+        "synergy": [
+          "reinhardt",
+          "ashe",
+          "soldier76",
+          "高输出队友"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "有掩体/队友保护的poke图"
+        ],
+        "weak": [
+          "多侧路易被dive图"
+        ],
+        "note": "乱七增伤体系核心,75/175极脆,被dive硬克需队友保"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "增伤价值高但极脆易切,强弱看保护,少被ban"
+      },
+      "rankPlay": {
+        "bronzeGold": "乱七挂坦克帮队友集火,和谐给被打的人,站队友身后别裸奔",
+        "platDiamond": "乱七切换目标放大集火,球补输出,入圣吃对面大招",
+        "masterGM": "乱七管理最大化团队伤害,球贡献高输出,入圣时机化解团灭"
+      },
+      "tier": "A",
+      "tags": [
+        "增伤debuff",
+        "高输出",
+        "极脆",
+        "保团大招"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/7d1546b1541a8afc39353f9337a408d6275a141b0432b7e560ef61579996b0fc.png",
+      "officialSubrole": "tactician"
+    },
+    {
+      "id": "brigitte",
+      "name": "Brigitte",
+      "nameZh": "布丽吉塔",
+      "role": "support",
+      "subrole": "off-heal-bruiser",
+      "difficulty": 2,
+      "health": {
+        "hp": 200,
+        "armor": 50,
+        "shield": 0
+      },
+      "params": {
+        "primary": "连枷(近战)+投盾",
+        "range": "melee",
+        "mobility": 3,
+        "dps": "近战+群疗",
+        "note": "近身反突进+群体治疗+护盾,贴队伍的肉盾辅助"
+      },
+      "abilities": {
+        "passive": "辅助职业被动 + 治疗时给护甲(Inspire)",
+        "weapon": {
+          "name": "Rocket Flail",
+          "nameZh": "火箭连枷",
+          "desc": "近战横扫,命中触发鼓舞群疗"
+        },
+        "actives": [
+          {
+            "name": "Whip Shot",
+            "nameZh": "鞭击",
+            "cooldown": 5,
+            "desc": "远程击退+伤害"
+          },
+          {
+            "name": "Barrier Shield + Shield Bash",
+            "nameZh": "屏障护盾+盾击",
+            "cooldown": 5,
+            "desc": "举盾+盾击击退/打断"
+          },
+          {
+            "name": "Repair Pack",
+            "nameZh": "维修包",
+            "cooldown": 6,
+            "desc": "投掷治疗包(3层)"
+          }
+        ],
+        "ultimate": {
+          "name": "Rally",
+          "nameZh": "集结号",
+          "cost": 0,
+          "desc": "给全队大量护甲+自身加速"
+        }
+      },
+      "position": {
+        "zh": "贴前排近身,连枷打突进触发群疗,盾击打断,维修包补关键",
+        "depth": "front"
+      },
+      "counters": {
+        "strongAgainst": [
+          "genji",
+          "tracer",
+          "winston",
+          "doomfist",
+          "reaper",
+          "所有近身flanker"
+        ],
+        "weakAgainst": [
+          "pharah",
+          "echo",
+          "widowmaker",
+          "ashe",
+          "ana(反治疗)",
+          "远程"
+        ],
+        "synergy": [
+          "reinhardt",
+          "mei",
+          "junker queen",
+          "zarya"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "近身缠斗brawl图:国王大道、好莱坞、漓江塔"
+        ],
+        "weak": [
+          "开阔远程poke图(近战够不到)"
+        ],
+        "note": "反dive护卫,被远程消耗与反治疗克"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "反突进工具人,强度非爆点,少被ban"
+      },
+      "rankPlay": {
+        "bronzeGold": "贴队友连枷触发群疗,盾击打断切入,鞭击补伤",
+        "platDiamond": "护卫被切队友,盾击/鞭击反dive,维修包给关键,集结开/守团",
+        "masterGM": "极限连枷续航+盾击打断combo,集结时机抗爆发翻团战"
+      },
+      "tier": "B",
+      "tags": [
+        "近身护卫",
+        "反突进",
+        "群疗"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/795fba91376d87d441a7f359ae12a3175dfa95825ccc4414cc6b95b129fc4cb0.png",
+      "officialSubrole": "survivor"
+    },
+    {
+      "id": "illari",
+      "name": "Illari",
+      "nameZh": "伊拉锐",
+      "role": "support",
+      "subrole": "poke-heal",
+      "difficulty": 3,
+      "health": {
+        "hp": 200,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "太阳能步枪(蓄能poke)+治疗柱",
+        "range": "long",
+        "mobility": 3,
+        "dps": "远程poke高",
+        "note": "治疗塔自动奶+高输出步枪,半奶半dps的远程辅助"
+      },
+      "abilities": {
+        "passive": "辅助职业被动",
+        "weapon": {
+          "name": "Solar Rifle",
+          "nameZh": "太阳能步枪",
+          "desc": "蓄能远程射击/近距持续治疗"
+        },
+        "actives": [
+          {
+            "name": "Healing Pylon",
+            "nameZh": "治疗光柱",
+            "cooldown": 0,
+            "desc": "部署自动治疗队友的光柱(可被摧毁)"
+          },
+          {
+            "name": "Outburst",
+            "nameZh": "迸发",
+            "cooldown": 9,
+            "desc": "击退敌人/位移自己,走位逃生"
+          }
+        ],
+        "ultimate": {
+          "name": "Captive Sun",
+          "nameZh": "禁锢之日",
+          "cost": 0,
+          "desc": "范围爆发伤害+减速,触发后引爆"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "光柱强化",
+            "desc": "治疗光柱血量/治疗提升"
+          },
+          {
+            "nameZh": "迸发冷却",
+            "desc": "迸发CD降低"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "步枪增伤",
+            "desc": "蓄能射击伤害提升"
+          },
+          {
+            "nameZh": "禁锢强化",
+            "desc": "禁锢之日范围/伤害提升"
+          }
+        ],
+        "recommended": "对枪选步枪增伤，团战选禁锢强化"
+      },
+      "position": {
+        "zh": "中后排,治疗柱托底自动奶,步枪远程poke贡献伤害,迸发拉扯走位",
+        "depth": "back"
+      },
+      "counters": {
+        "strongAgainst": [
+          "pharah",
+          "echo",
+          "reinhardt",
+          "脆皮后排"
+        ],
+        "weakAgainst": [
+          "genji",
+          "tracer",
+          "winston",
+          "sombra",
+          "dive"
+        ],
+        "synergy": [
+          "ashe",
+          "sojourn",
+          "sigma",
+          "ana"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "有高台/长视野poke图:花村、阿努比斯、numbani"
+        ],
+        "weak": [
+          "近身缠斗被dive抓"
+        ],
+        "note": "半dps辅助poke强,光柱省心,被dive克需保位置"
+      },
+      "ban": {
+        "priority": "medium",
+        "reason": "高分段半dps输出+省心治疗,胜率outlier,poke体系ban价值中上"
+      },
+      "rankPlay": {
+        "bronzeGold": "柱子摆好托底,步枪poke别只奶,迸发保命",
+        "platDiamond": "柱子放安全角,步枪集火软目标,禁锢配队友开团",
+        "masterGM": "光柱位置管理,步枪贡献高伤,禁锢之日时机团战引爆"
+      },
+      "tier": "A",
+      "tags": [
+        "半dps奶",
+        "远程poke",
+        "省心治疗"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/ce42d1455e03e79f321345fea84b27a8918b5db8bd7ab9b2ca9e569606ede9e4.png",
+      "officialSubrole": "survivor"
+    },
+    {
+      "id": "juno",
+      "name": "Juno",
+      "nameZh": "朱诺",
+      "role": "support",
+      "subrole": "flex-heal-speed",
+      "difficulty": 3,
+      "health": {
+        "hp": 200,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "锁定双枪(命中标记+治疗)",
+        "range": "mid",
+        "mobility": 5,
+        "dps": "锁定中等",
+        "note": "高机动飞行辅助,加速圈+导弹爆发治疗,游走能力强"
+      },
+      "abilities": {
+        "passive": "辅助职业被动 + 滞空悬浮/高机动",
+        "weapon": {
+          "name": "Mediblaster",
+          "nameZh": "医疗枪",
+          "desc": "锁定友伤双用射线"
+        },
+        "actives": [
+          {
+            "name": "Pulsar Torpedoes",
+            "nameZh": "脉冲鱼雷",
+            "cooldown": 8,
+            "desc": "锁定多目标:治疗队友/伤害敌人"
+          },
+          {
+            "name": "Glide Boost",
+            "nameZh": "滑翔加速",
+            "cooldown": 7,
+            "desc": "高速飞行机动/带队友加速"
+          },
+          {
+            "name": "Hyper Ring",
+            "nameZh": "极速光环",
+            "cooldown": 13,
+            "desc": "放置加速光环,穿过者大幅加速"
+          }
+        ],
+        "ultimate": {
+          "name": "Orbital Ray",
+          "nameZh": "轨道射线",
+          "cost": 0,
+          "desc": "范围治疗+增伤光带,推进团队"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "鱼雷强化",
+            "desc": "脉冲鱼雷数量/效果提升"
+          },
+          {
+            "nameZh": "光环延长",
+            "desc": "极速光环时长提升"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "轨道延长",
+            "desc": "轨道射线时长/范围提升"
+          },
+          {
+            "nameZh": "鱼雷爆发",
+            "desc": "鱼雷治疗/伤害爆发提升"
+          }
+        ],
+        "recommended": "团队推进选轨道延长，爆发治疗选鱼雷爆发"
+      },
+      "position": {
+        "zh": "中排灵活游走,加速圈带节奏,鱼雷爆发奶,飞行机动躲伤害",
+        "depth": "mid"
+      },
+      "counters": {
+        "strongAgainst": [
+          "dive需续航的体系",
+          "持续战"
+        ],
+        "weakAgainst": [
+          "widowmaker",
+          "ashe",
+          "sombra",
+          "hitscan(空中靶)"
+        ],
+        "synergy": [
+          "genji",
+          "tracer",
+          "winston",
+          "dva",
+          "突进体系"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "多数图通用,竖向空间图机动价值高"
+        ],
+        "weak": [
+          "开阔被狙图(飞行被hitscan抓)"
+        ],
+        "note": "万金油机动辅助,加速圈契合dive,被hitscan针对"
+      },
+      "ban": {
+        "priority": "medium",
+        "reason": "机动+加速+爆发奶全能,dive体系契合度高,版本强势时ban价值中上"
+      },
+      "rankPlay": {
+        "bronzeGold": "鱼雷锁队友奶,加速圈给推进,别飞太高被秒",
+        "platDiamond": "加速圈带节奏开团,鱼雷爆发救/打,飞行躲技能",
+        "masterGM": "加速圈时机配dive强开,鱼雷双用,轨道射线推团战,极限走位躲hitscan"
+      },
+      "tier": "A",
+      "tags": [
+        "机动奶",
+        "加速",
+        "万金油"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/c0167d251e57b0aa2b1e16c37d87f0e7c77263db9dd0503d77b5f2589bf3e4a0.png",
+      "officialSubrole": "survivor"
+    },
+    {
+      "id": "venture",
+      "name": "Venture",
+      "nameZh": "探奇",
+      "role": "damage",
+      "subrole": "dive-burst-dps",
+      "difficulty": 3,
+      "health": {
+        "hp": 250,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "钻机枪(蓄能爆发)",
+        "range": "mid",
+        "mobility": 4,
+        "dps": "近中爆发高",
+        "note": "钻地切入/逃生,贴脸combo秒脆,机动灵活的近战型dps"
+      },
+      "abilities": {
+        "passive": "伤害职业被动",
+        "weapon": {
+          "name": "Smart Excavator",
+          "nameZh": "智能挖掘机",
+          "desc": "蓄能弹近距高伤"
+        },
+        "actives": [
+          {
+            "name": "Drill Dash",
+            "nameZh": "钻地冲刺",
+            "cooldown": 8,
+            "desc": "向前冲刺伤害+位移"
+          },
+          {
+            "name": "Burrow",
+            "nameZh": "钻地",
+            "cooldown": 10,
+            "desc": "钻入地下无敌移动,冒出范围击飞+伤害"
+          },
+          {
+            "name": "Clobber",
+            "nameZh": "猛击",
+            "cooldown": 6,
+            "desc": "近战上挑击退"
+          }
+        ],
+        "ultimate": {
+          "name": "Tectonic Shock",
+          "nameZh": "地壳震击",
+          "cost": 0,
+          "desc": "范围地震伤害+击倒"
+        }
+      },
+      "position": {
+        "zh": "近中距离游走,钻地切入打combo或脱身,贴脸爆发秒脆皮",
+        "depth": "flank"
+      },
+      "counters": {
+        "strongAgainst": [
+          "ana",
+          "zenyatta",
+          "widowmaker",
+          "reinhardt",
+          "脆皮后排"
+        ],
+        "weakAgainst": [
+          "cassidy",
+          "mei",
+          "sombra",
+          "brigitte",
+          "dva"
+        ],
+        "synergy": [
+          "lucio",
+          "kiriko",
+          "winston"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "多路线/缠斗图便于钻地切入:好莱坞、漓江塔、王者大道"
+        ],
+        "weak": [
+          "开阔长狙图被风筝"
+        ],
+        "note": "钻地机动切后排强,被点控与近身辅助克"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "机动切入强但上手有门槛,强度均衡,少被ban"
+      },
+      "rankPlay": {
+        "bronzeGold": "钻地切软目标打combo,血少钻走别恋战,猛击近身自保",
+        "platDiamond": "钻地找角度切后排,蓄能combo秒脆,地壳配队友开团",
+        "masterGM": "极限钻地走位拉扯,combo秒杀+无敌躲技能,地壳时机团战"
+      },
+      "tier": "B",
+      "tags": [
+        "突进dps",
+        "钻地机动",
+        "近身爆发"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/dcab9123f5f55df22e54d4e797de43c71b917e0149dd059a7fd6136f48464cd0.png",
+      "officialSubrole": "flanker"
+    },
+    {
+      "id": "lifeweaver",
+      "name": "Lifeweaver",
+      "nameZh": "生命之梭",
+      "role": "support",
+      "subrole": "utility-heal",
+      "difficulty": 3,
+      "health": {
+        "hp": 200,
+        "armor": 0,
+        "shield": 0
+      },
+      "params": {
+        "primary": "生命之握(蓄力治疗)/荆棘volley(伤害)",
+        "range": "mid",
+        "mobility": 3,
+        "dps": "荆棘中等",
+        "healingPerSec": "大额单体",
+        "note": "拉队友脱险+平台+花瓣救命,工具性极强的辅助"
+      },
+      "abilities": {
+        "passive": "辅助职业被动",
+        "weapon": {
+          "name": "Healing Blossom / Thorn Volley",
+          "nameZh": "治疗之花/荆棘连射",
+          "desc": "蓄力大额治疗 / 切换荆棘射击伤害"
+        },
+        "actives": [
+          {
+            "name": "Life Grip",
+            "nameZh": "生命之握",
+            "cooldown": 16,
+            "desc": "拉拽一名队友到自己身边脱险(强制位移)"
+          },
+          {
+            "name": "Petal Platform",
+            "nameZh": "莲花平台",
+            "cooldown": 13,
+            "desc": "踩上升起的平台占高台/躲伤害"
+          },
+          {
+            "name": "Rejuvenating Dash",
+            "nameZh": "焕活闪步",
+            "cooldown": 5,
+            "desc": "短距冲刺+少量自愈"
+          }
+        ],
+        "ultimate": {
+          "name": "Tree of Life",
+          "nameZh": "生命之树",
+          "cost": 0,
+          "desc": "种下大树范围持续治疗+初始护盾"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "平台冷却",
+            "desc": "莲花平台CD降低"
+          },
+          {
+            "nameZh": "荆棘强化",
+            "desc": "荆棘连射伤害提升"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "之握强化",
+            "desc": "生命之握附带护盾/效果提升"
+          },
+          {
+            "nameZh": "生命树强化",
+            "desc": "生命之树治疗/血量提升"
+          }
+        ],
+        "recommended": "保人选之握强化，团战选生命树强化"
+      },
+      "position": {
+        "zh": "中后排,蓄力大奶续航,关键时之握拉回被切队友,平台救场/占点",
+        "depth": "back"
+      },
+      "counters": {
+        "strongAgainst": [
+          "dive切人体系(之握救人)",
+          "持续战"
+        ],
+        "weakAgainst": [
+          "widowmaker",
+          "ashe",
+          "sombra",
+          "ana(反治疗)",
+          "dva"
+        ],
+        "synergy": [
+          "reinhardt",
+          "winston",
+          "mei",
+          "需被保护的carry"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "有竖向空间/平台价值高的图"
+        ],
+        "weak": [
+          "开阔被狙图"
+        ],
+        "note": "工具性极强(救人/占高),输出偏弱靠队友,之握用好是版本答案之握用坏坑队友"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "工具人辅助,强度非爆点,之握双刃剑,少被ban"
+      },
+      "rankPlay": {
+        "bronzeGold": "蓄力大奶别松手,之握拉被钩/被切的队友(别乱拉打断队友输出),平台救命",
+        "platDiamond": "之握化解对面抓单/秒人,平台占高台或躲大招,生命树吃团战爆发",
+        "masterGM": "之握时机精准救核心,平台战术占位,荆棘补输出,生命树反团灭"
+      },
+      "tier": "B",
+      "tags": [
+        "工具奶",
+        "救人位移",
+        "莲花平台"
+      ],
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/3376515cebed0904012e67e956f6d1b9c12e03da642845eeaf787b7e4c7b339d.png",
+      "officialSubrole": "medic"
+    },
+    {
+      "id": "emre",
+      "name": "Emre",
+      "nameZh": "埃姆雷",
+      "role": "damage",
+      "subrole": "specialist",
+      "officialSubrole": "specialist",
+      "health": {
+        "hp": 250,
+        "armor": 0,
+        "shield": 0
+      },
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/c51e2f698138861c0e3b6cfab3c3ca9d67fd709be175e7c397aa6f2649712a30.png",
+      "abilities": {
+        "passive": "伤害职业被动 + Altered Vitals:自愈更早触发,激活时立即回30血",
+        "weapon": {
+          "name": "Synthetic Burst Rifle",
+          "nameZh": "合成爆发步枪",
+          "desc": "三连发,长按开镜收紧弹道+增加衰减距离"
+        },
+        "actives": [
+          {
+            "name": "Cyber Frag",
+            "nameZh": "赛博碎片雷",
+            "cooldown": 8,
+            "desc": "投掷弹跳后引爆的手雷"
+          }
+        ],
+        "ultimate": {
+          "name": "Override Protocol",
+          "nameZh": "超载协议",
+          "cost": 0,
+          "desc": "启动超载,化身活体武器(强化形态)"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "name": "Suppressive Security",
+            "nameZh": "Suppressive Security",
+            "desc": "Override Protocol’s light rounds slow enemies by 30% for 1 second."
+          },
+          {
+            "name": "Enhanced Agility",
+            "nameZh": "Enhanced Agility",
+            "desc": "Siphon Blaster’s movement speed bonus is increased by 20% while not firing."
+          }
+        ],
+        "major": [
+          {
+            "name": "Heat Sink",
+            "nameZh": "Heat Sink",
+            "desc": "Direct hits with Siphon Blaster refunds 60% heat and increase its duration by 0.1 seconds."
+          },
+          {
+            "name": "Cyber Adhesion",
+            "nameZh": "Cyber Adhesion",
+            "desc": "Cyber Frag now sticks on contact, dealing 40 extra damage to stuck enemies."
+          }
+        ]
+      },
+      "params": {
+        "primary": "三连发步枪(可开镜)",
+        "range": "mid",
+        "mobility": 3,
+        "dps": "中距稳定",
+        "note": "2026新dps,超载协议强化形态+自愈被动"
+      },
+      "position": {
+        "zh": "中排稳定输出,开镜收枪线消耗,超载协议开后切入收割",
+        "depth": "mid"
+      },
+      "counters": {
+        "strongAgainst": [
+          "pharah",
+          "echo",
+          "winston"
+        ],
+        "weakAgainst": [
+          "genji",
+          "tracer",
+          "widowmaker",
+          "sombra"
+        ],
+        "synergy": [
+          "ana",
+          "kiriko",
+          "lucio"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "中距离对枪图"
+        ],
+        "weak": [
+          "极近身或超长狙图"
+        ],
+        "note": "2026新英雄,数值随补丁变,需核对官方"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "新英雄强度未稳定,按当前补丁评估"
+      },
+      "rankPlay": {
+        "bronzeGold": "三连发点射别浪,碎片雷封走位,超载找时机切",
+        "platDiamond": "开镜消耗软目标,超载协议强化期切入,碎片雷配队友",
+        "masterGM": "弹道与超载时机管理,combo秒脆+走位躲突进"
+      },
+      "tier": "B",
+      "tags": [
+        "新英雄",
+        "三连发",
+        "强化形态"
+      ]
+    },
+    {
+      "id": "freja",
+      "name": "Freja",
+      "nameZh": "弗蕾娅",
+      "role": "damage",
+      "subrole": "recon",
+      "officialSubrole": "recon",
+      "health": {
+        "hp": 225,
+        "armor": 0,
+        "shield": 0
+      },
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/811963897c352d9f178bec882d94bd0281074feee7c429c5145b6b8ea8ebe862.png",
+      "abilities": {
+        "passive": "伤害职业被动(recon侦察:命中敌人短暂为队伍标记其位置)",
+        "weapon": {
+          "name": "Revdraw Crossbow",
+          "nameZh": "旋拉弩",
+          "desc": "自动连射弩箭(主武器)"
+        },
+        "actives": [
+          {
+            "name": "Bola Shot",
+            "nameZh": "缚索弹",
+            "cooldown": 8,
+            "desc": "发射爆炸缚索,命中缠住敌人并拉拽附近敌人"
+          },
+          {
+            "name": "Quick Dash",
+            "nameZh": "疾冲",
+            "cooldown": 6,
+            "desc": "朝移动方向翻越闪避并刷新Take Aim"
+          },
+          {
+            "name": "Take Aim",
+            "nameZh": "蓄力瞄准",
+            "cooldown": 0,
+            "desc": "减速身形蓄力射出高速爆炸弩矢"
+          },
+          {
+            "name": "Updraft",
+            "nameZh": "上升气流",
+            "cooldown": 6,
+            "desc": "一股气流将自己向上弹射"
+          }
+        ],
+        "ultimate": {
+          "name": "Bola Shot (Ult: Cluster Bola)",
+          "nameZh": "缚索终结(大招待核对)",
+          "cost": 0,
+          "desc": "满能量爆发缚索连锁(官方大招数据待核对)"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "name": "Relentless Barrage",
+            "nameZh": "Relentless Barrage",
+            "desc": "Direct hits with Take Aim refund 8 automatic bolt ammo."
+          },
+          {
+            "name": "Momentum Boost",
+            "nameZh": "Momentum Boost",
+            "desc": "Quick Dash distance is increased by 20%."
+          }
+        ],
+        "major": [
+          {
+            "name": "Aerial Recovery",
+            "nameZh": "Aerial Recovery",
+            "desc": "After using Updraft, heal for 30 health per second until Freja touches the ground."
+          },
+          {
+            "name": "Rising Winds",
+            "nameZh": "Rising Winds",
+            "desc": "Updraft gains an additional charge."
+          }
+        ]
+      },
+      "params": {
+        "primary": "弩(连射/蓄力爆炸矢)",
+        "range": "mid",
+        "mobility": 4,
+        "dps": "爆发型",
+        "note": "2026新dps,缚索控制+上升气流空中机动"
+      },
+      "position": {
+        "zh": "中近距离游走,缚索控人接蓄力爆炸,气流卡角度/脱身",
+        "depth": "flank"
+      },
+      "counters": {
+        "strongAgainst": [
+          "reinhardt",
+          "pharah",
+          "ana",
+          "脆皮后排"
+        ],
+        "weakAgainst": [
+          "widowmaker",
+          "cassidy",
+          "dva",
+          "sombra"
+        ],
+        "synergy": [
+          "lucio",
+          "kiriko",
+          "zarya"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "有竖向空间便于气流的图"
+        ],
+        "weak": [
+          "开阔长狙图"
+        ],
+        "note": "2026新英雄,大招数值待核对"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "新英雄强度未稳定,按当前补丁评估"
+      },
+      "rankPlay": {
+        "bronzeGold": "缚索命中再蓄力爆炸,气流躲伤害,别裸冲",
+        "platDiamond": "缚索控关键目标接combo,气流卡角度poke",
+        "masterGM": "缚索连锁拉拽开团,蓄力矢爆头,极限气流走位"
+      },
+      "tier": "B",
+      "tags": [
+        "新英雄",
+        "控制",
+        "空中机动"
+      ]
+    },
+    {
+      "id": "jetpack-cat",
+      "name": "Jetpack Cat",
+      "nameZh": "喷气背包猫",
+      "role": "support",
+      "subrole": "tactician",
+      "officialSubrole": "tactician",
+      "health": {
+        "hp": 225,
+        "armor": 0,
+        "shield": 0
+      },
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/03a184cd0de27091e0099ac22635ad9615a8f6997881a5c25cc5f2444764f729.png",
+      "abilities": {
+        "passive": "辅助职业被动 + 飞行机动",
+        "weapon": {
+          "name": "Biotic Pawjectiles",
+          "nameZh": "生化爪弹",
+          "desc": "中距扩散弹:治疗队友/伤害敌人"
+        },
+        "actives": [
+          {
+            "name": "Frenetic Flight",
+            "nameZh": "狂飙飞行",
+            "cooldown": 7,
+            "desc": "朝移动方向加速(载人时燃料回复变慢)"
+          },
+          {
+            "name": "Lifeline",
+            "nameZh": "生命线",
+            "cooldown": 0,
+            "desc": "切换载人模式拖带一名队友,提升其移速并治疗"
+          },
+          {
+            "name": "Purr",
+            "nameZh": "呼噜",
+            "cooldown": 0,
+            "desc": "逐渐加快的范围治疗脉冲,激活时击退附近敌人"
+          }
+        ],
+        "ultimate": {
+          "name": "Catnapper",
+          "nameZh": "擒猫",
+          "cost": 0,
+          "desc": "俯冲到地面击倒敌人并将最近一名拴向自己"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "name": "Ulterior Motive",
+            "nameZh": "Ulterior Motive",
+            "desc": "15% of Biotic Pawjectiles healing recovers fuel."
+          },
+          {
+            "name": "Transport Shielding",
+            "nameZh": "Transport Shielding",
+            "desc": "Gain up to 50 extra shield health while carrying another hero."
+          }
+        ],
+        "major": [
+          {
+            "name": "Headbutt",
+            "nameZh": "Headbutt",
+            "desc": "Frenetic Flight can knockback an enemy when flying fast enough, dealing 50 damage on impact."
+          },
+          {
+            "name": "Claws Out",
+            "nameZh": "Claws Out",
+            "desc": "Quick melee becomes empowered every 6 seconds, wounding enemies for 40 damage and slowing them by 30% for 1 second."
+          }
+        ]
+      },
+      "params": {
+        "primary": "扩散爪弹(友伤双用)",
+        "range": "mid",
+        "mobility": 5,
+        "dps": "中低",
+        "healingPerSec": "范围脉冲",
+        "note": "2026新辅助,高机动飞行+拖带队友+范围治疗"
+      },
+      "position": {
+        "zh": "中排灵活游走,呼噜范围奶,生命线拖核心脱险,飞行躲伤害",
+        "depth": "mid"
+      },
+      "counters": {
+        "strongAgainst": [
+          "dive需续航体系",
+          "持续战"
+        ],
+        "weakAgainst": [
+          "widowmaker",
+          "ashe",
+          "sombra",
+          "hitscan"
+        ],
+        "synergy": [
+          "genji",
+          "tracer",
+          "winston",
+          "dva"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "竖向空间大便于飞行的图"
+        ],
+        "weak": [
+          "开阔被狙图(飞行靶)"
+        ],
+        "note": "2026新英雄,数值待核对"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "新英雄强度未稳定,按当前补丁评估"
+      },
+      "rankPlay": {
+        "bronzeGold": "呼噜贴队伍奶,生命线救被切的人,别飞太高被秒",
+        "platDiamond": "飞行游走带节奏,生命线拖核心脱险,擒猫拉关键目标",
+        "masterGM": "飞行走位躲hitscan,生命线/擒猫时机救人开团"
+      },
+      "tier": "B",
+      "tags": [
+        "新英雄",
+        "机动奶",
+        "飞行",
+        "拖带"
+      ]
+    },
+    {
+      "id": "mizuki",
+      "name": "Mizuki",
+      "nameZh": "瑞月",
+      "role": "support",
+      "subrole": "survivor",
+      "officialSubrole": "survivor",
+      "health": {
+        "hp": 250,
+        "armor": 0,
+        "shield": 0
+      },
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/a9733c2367e0cbd70b9316fd2e1e17028653ec56d0051ea6ff098531dc4f99fc.png",
+      "abilities": {
+        "passive": "辅助职业被动 + Remedy Aura 疗愈光环",
+        "weapon": {
+          "name": "Spirit Glaive",
+          "nameZh": "灵刃",
+          "desc": "弹跳投射物造成伤害"
+        },
+        "actives": [
+          {
+            "name": "Healing Kasa",
+            "nameZh": "治疗笠",
+            "cooldown": 0,
+            "desc": "投掷斗笠在队友间弹跳治疗"
+          },
+          {
+            "name": "Binding Chain",
+            "nameZh": "束缚锁链",
+            "cooldown": 0,
+            "desc": "向敌人掷出锁链,阻碍其移动"
+          },
+          {
+            "name": "Katashiro Return",
+            "nameZh": "形代回归",
+            "cooldown": 0,
+            "desc": "向前跃出加速,再次激活传送回原位"
+          },
+          {
+            "name": "Remedy Aura",
+            "nameZh": "疗愈光环",
+            "cooldown": 0,
+            "desc": "治疗附近队友,造成伤害/治疗时增强(被动式)"
+          }
+        ],
+        "ultimate": {
+          "name": "Kekkai Sanctuary",
+          "nameZh": "结界圣域",
+          "cost": 0,
+          "desc": "创建圣域,治疗内部队友并吸收穿过的敌方弹道"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "name": "Wellspring",
+            "nameZh": "Wellspring",
+            "desc": "Remedy Aura generation is increased by 25%."
+          },
+          {
+            "name": "Exposed Soul",
+            "nameZh": "Exposed Soul",
+            "desc": "Hitting an enemy with Binding Chain increases your damage dealt to them by 30% for 2 seconds."
+          }
+        ],
+        "major": [
+          {
+            "name": "Resonant Return",
+            "nameZh": "Resonant Return",
+            "desc": "Healing Kasa bounces one additional time. Each bounce increases its healing by 10."
+          },
+          {
+            "name": "Quickstep",
+            "nameZh": "Quickstep",
+            "desc": "While Katashiro Return is active, allies within Remedy Aura gain 25% increased movement speed."
+          }
+        ]
+      },
+      "params": {
+        "primary": "弹跳灵刃(伤害)",
+        "range": "mid",
+        "mobility": 4,
+        "dps": "灵刃中等",
+        "healingPerSec": "光环+斗笠",
+        "note": "2026新辅助,光环奶+束缚控制+结界吸弹+传送"
+      },
+      "position": {
+        "zh": "中排,光环托底奶,束缚控突进,关键结界吸弹保团,形代进退",
+        "depth": "mid"
+      },
+      "counters": {
+        "strongAgainst": [
+          "genji",
+          "tracer",
+          "dive(束缚/结界)"
+        ],
+        "weakAgainst": [
+          "widowmaker",
+          "ashe",
+          "ana(反治疗)",
+          "sombra"
+        ],
+        "synergy": [
+          "reinhardt",
+          "winston",
+          "mei"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "近中距离缠斗图"
+        ],
+        "weak": [
+          "开阔被狙图"
+        ],
+        "note": "2026新英雄,数值待核对"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "新英雄强度未稳定,按当前补丁评估"
+      },
+      "rankPlay": {
+        "bronzeGold": "光环贴队伍,斗笠群奶,束缚粘突进,形代逃生",
+        "platDiamond": "束缚控关键目标,结界吸对面爆发/弹道,形代救人",
+        "masterGM": "结界时机化解combo,束缚链接集火,光环续航管理"
+      },
+      "tier": "B",
+      "tags": [
+        "新英雄",
+        "光环奶",
+        "控制",
+        "结界"
+      ]
+    },
+    {
+      "id": "shion",
+      "name": "Shion",
+      "nameZh": "紫苑",
+      "role": "damage",
+      "subrole": "flanker",
+      "officialSubrole": "flanker",
+      "health": {
+        "hp": 250,
+        "armor": 0,
+        "shield": 0
+      },
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/070481cf871590a2b45a51d1335f9fe3d65eb4e4d361ecdd998b34fae2ed65d5.png",
+      "abilities": {
+        "passive": "伤害职业被动(flanker)",
+        "weapon": {
+          "name": "Kira Pistols",
+          "nameZh": "绮罗双枪",
+          "desc": "快速连射的灵能手枪"
+        },
+        "actives": [
+          {
+            "name": "Execution",
+            "nameZh": "处决",
+            "cooldown": 0,
+            "desc": "射出X形弹幕,长按收紧扩散"
+          },
+          {
+            "name": "Joyride",
+            "nameZh": "兜风",
+            "cooldown": 0,
+            "desc": "轰鸣引擎,再次激活下车并将摩托向前射出"
+          },
+          {
+            "name": "Evade",
+            "nameZh": "闪避",
+            "cooldown": 0,
+            "desc": "冲刺并短暂获得额外护盾"
+          }
+        ],
+        "ultimate": {
+          "name": "Satsuriku Spree",
+          "nameZh": "杀戮狂潮",
+          "cost": 0,
+          "desc": "向前三段冲刺,枪林弹雨横扫"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "name": "Rapid Reload",
+            "nameZh": "Rapid Reload",
+            "desc": "Evade reloads 9 ammo."
+          },
+          {
+            "name": "X Machina",
+            "nameZh": "X Machina",
+            "desc": "Execution does 20% more damage to enemies below half health."
+          }
+        ],
+        "major": [
+          {
+            "name": "Refuel",
+            "nameZh": "Refuel",
+            "desc": "Joyride instantly restores 50 health and regenerates 20 health per second while active."
+          },
+          {
+            "name": "Faces of Death",
+            "nameZh": "Faces of Death",
+            "desc": "Gain all other Damage subrole passives (Recon, Specialist, and Sharpshooter)."
+          }
+        ]
+      },
+      "params": {
+        "primary": "双枪(近距高射速)+X弹幕",
+        "range": "short",
+        "mobility": 5,
+        "dps": "切入爆发高",
+        "note": "2026新dps,摩托突进+闪避护盾的高机动flanker"
+      },
+      "position": {
+        "zh": "侧翼游走切后排,处决爆发,闪避吃伤害,兜风进退",
+        "depth": "flank"
+      },
+      "counters": {
+        "strongAgainst": [
+          "ana",
+          "zenyatta",
+          "widowmaker",
+          "脆皮后排"
+        ],
+        "weakAgainst": [
+          "cassidy",
+          "mei",
+          "brigitte",
+          "sombra",
+          "dva"
+        ],
+        "synergy": [
+          "lucio",
+          "kiriko",
+          "winston"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "多路线缠斗图便于切入"
+        ],
+        "weak": [
+          "开阔长狙图"
+        ],
+        "note": "2026新英雄,数值待核对"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "新英雄强度未稳定,近身易被风筝,按补丁评估"
+      },
+      "rankPlay": {
+        "bronzeGold": "闪避吃伤害再切,处决补残血,兜风别莽",
+        "platDiamond": "侧翼切软辅,处决爆发,闪避护盾换血,狂潮收割",
+        "masterGM": "极限闪避+处决combo秒杀,狂潮时机团战收割,走位拉扯"
+      },
+      "tier": "B",
+      "tags": [
+        "新英雄",
+        "flanker",
+        "高机动"
+      ]
+    },
+    {
+      "id": "sierra",
+      "name": "Sierra",
+      "nameZh": "塞拉",
+      "role": "damage",
+      "subrole": "recon",
+      "officialSubrole": "recon",
+      "health": {
+        "hp": 250,
+        "armor": 0,
+        "shield": 0
+      },
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/4bfd3d8b95844231115cb5bf4db03344c71bc3e865189c52403b2dc51438e63a.png",
+      "abilities": {
+        "passive": "伤害职业被动(recon侦察)",
+        "weapon": {
+          "name": "Helix Rifle",
+          "nameZh": "螺旋步枪",
+          "desc": "自动步枪,螺旋弹道,持续射击提升精度"
+        },
+        "actives": [
+          {
+            "name": "Tracking Shot",
+            "nameZh": "追踪标记",
+            "cooldown": 0,
+            "desc": "标记敌人,螺旋步枪自动追踪被标记者"
+          },
+          {
+            "name": "Tremor Charge",
+            "nameZh": "震颤雷",
+            "cooldown": 0,
+            "desc": "投掷电荷,落地产生冲击波"
+          },
+          {
+            "name": "Anchor Drone",
+            "nameZh": "锚定无人机",
+            "cooldown": 0,
+            "desc": "发射锚定无人机,再次激活钩向它"
+          }
+        ],
+        "ultimate": {
+          "name": "Trailblazer",
+          "nameZh": "开路者",
+          "cost": 0,
+          "desc": "部署向前飞行并投放炸弹的无人机"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "name": "Full Flight",
+            "nameZh": "Full Flight",
+            "desc": "Increase Anchor Drone flight and grapple ranges by 25%."
+          },
+          {
+            "name": "Tight Grip",
+            "nameZh": "Tight Grip",
+            "desc": "Helix Rifle's bullet spread tightens 70% faster and widens 30% slower."
+          }
+        ],
+        "major": [
+          {
+            "name": "Medi-Drone",
+            "nameZh": "Medi-Drone",
+            "desc": "Anchor Drones hold a medkit that can heal Sierra."
+          },
+          {
+            "name": "Locked In",
+            "nameZh": "Locked In",
+            "desc": "Hitting an enemy with Tracking Shot increases your attack speed by 20% for 2 seconds."
+          }
+        ]
+      },
+      "params": {
+        "primary": "螺旋自动步枪(持续射击更准)",
+        "range": "mid",
+        "mobility": 3,
+        "dps": "持续中高",
+        "note": "2026新dps,标记追踪+无人机机动+区域炸弹"
+      },
+      "position": {
+        "zh": "中排持续输出,标记锁软目标,锚定无人机卡角度/上高台",
+        "depth": "mid"
+      },
+      "counters": {
+        "strongAgainst": [
+          "pharah",
+          "echo",
+          "winston",
+          "脆皮"
+        ],
+        "weakAgainst": [
+          "genji",
+          "tracer",
+          "sombra",
+          "dva",
+          "widowmaker"
+        ],
+        "synergy": [
+          "ana",
+          "kiriko",
+          "sigma"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "中距离对枪+有高台图"
+        ],
+        "weak": [
+          "极近身被突进抓"
+        ],
+        "note": "2026新英雄,数值待核对"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "新英雄强度未稳定,按当前补丁评估"
+      },
+      "rankPlay": {
+        "bronzeGold": "持续射击攒精度,标记锁目标,无人机上高台",
+        "platDiamond": "标记追踪集火软目标,震颤雷封走位,开路者封点",
+        "masterGM": "标记+螺旋精度管理,无人机走位,开路者团战封锁"
+      },
+      "tier": "B",
+      "tags": [
+        "新英雄",
+        "标记追踪",
+        "无人机机动"
+      ]
+    },
+    {
+      "id": "wuyang",
+      "name": "Wuyang",
+      "nameZh": "吴阳",
+      "role": "support",
+      "subrole": "survivor",
+      "officialSubrole": "survivor",
+      "health": {
+        "hp": 225,
+        "armor": 0,
+        "shield": 0
+      },
+      "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/4959500b495b35c0908be2abda56b53f2601b2c5cc39a1cfde8df1bffd38d66d.png",
+      "abilities": {
+        "passive": "辅助职业被动 + 水流机动",
+        "weapon": {
+          "name": "Xuanwu Staff",
+          "nameZh": "玄武杖",
+          "desc": "发射水球造成伤害,长按控制弹道并强化爆炸"
+        },
+        "actives": [
+          {
+            "name": "Restorative Stream",
+            "nameZh": "复元之流",
+            "cooldown": 0,
+            "desc": "在队友身上放置被动治疗水流,长按手动强化治疗"
+          },
+          {
+            "name": "Rushing Torrent",
+            "nameZh": "奔涌激流",
+            "cooldown": 0,
+            "desc": "乘水流加速移动+跳更高"
+          },
+          {
+            "name": "Tidal Blast",
+            "nameZh": "潮汐爆破",
+            "cooldown": 0,
+            "desc": "给队友/自己附水,短暂后引爆击倒敌人"
+          }
+        ],
+        "ultimate": {
+          "name": "Guardian Wave",
+          "nameZh": "守护之潮",
+          "cost": 0,
+          "desc": "送出向前的水波,提升队友受治疗量并击退敌人"
+        }
+      },
+      "perks": {
+        "minor": [
+          {
+            "name": "Overflow",
+            "nameZh": "Overflow",
+            "desc": "Gain 10 ammo and 50% healing resource when Rushing Torrent is activated."
+          },
+          {
+            "name": "Balance",
+            "nameZh": "Balance",
+            "desc": "When you deal damage with water orbs, increase Restorative Stream's passive healing by 30% for 2 seconds."
+          }
+        ],
+        "major": [
+          {
+            "name": "Ebb and Flow",
+            "nameZh": "Ebb and Flow",
+            "desc": "Guardian Wave rewinds to its starting location."
+          },
+          {
+            "name": "Falling Rain",
+            "nameZh": "Falling Rain",
+            "desc": "Simultaneously control 3 water orbs that deal 60% decreased damage and have 25% decreased empowered explosion radius."
+          }
+        ]
+      },
+      "params": {
+        "primary": "水球(可控弹道+蓄力爆炸)",
+        "range": "mid",
+        "mobility": 4,
+        "dps": "水球中等",
+        "healingPerSec": "水流持续",
+        "note": "2026新辅助(国风),水流治疗+机动+守护波,半poke辅助"
+      },
+      "position": {
+        "zh": "中排,复元之流托底奶,水球poke,激流机动,守护潮增疗开团",
+        "depth": "mid"
+      },
+      "counters": {
+        "strongAgainst": [
+          "pharah",
+          "echo",
+          "reinhardt"
+        ],
+        "weakAgainst": [
+          "genji",
+          "tracer",
+          "widowmaker",
+          "sombra",
+          "ana(反治疗)"
+        ],
+        "synergy": [
+          "ashe",
+          "sigma",
+          "ana"
+        ]
+      },
+      "maps": {
+        "strong": [
+          "中距离有掩体图"
+        ],
+        "weak": [
+          "近身被dive抓"
+        ],
+        "note": "2026新英雄,数值待核对"
+      },
+      "ban": {
+        "priority": "low",
+        "reason": "新英雄强度未稳定,按当前补丁评估"
+      },
+      "rankPlay": {
+        "bronzeGold": "复元之流托底,水球poke别只奶,激流走位",
+        "platDiamond": "水流挂核心,水球消耗,潮汐爆破打断,守护潮增疗开团",
+        "masterGM": "水球弹道控制贡献伤害,守护潮/潮汐时机团战,激流极限走位"
+      },
+      "tier": "B",
+      "tags": [
+        "新英雄",
+        "半poke奶",
+        "水流机动"
+      ]
+    }
+  ]
+}
