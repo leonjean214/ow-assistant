@@ -1,5 +1,34 @@
 # Handoff
 
+## Phase 11 已完成
+
+- 已实现「记录」视图 session 增强：JSON 导出/导入、合并/替换、去重冲突保新、损坏文件友好错误、战绩分享 PNG 图卡；未引入框架、构建或依赖，未提交 git commit。
+- `src/journal.js` 新增纯函数 `serializeJournal(entries)`、`parseImportedJournal(text)`、`mergeJournal(existing, incoming)`；导出结构为 `{ version: 1, exportedAt, entries }`；导入接受数组或 `{ entries }`；合并按 `id` 去重，冲突保留较新 `ts`，最终仍按新到旧保留最多 1000 条；内置 `console.assert` 覆盖导出、损坏导入、过滤损坏、去重和冲突保新。
+- `index.html` 的 `#/journal` 新增「导出 JSON」「导入 JSON」「替换全部」「生成分享图」工具条、隐藏 file input 和离屏 canvas。
+- `src/app.js` 接入导出下载、文件导入、替换确认、即时刷新统计/表/列表、aria-live 状态；下载使用 `Blob` + `URL.createObjectURL` + 临时 `<a download>`，触发后 `revokeObjectURL`。
+- 分享图卡在本地 canvas 绘制，尺寸 1080×1350，并按 `devicePixelRatio` 设置 backing store；配色从 CSS 变量读取，覆盖浅/深主题；内容包含标题、日期/赛季、总场次、总胜率、今日、当前趋势、最近 10 局走势和 Top 3 英雄；`canvas.toBlob("image/png")` 后下载，并尝试 Clipboard API 复制，失败只提示不报错。
+- 空记录时导出/分享按钮禁用；直接触发时也会提示「先记录几局再导出/分享」。
+- `src/styles.css` 新增记录工具条、替换开关、禁用按钮和离屏 canvas 样式，移动端 375px 无横向溢出。
+- `sw.js` 已升级 `CACHE_NAME` 到 `ow-cache-v11`；未新增 `src/share-card.js`，因此无需增加新的 JS 缓存项。
+- `README.md` 已补充记录导出/导入、分享图和 `src/journal.js` 说明；`docs/ROADMAP.md` 已将 Phase 11 标记为完成，并调整后续 A 线编号。
+
+## Phase 11 验证记录
+
+- 静态检查：
+  - `for f in src/*.js sw.js; do node --check "$f" || exit 1; done`
+  - `node --input-type=module -e "import('./src/journal.js').then(() => console.log('journal self-test import ok'))"`
+  - `rg -n "innerHTML|insertAdjacentHTML|outerHTML" . -g '!node_modules'` 无命中
+- Headless Chrome/CDP 验收通过：
+  - 空 `ow-journal` 时，`#exportJournal.disabled === true` 且 `#shareJournal.disabled === true`。
+  - 导出 JSON 触发下载 `ow-journal-2026-06-20.json`，内容含 `version:1`、`exportedAt` 和 2 条 `entries`。
+  - 合法导入 `{ entries }` 后即时刷新，状态提示「导入 2 条，去重后共 3 条。」；重复 `id=b` 的冲突记录保留较新 `ts` 且结果变为 `win`；`localStorage.ow-journal` 为 3 条。
+  - 损坏 JSON 文件显示「导入失败：JSON 文件已损坏或格式不正确。」；原 3 条记录保持不变，不崩溃。
+  - 分享图浅色主题触发下载 `ow-journal-share-2026-06-20.png`，PNG header 有效，canvas 输出 `data:image/png`，尺寸为 1080×1350。
+  - 分享图深色主题 `canvas.toBlob("image/png")` 返回有效 PNG，blob size 153008，尺寸为 1080×1350。
+  - Service Worker cache keys 包含 `ow-cache-v11`；DevTools offline 后刷新仍可加载 `#/journal`。
+  - 375px 移动视口 `documentElement` 和 `body` 横向溢出均为 0。
+  - 应用级 runtime exception、`console.error`、`console.assert` failure 数量为 0。
+
 ## Phase 10 已完成
 
 - 已实现「记录」视图 `#/journal`，未引入框架、构建或依赖，未提交 git commit。

@@ -1329,6 +1329,33 @@ input[type="range"] {
   gap: 8px;
 }
 
+.journal-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.journal-tools button:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}
+
+.journal-replace-toggle {
+  min-height: 32px;
+  border-radius: var(--radius);
+}
+
+.share-canvas {
+  position: fixed;
+  left: -9999px;
+  top: -9999px;
+  width: 1080px;
+  height: 1350px;
+  pointer-events: none;
+}
+
 .journal-summary,
 .journal-tables {
   display: grid;
@@ -2423,7 +2450,8 @@ body.is-overlay .overlay-panel {
 
   .result-row,
   .position-box,
-  .journal-actions {
+  .journal-actions,
+  .journal-tools {
     align-items: stretch;
     flex-direction: column;
   }

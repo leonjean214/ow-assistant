@@ -47,7 +47,7 @@ http://localhost:8000/#/compare/genji,ana
 - 我该玩谁：英雄库顶部折叠面板可按职业、难度上限和风格标签推荐低难英雄，并给出新手理由。
 - 克制计算器：选择或输入 1-5 个敌方英雄，按职业输出 Top counter 推荐；选择“我当前英雄”后会给出“换不换”建议。
 - 战绩查询：输入 BattleTag 搜索 OverFast 候选，选中后显示玩家档案、PC/主机段位、总览、表现卡片和英雄战绩表。
-- 记录：`#/journal` 可手动记录每局胜/负/平、我方英雄、地图、敌方阵容备注和复盘备注，使用 `localStorage` 的 `ow-journal` 持久化；统计总/今日胜率、当前连胜/连败、最近 10 局走势，并按英雄和地图聚合趋势。胜率按 `胜 / (胜 + 负)` 计算，平局单列。
+- 记录：`#/journal` 可手动记录每局胜/负/平、我方英雄、地图、敌方阵容备注和复盘备注，使用 `localStorage` 的 `ow-journal` 持久化；统计总/今日胜率、当前连胜/连败、最近 10 局走势，并按英雄和地图聚合趋势。支持 JSON 导出/导入，导入默认按 `id` 去重合并且冲突保留较新记录，也可勾选替换全部；还可把当前统计绘制为本地 PNG 分享图。胜率按 `胜 / (胜 + 负)` 计算，平局单列。
 - 地图：加载 OverFast `/maps`，按模式筛选 57 张地图；25 张竞技图优先使用 `data/maps_meta.json` 展示地形要点和强势英雄头像行，缺图回退本地英雄地图文本聚合。
 - Meta：本地聚合 Tier 网格、Ban 三栏和职业打法速览。
 - Overlay：`?overlay=1` 下只显示紧凑克制计算器和 Meta Ban 速览。
@@ -64,7 +64,7 @@ http://localhost:8000/#/compare/genji,ana
 - `src/counter.js`：`recommend(enemyIds, heroes)` 纯函数和 `console.assert` 自测
 - `src/recommend-hero.js`：`recommendHeroes(filters, heroes)` 新手英雄推荐纯函数和 `console.assert` 自测
 - `src/stats.js`：战绩整理、排序、段位格式化、表现卡片纯函数和 `console.assert` 自测
-- `src/journal.js`：本地对局记录读写、汇总、英雄/地图趋势聚合纯函数和 `console.assert` 自测
+- `src/journal.js`：本地对局记录读写、导出/导入解析、去重合并、汇总、英雄/地图趋势聚合纯函数和 `console.assert` 自测
 - `src/app.js`：导航、英雄库、战绩、地图、Meta、Overlay 和详情交互
 - `manifest.webmanifest`：PWA 安装元数据
 - `sw.js`：预缓存 app shell、本地数据和图标；离线导航回退到 `index.html`
@@ -79,7 +79,7 @@ OverFast Base URL：`https://overfast-api.tekrop.fr`
 
 - 玩家搜索、概要和统计缓存 10 分钟。
 - 地图缓存 1 天。
-- 对局记录只存本机 `localStorage`，不请求外部 API；损坏或不可用时回退空记录。
+- 对局记录只存本机 `localStorage`，不请求外部 API；损坏或不可用时回退空记录。JSON 导入会过滤无效条目并友好提示损坏文件，分享图使用本地 canvas 生成。
 - Service Worker 不拦截也不缓存 `overfast-api.tekrop.fr` 请求，外部 API 仍由 `src/api.js` 的网络请求和 `localStorage` 缓存控制。
 - 请求超时、404、网络/CORS 失败都会显示中文错误提示，不会白屏。
 - API 英雄 key 会映射 `junker-queen/soldier-76/wrecking-ball` 与本地 `junkerqueen/soldier76/wreckingball`。
