@@ -10,10 +10,27 @@ const REQUIRED_FEATURES = ["match_info", "kill", "death", "assists", "hero", "me
 const RETRY_MS = 2000;
 let overlayWin = null;
 
+// 文件日志：把所有事件写到固定路径，便于事后通过 SSH 读取真实 GEP 结构回填 SPIKE.md。
+// ⚠️ 路径写死为 game5090 主机；换机改这里。
+const LOG_PATH = "C:\\Users\\game5090\\ow-gep-log.json";
+const logBuffer = [];
+
+function persist() {
+  if (typeof overwolf === "undefined" || !overwolf.io?.writeFileContents) return;
+  const content = JSON.stringify({ updated: Date.now(), count: logBuffer.length, entries: logBuffer.slice(-500) }, null, 2);
+  try {
+    overwolf.io.writeFileContents(LOG_PATH, content, "UTF8", true, () => {});
+  } catch (e) { /* 忽略写盘失败 */ }
+}
+
 function log(...args) {
   // 在 Overwolf 开发者工具 background 页 console 可见
   console.log("[OWGEP]", ...args);
+  logBuffer.push({ t: Date.now(), msg: args.map((a) => (typeof a === "string" ? a : safeStr(a))).join(" ") });
+  persist();
 }
+
+function safeStr(v) { try { return JSON.stringify(v); } catch { return String(v); } }
 
 function setFeatures(attempt = 0) {
   overwolf.games.events.setRequiredFeatures(REQUIRED_FEATURES, (info) => {

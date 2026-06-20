@@ -19,6 +19,15 @@ OW 游戏 ──GEP──> background.js ──postMessage(owgep)──> overlay
 ```
 SPA 侧已具备：`?overlay=1` 紧凑浮层、克制计算器、对面阵容原型(`createEnemyCompSummary`)、组队分析。W1 只需在 SPA 加一段 `window.onmessage` 把 GEP 本方英雄灌进现有状态即可，**不改其余逻辑**。
 
+## 回填闭环（不必手抄 console）
+`background.js` 会把所有 GEP 事件写到 `C:\Users\game5090\ow-gep-log.json`（需 manifest `FileSystem` 权限）。
+用户只需「load unpacked + 打一局」，之后 Claude 可 `ssh win-desktop` 读取该 json，自己解析真实 game id / feature / 事件字段并回填本文件与 manifest/background。
+
+## 已就位（2026-06-20，Claude 经 SSH 部署）
+- Win 已确认：Overwolf 已装（`%LOCALAPPDATA%\Overwolf`）、Overwatch 在 `D:\Overwatch\_retail_`。
+- 脚手架已拷到 `C:\Users\game5090\ow-assistant-overwolf\`（含 icons、FileSystem 权限、文件日志）。
+- ⏳ 待用户 GUI 操作：Overwolf → 设置 → 开发者 → **Load unpacked extension** → 选该目录 → 启动 OW → 打一局。
+
 ## Win 实测步骤（在 ssh win-desktop / 本机 Win 上）
 1. 装 **Overwolf 客户端**（overwolf.com），登录开发者。
 2. Overwolf → 设置 → 开发者选项 → **Load unpacked extension**，选本 `overwolf/` 目录。
