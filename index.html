@@ -45,6 +45,7 @@
 
     <nav class="view-tabs" aria-label="主导航">
       <button class="view-tab is-active" type="button" data-view="heroes">英雄库</button>
+      <button class="view-tab" type="button" data-view="compare">英雄对比</button>
       <button class="view-tab" type="button" data-view="updates">更新</button>
       <button class="view-tab" type="button" data-view="counter">克制计算器</button>
       <button class="view-tab" type="button" data-view="profile">战绩查询</button>
@@ -142,6 +143,17 @@
 
         <div class="hero-grid" id="heroGrid" aria-live="polite"></div>
         <p class="empty-state" id="heroEmpty" hidden>没有符合条件的英雄。</p>
+      </section>
+
+      <section class="panel view" id="compareView" aria-labelledby="compareTitle">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Hero Compare</p>
+            <h2 id="compareTitle">英雄对比</h2>
+          </div>
+          <span class="count-pill" id="compareCount">0 / 4</span>
+        </div>
+        <div class="compare-content" id="compareContent" aria-live="polite"></div>
       </section>
 
       <section class="panel view" id="updatesView" aria-labelledby="updatesTitle">
@@ -289,6 +301,8 @@
         <div class="ban-list" id="banList"></div>
       </section>
     </main>
+
+    <aside class="compare-tray" id="compareTray" aria-label="英雄对比盘" hidden></aside>
 
     <footer class="site-footer">
       <p>功能源于社区需求调研：Reddit r/Overwatch、贴吧、OverHub 等；未伪造 workshop 代码或不存在的数据。</p>

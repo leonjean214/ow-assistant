@@ -2,6 +2,14 @@
 
 ## 已完成
 
+- Phase 7 英雄对比已补齐执行方缺口，未引入框架/构建/依赖，未提交 git commit。
+- `index.html` 已有 `data-view="compare"` 导航、`compareView` section、`#compareContent/#compareCount` 和底部 `#compareTray` 容器。
+- `src/app.js` 新增对比数据层：`state.compare` 为有序数组，最多 4 位；`localStorage` key 为 `ow-compare`；读写均有 try/catch 容错，损坏数据回退空集合。
+- 英雄卡和详情头部对比按钮使用 `button[data-compare-hero]`、`aria-pressed`、`aria-label`；切换后刷新所有对比按钮态，且不会触发打开详情。
+- 底部对比盘显示已选英雄头像/名，支持单个移除、清空和查看对比；为空时隐藏，超 4 位时显示提示且不超限。
+- 对比视图 `#/compare/<ids>` 使用 DOM API 渲染并排表格，包含职业、Tier、难度、总有效生命、HP/Armor/Shield、DPS/HPS、射程、机动、站位、标签、Ban 优先级和代表克制；数值最优项加 `.is-best`，缺值显示 `—` 且不参与比较；外层 `.compare-table-wrap` 横向滚动。
+- Hash 路由新增 `#/compare/<id1>,<id2>,...`，非法/重复 id 跳过；`switchView("compare")` 和对比集合变化会同步 hash，`?overlay=1` 下仍短路。
+- `src/styles.css` 新增 `.compare-btn`、`.detail-head-actions`、`.compare-tray`、`.compare-table/.is-best/.compare-table-wrap`、`.hero-card:focus-visible`、`.compare-btn:focus-visible`，并补 920/768/375px 响应式规则。
 - Phase 6 URL Hash 路由 / 深链 + 英雄收藏已完成，未修改 `data/`、`docs/` 或 `.ai/TASK.md`，未引入框架/构建/依赖。
 - `src/app.js` 新增纯静态 hash 路由层：初始化在数据加载完成后解析 hash；监听 `hashchange`；`switchView()`、`openDetail()`、`closeDetail()` 在 overlay 之外同步 hash；`?overlay=1` 下路由读写整体短路，不干扰 Overlay 模式。
 - 英雄详情深链 `#/hero/<id>` 会切到英雄库背景并打开对应抽屉；非法 hash 或非法 hero id 不崩溃，回退 `#/heroes`。
@@ -23,9 +31,27 @@
 | `maps` | `mapsView` | `#/maps` |
 | `meta` | `metaView` | `#/meta` |
 | `ban` | `banView` | `#/ban` |
+| `compare` | `compareView` | `#/compare` 或 `#/compare/genji,ana` |
 | 英雄详情 | `detailDrawer` over `heroesView` | `#/hero/<id>`，例如 `#/hero/genji` |
 
 说明：当前 DOM 中实际 `data-view` 为 `profile` 和 `ban`；任务文本中的 `players`、`recommend` 不是现有导航视图，因此未新增不存在的 hash 入口。
+
+## Phase 7 验证记录
+
+- 静态检查：
+  - `for f in src/*.js; do node --check "$f" || exit 1; done`
+  - `git diff --check`
+  - `rg -n "innerHTML|insertAdjacentHTML|outerHTML" src index.html README.md docs data` 无命中
+- Headless Chrome/CDP 验收通过：
+  - 首页英雄库渲染 52 张 `.hero-card`，52 个收藏按钮和 52 个对比按钮；`document.querySelectorAll("button button").length === 0`。
+  - `.hero-card` 聚焦后 Enter 打开英雄详情，hash 变为 `#/hero/reinhardt`。
+  - 点击 ★ 只切换收藏态，不打开详情；点击对比按钮只加入对比，不打开详情。
+  - 对比盘可添加、单个移除、清空；添加第 5 位时 `ow-compare` 保持 4 位并显示“最多同时对比 4 位英雄”提示。
+  - `#/compare/genji,ana` 深链恢复 `["genji","ana"]`，激活 `compareView`，对比表 2 个英雄列，`.is-best` 数值高亮存在，`.compare-table-wrap` 为 `overflow-x:auto`。
+  - 刷新后仍保持 `#/compare/genji,ana` 和 `ow-compare=["genji","ana"]`。
+  - `?overlay=1#/compare/genji,ana` 保持 `body.is-overlay`，topbar 隐藏，overlay 可见，详情未打开，对比视图未激活。
+  - 375px 视口 `scrollWidth === clientWidth`，无横向溢出。
+  - console/runtime error 数量为 0。
 
 ## Phase 6 验证记录
 

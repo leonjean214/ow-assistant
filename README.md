@@ -28,6 +28,7 @@ http://localhost:8000/?overlay=1
 http://localhost:8000/#/heroes
 http://localhost:8000/#/maps
 http://localhost:8000/#/hero/genji
+http://localhost:8000/#/compare/genji,ana
 ```
 
 ## 功能
@@ -36,6 +37,8 @@ http://localhost:8000/#/hero/genji
 - 英雄库：职业、Tier、Ban 优先级和关键词筛选，英雄详情使用本地官方头像字段。
 - 深链路由：使用 `location.hash` 支持 `#/heroes`、`#/counter`、`#/profile`、`#/maps`、`#/meta`、`#/updates`、`#/ban` 和 `#/hero/<id>`；浏览器后退/前进可切换视图并关闭/重开英雄详情。
 - 英雄收藏：英雄卡和详情抽屉均可点 ★ 收藏/取消，使用 `localStorage` 的 `ow-favorites` 持久化；英雄库支持“只看收藏”，未筛选时收藏英雄置顶。
+- 英雄对比：英雄卡和详情头部可加入/移出对比，最多 4 位，使用 `localStorage` 的 `ow-compare` 持久化；底部对比盘支持移除、清空和查看对比。
+- 对比深链：`#/compare/<id1>,<id2>` 可恢复对比集合并落到英雄对比视图，非法 id 会跳过；对比视图用横向表格展示职业、Tier、难度、生命值、DPS/HPS、射程、机动、站位、标签、Ban 和代表克制，并高亮数值最优项。
 - 更新：读取 `data/patches.json` 展示 2026 新英雄时间线、最新英雄紫苑高亮、补丁逐英雄改动、职业/type/搜索筛选和本补丁统计。
 - 近期调整：最新补丁涉及的英雄卡片显示调整徽章，英雄详情新增“近期调整”分区；紫苑卡片显示 `NEW`，英雄库标题处显示当前最新英雄。
 - 我该玩谁：英雄库顶部折叠面板可按职业、难度上限和风格标签推荐低难英雄，并给出新手理由。
