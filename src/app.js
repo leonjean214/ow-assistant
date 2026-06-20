@@ -5,6 +5,7 @@ import { buildPerformanceCards, formatDuration, formatRank, normalizeHeroStats, 
 import { recommendHeroes } from "./recommend-hero.js";
 import { addJournalEntry, clearJournal, loadJournal, mergeJournal, parseImportedJournal, removeJournalEntry, saveJournal, serializeJournal, summarizeJournal } from "./journal.js";
 import { analyzeTeam, teamArchetype, teamRoleCount, ROLE_ZH as TEAM_ROLE_ZH } from "./team.js";
+import { loadProfile, saveProfile, localOverview, exportAllLocal, parseBackup, importAllLocal, clearAllLocal, ROLE_OPTIONS } from "./profile.js";
 
 const roleNamesZh = { tank: "重装", damage: "输出", support: "支援" };
 const modeLabels = {
@@ -50,6 +51,7 @@ const state = {
   teamMessage: "",
   workshop: { meta: {}, categories: [] },
   counterNotes: new Map(),
+  profile: { nickname: "", battletag: "", mainRole: "", avatarHeroId: "" },
   selectedEnemies: [],
   currentHeroId: "",
   overlayEnemies: [],
@@ -105,6 +107,7 @@ async function init() {
     state.patches = patches;
     state.workshop = workshop;
     state.counterNotes = counterNotes;
+    state.profile = loadProfile();
     state.journalEntries = loadJournal();
     renderMetaText(data.meta);
     renderLatestHeroLine();
@@ -117,6 +120,7 @@ async function init() {
     renderCompareView();
     renderTeam();
     renderWorkshop();
+    renderMe();
     renderUpdates();
     renderEnemyChips();
     renderCounter();
@@ -139,7 +143,7 @@ function bindElements() {
     "dataMeta", "heroCount", "heroGrid", "heroEmpty", "roleTabs", "tierFilter", "banFilter", "searchInput",
     "favoriteOnlyToggle",
     "compareTray", "compareContent", "compareCount",
-    "teamContent", "teamCount", "workshopContent",
+    "teamContent", "teamCount", "workshopContent", "meContent",
     "latestHeroLine", "updatesTimeline", "patchRoleFilter", "patchTypeFilter", "patchSearchInput", "patchList", "patchEmpty",
     "heroRecommendPanel", "recommendRole", "recommendDifficulty", "recommendDifficultyLabel", "recommendTag", "recommendResults",
     "enemyInput", "currentHeroSelect", "runCounter", "clearCounter", "selectedEnemies", "enemyChips", "counterResults",
@@ -446,6 +450,7 @@ function setupA11y() {
     [el.compareContent, "polite"],
     [el.teamContent, "polite"],
     [el.workshopContent, "polite"],
+    [el.meContent, "polite"],
     [el.recommendResults, "polite"],
     [el.patchList, "polite"],
     [el.journalStatus, "polite"],
@@ -1113,6 +1118,7 @@ function switchView(view) {
   if (view === "compare") renderCompareView();
   if (view === "team") renderTeam();
   if (view === "workshop") renderWorkshop();
+  if (view === "me") renderMe();
   if (view === "journal") renderJournal();
   activeDetailHeroId = "";
   if (!isRouting) closeDetailPanel();
@@ -1936,6 +1942,223 @@ function renderWorkshop(message = "") {
     card.append(list);
     el.workshopContent.append(card);
   });
+}
+
+// ---- 个人中心 ----
+function renderMe(message = "") {
+  if (!el.meContent) return;
+  el.meContent.replaceChildren();
+  const p = state.profile || {};
+
+  if (message) {
+    const m = create("p", "workshop-msg");
+    m.textContent = message;
+    el.meContent.append(m);
+  }
+
+  // 资料卡
+  const card = create("div", "team-card me-profile");
+  const head = create("div", "me-head");
+  const avatarHero = p.avatarHeroId ? state.byId.get(p.avatarHeroId) : null;
+  head.append(createAvatar(avatarHero || { nameZh: p.nickname || "我" }));
+  const idBox = create("div");
+  appendText(idBox, "strong", p.nickname || "未命名玩家");
+  appendText(idBox, "span", p.battletag ? p.battletag : "未绑定 BattleTag");
+  head.append(idBox);
+  card.append(head);
+
+  const form = create("div", "me-form");
+  form.append(
+    meField("昵称", textInput(p.nickname, (v) => updateProfile({ nickname: v }))),
+    meField("BattleTag", battletagRow(p.battletag)),
+    meField("主玩定位", roleSelect(p.mainRole, (v) => updateProfile({ mainRole: v }))),
+    meField("头像英雄", avatarSelect(p.avatarHeroId, (v) => updateProfile({ avatarHeroId: v })))
+  );
+  card.append(form);
+  el.meContent.append(card);
+
+  // 概览
+  const ov = localOverview();
+  const journal = summarizeJournal(loadJournal(), state.byId);
+  const overview = create("div", "team-card");
+  appendText(overview, "h3", "我的数据概览");
+  const grid = create("div", "me-stats");
+  grid.append(
+    meStat("收藏英雄", String(ov.favorites), "heroes", () => { state.filters.favoritesOnly = true; if (el.favoriteOnlyToggle) el.favoriteOnlyToggle.checked = true; renderHeroGrid(); }),
+    meStat("对比中", String(ov.compare), "compare"),
+    meStat("队伍", String(ov.team), "team"),
+    meStat("对局记录", `${journal.total.games} 局 · ${journal.total.games ? journal.total.winrate.toFixed(0) + "% 胜" : "—"}`, "journal")
+  );
+  overview.append(grid);
+  if (ov.recentPlayers.length) {
+    appendText(overview, "h4", "最近查询玩家");
+    const chips = create("div", "tag-row");
+    ov.recentPlayers.slice(0, 6).forEach((name) => {
+      const b = create("button", "recent-chip");
+      b.type = "button";
+      b.textContent = name;
+      b.addEventListener("click", () => lookupBattletag(name));
+      chips.append(b);
+    });
+    overview.append(chips);
+  }
+  el.meContent.append(overview);
+
+  // 数据管理（云同步前的本地备份/迁移）
+  const data = create("div", "team-card");
+  appendText(data, "h3", "数据备份与迁移");
+  appendText(data, "p", "全部本地数据（资料/收藏/对比/队伍/记录/主题）可导出为 JSON 备份，换设备时导入恢复。云同步功能预留中。");
+  const tools = create("div", "me-actions");
+  const exportBtn = create("button", "primary-btn");
+  exportBtn.type = "button";
+  exportBtn.textContent = "导出全部备份";
+  exportBtn.addEventListener("click", exportProfileBackup);
+  const importBtn = create("button", "ghost-btn");
+  importBtn.type = "button";
+  importBtn.textContent = "导入备份";
+  importBtn.addEventListener("click", importProfileBackup);
+  const clearBtn = create("button", "ghost-btn");
+  clearBtn.type = "button";
+  clearBtn.textContent = "清空本地数据";
+  clearBtn.addEventListener("click", () => {
+    if (window.confirm("确定清空本应用全部本地数据？此操作不可撤销。")) {
+      clearAllLocal();
+      state.profile = loadProfile();
+      state.favorites = new Set();
+      state.compare = [];
+      state.team = [];
+      state.journalEntries = [];
+      renderHeroGrid();
+      renderMe("已清空全部本地数据。");
+    }
+  });
+  tools.append(exportBtn, importBtn, clearBtn);
+  data.append(tools);
+  el.meContent.append(data);
+}
+
+function updateProfile(patch) {
+  state.profile = { ...state.profile, ...patch };
+  saveProfile(state.profile);
+  renderMe();
+}
+
+function meField(label, control) {
+  const wrap = create("label", "field");
+  appendText(wrap, "span", label);
+  wrap.append(control);
+  return wrap;
+}
+
+function textInput(value, onChange) {
+  const input = document.createElement("input");
+  input.type = "text";
+  input.value = value || "";
+  input.addEventListener("change", () => onChange(input.value.trim()));
+  return input;
+}
+
+function battletagRow(value) {
+  const row = create("div", "me-bt-row");
+  const input = document.createElement("input");
+  input.type = "text";
+  input.value = value || "";
+  input.placeholder = "Jay3#1234";
+  input.addEventListener("change", () => updateProfile({ battletag: input.value.trim() }));
+  const go = create("button", "ghost-btn");
+  go.type = "button";
+  go.textContent = "查战绩";
+  go.addEventListener("click", () => { if (input.value.trim()) lookupBattletag(input.value.trim()); });
+  row.append(input, go);
+  return row;
+}
+
+function roleSelect(value, onChange) {
+  const sel = document.createElement("select");
+  ROLE_OPTIONS.forEach(([v, label]) => {
+    const o = document.createElement("option");
+    o.value = v; o.textContent = label;
+    if (v === (value || "")) o.selected = true;
+    sel.append(o);
+  });
+  sel.addEventListener("change", () => onChange(sel.value));
+  return sel;
+}
+
+function avatarSelect(value, onChange) {
+  const sel = document.createElement("select");
+  const blank = document.createElement("option");
+  blank.value = ""; blank.textContent = "默认占位";
+  sel.append(blank);
+  [...state.heroes].sort((a, b) => a.nameZh.localeCompare(b.nameZh, "zh-Hans-CN")).forEach((hero) => {
+    const o = document.createElement("option");
+    o.value = hero.id; o.textContent = hero.nameZh;
+    if (hero.id === (value || "")) o.selected = true;
+    sel.append(o);
+  });
+  sel.addEventListener("change", () => onChange(sel.value));
+  return sel;
+}
+
+function meStat(label, value, view, onClick) {
+  const b = create("button", "me-stat");
+  b.type = "button";
+  appendText(b, "strong", value);
+  appendText(b, "span", label);
+  b.addEventListener("click", () => { if (onClick) onClick(); switchView(view); });
+  return b;
+}
+
+function lookupBattletag(name) {
+  switchView("profile");
+  if (el.playerSearchInput) {
+    el.playerSearchInput.value = name;
+    runPlayerSearch();
+  }
+}
+
+function exportProfileBackup() {
+  try {
+    const blob = new Blob([JSON.stringify(exportAllLocal(), null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ow-assistant-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.append(a);
+    a.click();
+    a.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    renderMe("已导出全部本地数据备份。");
+  } catch {
+    renderMe("导出失败，请稍后重试。");
+  }
+}
+
+function importProfileBackup() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".json,application/json";
+  input.addEventListener("change", async () => {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = parseBackup(text);
+      if (!parsed.ok) { renderMe(`导入失败：${parsed.error}`); return; }
+      const res = importAllLocal(parsed.payload);
+      // 重载内存态
+      state.profile = loadProfile();
+      state.favorites = loadFavorites();
+      state.compare = loadCompare();
+      state.team = loadTeam();
+      state.journalEntries = loadJournal();
+      renderHeroGrid();
+      renderMe(`已导入备份，恢复 ${res.count} 项。`);
+    } catch {
+      renderMe("导入失败：无法读取这个文件。");
+    }
+  });
+  input.click();
 }
 
 function copyWorkshopCode(code, button) {

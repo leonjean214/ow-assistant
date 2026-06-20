@@ -107,6 +107,15 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   check("工坊有可复制代码按钮", (await c.evals(`document.querySelectorAll('#workshopContent button[data-copy-code]').length`)) >= 5);
   check("工坊有免责声明", (await c.evals(`document.querySelectorAll('#workshopContent .workshop-disclaimer').length`)) === 1);
 
+  // 个人中心
+  await c.evals(`location.hash='#/me'; null`); await sleep(500);
+  check("个人中心视图激活", (await c.evals(`document.getElementById('meView').classList.contains('is-active')`)) === true);
+  check("个人中心有资料表单", (await c.evals(`document.querySelectorAll('#meContent .me-form .field').length`)) >= 4);
+  check("个人中心有概览统计", (await c.evals(`document.querySelectorAll('#meContent .me-stat').length`)) === 4);
+  // 改昵称→持久化
+  await c.evals(`(()=>{const i=document.querySelector('#meContent .me-form input');i.value='测试昵称';i.dispatchEvent(new Event('change',{bubbles:true}));})(); null`); await sleep(300);
+  check("昵称写入 ow-profile", (await c.evals(`(JSON.parse(localStorage.getItem('ow-profile')||'{}').nickname)==='测试昵称'`)) === true);
+
   // Overwolf 消息桥(W1 SPA 侧)：模拟 overlay 转发本方英雄
   await c.evals(`location.hash='#/counter'; null`); await sleep(200);
   await c.evals(`window.postMessage({source:'owgep',kind:'my-hero',heroId:'genji'},'*'); null`); await sleep(300);
