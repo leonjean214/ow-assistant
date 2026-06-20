@@ -92,6 +92,13 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     check("找到主题切换按钮", false, "(选择器未命中)");
   }
 
+  // 键盘快捷键
+  await c.evals(`location.hash='#/heroes'; document.body.focus(); null`); await sleep(200);
+  await c.evals(`document.dispatchEvent(new KeyboardEvent('keydown',{key:'/',bubbles:true})); null`); await sleep(200);
+  check("快捷键 / 跳战绩并聚焦搜索", (await c.evals(`document.activeElement && document.activeElement.id === 'playerSearchInput'`)) === true);
+  await c.evals(`document.dispatchEvent(new KeyboardEvent('keydown',{key:'b',bubbles:true})); null`); await sleep(200);
+  check("快捷键 b 跳英雄库并聚焦筛选", (await c.evals(`document.activeElement && document.activeElement.id === 'searchInput'`)) === true);
+
   // overlay
   await c.evals(`location.href = '${BASE}/?overlay=1'; null`); await sleep(1800);
   check("overlay 模式 body.is-overlay", (await c.evals(`document.body.classList.contains('is-overlay')`)) === true);
