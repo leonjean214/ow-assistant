@@ -622,9 +622,9 @@ function bindEvents() {
   });
   el.clearJournal.addEventListener("click", () => {
     if (!state.journalEntries.length) return;
-    if (!window.confirm("确定清空全部对局记录？此操作不可撤销。")) return;
+    if (!window.confirm((isEnglish() ? "Clear all match records? This cannot be undone." : "确定清空全部对局记录？此操作不可撤销。"))) return;
     state.journalEntries = clearJournal();
-    renderJournal("已清空全部记录。");
+    renderJournal(isEnglish() ? "All records cleared." : "已清空全部记录。");
   });
   el.exportJournal.addEventListener("click", exportJournalFile);
   el.importJournal.addEventListener("click", () => {
@@ -639,7 +639,7 @@ function bindEvents() {
     const remove = event.target.closest("button[data-journal-delete]");
     if (remove) {
       state.journalEntries = removeJournalEntry(state.journalEntries, remove.dataset.journalDelete);
-      renderJournal("已删除 1 条记录。");
+      renderJournal(isEnglish() ? "1 record deleted." : "已删除 1 条记录。");
       return;
     }
     const hero = event.target.closest("button[data-journal-hero]");
@@ -959,7 +959,7 @@ async function importJournalFile() {
       return;
     }
     const replaceAll = Boolean(el.replaceJournalToggle?.checked);
-    if (replaceAll && state.journalEntries.length && !window.confirm("确定用导入文件替换全部本地记录？")) {
+    if (replaceAll && state.journalEntries.length && !window.confirm((isEnglish() ? "Replace all local records with the imported file?" : "确定用导入文件替换全部本地记录？"))) {
       renderJournal(isEnglish() ? "Import canceled." : "已取消导入。");
       return;
     }
@@ -2850,7 +2850,7 @@ function setCompare(ids, options = {}) {
   updateCompareButton();
   if (options.sync !== false) syncHashForCompare(options);
   if (!options.silent && ids.length > MAX_COMPARE) {
-    state.compareMessage = `最多同时对比 ${MAX_COMPARE} 位英雄。`;
+    state.compareMessage = isEnglish() ? `Compare up to ${MAX_COMPARE} heroes at once.` : `最多同时对比 ${MAX_COMPARE} 位英雄。`;
     renderCompareTray();
     renderCompareView();
   }
@@ -2863,7 +2863,7 @@ function toggleCompare(heroId) {
     return;
   }
   if (state.compare.length >= MAX_COMPARE) {
-    state.compareMessage = `最多同时对比 ${MAX_COMPARE} 位英雄，先移除一个再添加。`;
+    state.compareMessage = isEnglish() ? `Compare up to ${MAX_COMPARE} heroes; remove one first.` : `最多同时对比 ${MAX_COMPARE} 位英雄，先移除一个再添加。`;
     renderCompareTray();
     renderCompareView();
     updateCompareButton();
@@ -2912,7 +2912,7 @@ function setTeam(ids, options = {}) {
   updateTeamButton();
   if (options.sync !== false) syncHashForTeam(options);
   if (!options.silent && ids.length > MAX_TEAM) {
-    state.teamMessage = `一支队伍最多 ${MAX_TEAM} 位英雄。`;
+    state.teamMessage = isEnglish() ? `A team holds up to ${MAX_TEAM} heroes.` : `一支队伍最多 ${MAX_TEAM} 位英雄。`;
     renderTeam();
   }
 }
@@ -2924,7 +2924,7 @@ function toggleTeam(heroId) {
     return;
   }
   if (state.team.length >= MAX_TEAM) {
-    state.teamMessage = `一支队伍最多 ${MAX_TEAM} 位英雄，先移除一个再添加。`;
+    state.teamMessage = isEnglish() ? `A team holds up to ${MAX_TEAM} heroes; remove one first.` : `一支队伍最多 ${MAX_TEAM} 位英雄，先移除一个再添加。`;
     renderTeam();
     updateTeamButton();
     return;
@@ -3122,6 +3122,8 @@ function teamThreatsToCounter() {
 function renderWorkshop(message = "") {
   if (!el.workshopContent) return;
   const { meta = {}, categories = [] } = state.workshop || {};
+  const en = isEnglish();
+  const pick = (zh, e) => (en && e ? e : zh);
   el.workshopContent.replaceChildren();
 
   if (message) {
@@ -3133,24 +3135,24 @@ function renderWorkshop(message = "") {
   // 导入指南
   if (meta.import) {
     const guide = create("div", "team-card");
-    appendText(guide, "h3", meta.import.title || "如何导入");
+    appendText(guide, "h3", pick(meta.import.title, meta.import.titleEn) || (en ? "How to import" : "如何导入"));
     const ol = document.createElement("ol");
     ol.className = "workshop-steps";
-    toArray(meta.import.steps).forEach((s) => { const li = document.createElement("li"); li.textContent = s; ol.append(li); });
+    toArray(pick(meta.import.steps, meta.import.stepsEn)).forEach((s) => { const li = document.createElement("li"); li.textContent = s; ol.append(li); });
     guide.append(ol);
-    if (meta.import.tip) appendText(guide, "p", meta.import.tip);
+    if (meta.import.tip) appendText(guide, "p", pick(meta.import.tip, meta.import.tipEn));
     el.workshopContent.append(guide);
   }
 
   // 免责声明 + 实时源
   if (meta.disclaimer) {
     const warn = create("div", "workshop-disclaimer");
-    appendText(warn, "p", meta.disclaimer);
+    appendText(warn, "p", pick(meta.disclaimer, meta.disclaimerEn));
     if (meta.liveSource) {
       const a = document.createElement("a");
       a.href = meta.liveSource; a.target = "_blank"; a.rel = "noopener noreferrer";
       a.className = "hero-link";
-      a.textContent = "打开 workshop.codes（实时最新）";
+      a.textContent = pick(meta.liveSourceLabel, meta.liveSourceLabelEn) || "workshop.codes";
       warn.append(a);
     }
     el.workshopContent.append(warn);
@@ -3158,7 +3160,7 @@ function renderWorkshop(message = "") {
 
   if (!categories.length) {
     const empty = create("p", "empty-state");
-    empty.textContent = "工坊数据未加载。";
+    empty.textContent = en ? "Workshop data not loaded." : "工坊数据未加载。";
     el.workshopContent.append(empty);
     return;
   }
@@ -3167,14 +3169,14 @@ function renderWorkshop(message = "") {
     const card = create("div", "team-card workshop-cat");
     const head = create("div", "section-head");
     const titleBox = create("div");
-    appendText(titleBox, "h3", cat.name);
-    if (cat.desc) appendText(titleBox, "p", cat.desc);
+    appendText(titleBox, "h3", pick(cat.name, cat.nameEn));
+    if (cat.desc) appendText(titleBox, "p", pick(cat.desc, cat.descEn));
     head.append(titleBox);
     if (cat.search) {
       const a = document.createElement("a");
       a.href = cat.search; a.target = "_blank"; a.rel = "noopener noreferrer";
       a.className = "hero-link";
-      a.textContent = "更多 ↗";
+      a.textContent = isEnglish() ? "More ↗" : "更多 ↗";
       head.append(a);
     }
     card.append(head);
@@ -3188,9 +3190,9 @@ function renderWorkshop(message = "") {
       codeBtn.setAttribute("aria-label", `复制工坊代码 ${c.code}`);
       codeBtn.textContent = c.code;
       const info = create("div", "workshop-code-info");
-      appendText(info, "strong", c.name || c.code);
-      if (c.note) appendText(info, "span", c.note);
-      if (c.source) appendText(info, "small", `来源：${c.source}`);
+      appendText(info, "strong", pick(c.name, c.nameEn) || c.code);
+      if (c.note) appendText(info, "span", pick(c.note, c.noteEn));
+      if (c.source) appendText(info, "small", `${en ? "Source" : "来源"}：${c.source}`);
       row.append(codeBtn, info);
       list.append(row);
     });
@@ -3276,7 +3278,7 @@ function renderMe(message = "") {
   clearBtn.type = "button";
   clearBtn.textContent = isEnglish() ? "Clear local data" : "清空本地数据";
   clearBtn.addEventListener("click", () => {
-    if (window.confirm("确定清空本应用全部本地数据？此操作不可撤销。")) {
+    if (window.confirm((isEnglish() ? "Clear all local data for this app? This cannot be undone." : "确定清空本应用全部本地数据？此操作不可撤销。"))) {
       clearAllLocal();
       state.profile = loadProfile();
       state.favorites = new Set();
@@ -3284,7 +3286,7 @@ function renderMe(message = "") {
       state.team = [];
       state.journalEntries = [];
       renderHeroGrid();
-      renderMe("已清空全部本地数据。");
+      renderMe(isEnglish() ? "All local data cleared." : "已清空全部本地数据。");
     }
   });
   tools.append(exportBtn, importBtn, clearBtn);
@@ -3383,9 +3385,9 @@ function exportProfileBackup() {
     a.click();
     a.remove();
     window.setTimeout(() => URL.revokeObjectURL(url), 0);
-    renderMe("已导出全部本地数据备份。");
+    renderMe(isEnglish() ? "Full local backup exported." : "已导出全部本地数据备份。");
   } catch {
-    renderMe("导出失败，请稍后重试。");
+    renderMe(isEnglish() ? "Export failed, try again later." : "导出失败，请稍后重试。");
   }
 }
 
@@ -3410,7 +3412,7 @@ function importProfileBackup() {
       renderHeroGrid();
       renderMe(`已导入备份，恢复 ${res.count} 项。`);
     } catch {
-      renderMe("导入失败：无法读取这个文件。");
+      renderMe(isEnglish() ? "Import failed: could not read this file." : "导入失败：无法读取这个文件。");
     }
   });
   input.click();
