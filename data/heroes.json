@@ -2,7 +2,7 @@
   "meta": {
     "game": "Overwatch (2026 起官方去掉 \"2\")",
     "season": "Season 3：Into the Tiger's Den (Reign of Talon) / 2026-06-16",
-    "note": "evergreen 字段=英雄基础kit与经典克制(稳定)；tier/ban/分段=当前meta(随补丁变，见 docs/SOURCES.md)。Perk为2选1天赋。最新英雄 Shion(Hero 52, S3, 2026-06-16) 已联网核实。",
+    "note": "evergreen 字段=英雄基础kit与经典克制(稳定)；tier/ban/分段=当前meta(随补丁变，见 docs/SOURCES.md)。Perk为2选1天赋。最新英雄 Shion(Hero 52, S3, 2026-06-16) 已联网核实。 Perk(双天赋)已补全(英文官方名+中文效果,来源 dotesports/dexerto/sportskeeda/fandom 2026-06,domina/anran/vendetta 因官方未公开暂缺)。",
     "updated": "2026-06-20"
   },
   "heroes": [
@@ -564,21 +564,29 @@
       "perks": {
         "minor": [
           {
-            "nameZh": "Off the Top",
-            "desc": "跃击斩击对250血以上敌人多30%伤害"
+            "nameZh": "居高临下",
+            "name": "Off the Top",
+            "desc": "跃击斩对250+血量敌人+30%伤"
+          },
+          {
+            "nameZh": "重整",
+            "name": "Reconstitution",
+            "desc": "锯齿墙命中给尖刺护盾充能25,最多+50"
           }
         ],
         "major": [
           {
-            "nameZh": "Anarchic Zeal",
-            "desc": "尖刺守护尖刺获25%吸血"
+            "nameZh": "无序狂热",
+            "name": "Anarchic Zeal",
+            "desc": "尖刺护盾+25%吸血"
           },
           {
-            "nameZh": "Deep Leap",
-            "desc": "暴烈跃击距离+20%"
+            "nameZh": "深跃",
+            "name": "Deep Leap",
+            "desc": "跃击射程+20%"
           }
         ],
-        "recommended": "续航选 Anarchic Zeal，切入选 Deep Leap"
+        "recommended": "缠斗续航选无序狂热,切入选深跃"
       },
       "position": {
         "zh": "前中排近身缠斗，用尖刺墙分割战场、跃击切入软目标",
@@ -2434,7 +2442,34 @@
         "续航"
       ],
       "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/33d39bb439c08975197fc52eff4874716839711b5356c4fdc174f9c24bac1d0e.png",
-      "officialSubrole": "bruiser"
+      "officialSubrole": "bruiser",
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "动能弹链",
+            "name": "Kinetic Bandolier",
+            "desc": "冲撞时装填最多150发"
+          },
+          {
+            "nameZh": "双心",
+            "name": "Two Hearts",
+            "desc": "占点时算2名英雄且每秒回20"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "火行者",
+            "name": "Firewalker",
+            "desc": "冲撞点燃命中的敌人"
+          },
+          {
+            "nameZh": "战斗燃料",
+            "name": "Combat Fuel",
+            "desc": "爆头给下次强心过量血,最多100"
+          }
+        ],
+        "recommended": "占点续航选双心,缠斗选火行者"
+      }
     },
     {
       "id": "reaper",
@@ -2533,7 +2568,29 @@
         "吸血"
       ],
       "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/dc6ff07ac790c00dc95a40882449617bb6e0e38906b353a630cffe0c815270a9.png",
-      "officialSubrole": "flanker"
+      "officialSubrole": "flanker",
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "影步疾行",
+            "name": null,
+            "desc": "离开幽灵形态后2秒内+30%移速"
+          },
+          {
+            "nameZh": "灵魂收割",
+            "name": null,
+            "desc": "拾取敌人死亡掉落的灵魂球回复50血"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "地狱火霰弹",
+            "name": "Hellfire Shotguns",
+            "desc": "霰弹获得远程射击,可远距离贡献伤害/补刀"
+          }
+        ],
+        "recommended": "近身缠斗常规,需要补远刀选地狱火霰弹"
+      }
     },
     {
       "id": "cassidy",
@@ -2631,7 +2688,34 @@
         "稳定"
       ],
       "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/9240cd64cc8ef58df9acbf55204ab1b5d8578f743fda5931f0dbccbd75ab841b.png",
-      "officialSubrole": "sharpshooter"
+      "officialSubrole": "sharpshooter",
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "快速拔枪",
+            "name": "Quick Draw",
+            "desc": "扇形射击可单独控制,爆头额外+50%伤害"
+          },
+          {
+            "nameZh": "午后两点",
+            "name": "2 Past Noon",
+            "desc": "死神之眼完全过期返还30%大招充能"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "枪手",
+            "name": "Gun Slingin'",
+            "desc": "主火爆头使翻滚CD-3秒"
+          },
+          {
+            "nameZh": "砰砰",
+            "name": "Bang Bang",
+            "desc": "投掷第二枚飞更远的闪光弹,但两枚-30%伤害"
+          }
+        ],
+        "recommended": "反突进选砰砰双闪,对枪流选快速拔枪"
+      }
     },
     {
       "id": "widowmaker",
@@ -2731,7 +2815,34 @@
         "高技巧"
       ],
       "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/6e4702b45f196aaf51555cf57327322721f45458b17f5f0643ed008a88378259.png",
-      "officialSubrole": "sharpshooter"
+      "officialSubrole": "sharpshooter",
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "精准节流",
+            "name": "Scoped Efficiency",
+            "desc": "开镜每发耗3弹而非5弹"
+          },
+          {
+            "nameZh": "聚焦瞄准",
+            "name": "Focused Aim",
+            "desc": "红外侦测期间开镜充能+50%"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "脱身计划",
+            "name": "Escape Plan",
+            "desc": "开镜命中减少抓钩CD最多4秒"
+          },
+          {
+            "nameZh": "致命双雷",
+            "name": "Deadly Deux",
+            "desc": "毒雷+50%伤害且+1充能,可同时2个"
+          }
+        ],
+        "recommended": "上分点杀选脱身计划,守点骚扰选致命双雷"
+      }
     },
     {
       "id": "echo",
@@ -2835,7 +2946,34 @@
         "复制大招"
       ],
       "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/d4f2d5b0c2b7e82d61353186c5f23152ccba9d3569b50839aa580dca3e9114ba.png",
-      "officialSubrole": "recon"
+      "officialSubrole": "recon",
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "友方成像",
+            "name": "Friendly Imaging",
+            "desc": "复制可选择队友"
+          },
+          {
+            "nameZh": "强化复制",
+            "name": "Enhanced Duplication",
+            "desc": "复制期间克隆首个大招延长复制3秒"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "全弹齐射",
+            "name": "Full Salvo",
+            "desc": "黏弹+50%数量,但每发-15%伤"
+          },
+          {
+            "nameZh": "强光束",
+            "name": "High Beams",
+            "desc": "聚焦光束击杀重置飞行CD"
+          }
+        ],
+        "recommended": "打架选友方成像,补刀选强光束"
+      }
     },
     {
       "id": "mei",
@@ -2934,7 +3072,34 @@
         "反突进"
       ],
       "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/4a55ced3bd597fb08e0fde9dc007f8543ac616ba98ca3db9b0e4d871a8ae17f8.png",
-      "officialSubrole": "specialist"
+      "officialSubrole": "specialist",
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "寒意蔓延",
+            "name": "Chilling Reach",
+            "desc": "主火射程+30%"
+          },
+          {
+            "nameZh": "永冻",
+            "name": "Permafrost",
+            "desc": "冰墙持续与CD各+2秒"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "刺骨寒冷",
+            "name": "Biting Cold",
+            "desc": "副火命中减速15%,最多叠至30%"
+          },
+          {
+            "nameZh": "急冻风暴",
+            "name": "Cryo-Storm",
+            "desc": "急冻时减速并对周围每秒70伤害"
+          }
+        ],
+        "recommended": "分割守点选永冻+急冻风暴,远程消耗选寒意蔓延"
+      }
     },
     {
       "id": "sombra",
@@ -3034,7 +3199,34 @@
         "扰乱"
       ],
       "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/47727b02a16e3bd7b2447d86ae1edf11587bc320b2aecb4f2f16a7ca4ad4e8a0.png",
-      "officialSubrole": "recon"
+      "officialSubrole": "recon",
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "隐身黑客",
+            "name": null,
+            "desc": "隐身时可黑入,成功黑入延长隐身2秒"
+          },
+          {
+            "nameZh": "熟练黑客",
+            "name": "Adept Hacker",
+            "desc": "黑入补给包给自己最多50过量血"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "白帽",
+            "name": "White Hat",
+            "desc": "可黑入队友,2秒回复100血"
+          },
+          {
+            "nameZh": "栈溢出",
+            "name": "Stack Overflow",
+            "desc": "黑入沉默时长+100%,但范围-30%"
+          }
+        ],
+        "recommended": "打架辅助选白帽,封技能切人选栈溢出"
+      }
     },
     {
       "id": "junkrat",
@@ -3132,7 +3324,34 @@
         "守点"
       ],
       "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/7660b9fc6f25f30858fdd8797fe0d52b2306f1e78fef99843f58a274e69af046.png",
-      "officialSubrole": "specialist"
+      "officialSubrole": "specialist",
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "铝制框架",
+            "name": "Aluminium Frame",
+            "desc": "钢铁陷阱投掷距离+50%"
+          },
+          {
+            "nameZh": "硝基加速",
+            "name": "Nitro Boost",
+            "desc": "大招期间可加速,但大招-50%伤害"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "碎片炮",
+            "name": "Frag Cannon",
+            "desc": "榴弹弹速+40%,但弹容-1"
+          },
+          {
+            "nameZh": "滴答",
+            "name": "Tick Tock",
+            "desc": "震荡雷落地0.5秒后武装,伤+50%/范围+50%/血+200%"
+          }
+        ],
+        "recommended": "区域封锁选滴答,对枪压制选碎片炮"
+      }
     },
     {
       "id": "roadhog",
@@ -3230,7 +3449,34 @@
         "自给续航"
       ],
       "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/89ddf07e4b619ed96169042e296a1b8856d102746f35add88284b44a9a5a6a03.png",
-      "officialSubrole": "bruiser"
+      "officialSubrole": "bruiser",
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "废料钩",
+            "name": "Scrap Hook",
+            "desc": "钩中命中回2发弹药"
+          },
+          {
+            "nameZh": "猪圈远投",
+            "name": "Hog Toss",
+            "desc": "猪圈投掷距离+50%"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "活力",
+            "name": "Invigorate",
+            "desc": "喘息时移速+30%"
+          },
+          {
+            "nameZh": "氢气外泄",
+            "name": "Hogdrogen Exposure",
+            "desc": "喘息也治疗周围队友(50%疗量)"
+          }
+        ],
+        "recommended": "抓单选活力,团辅选氢气外泄"
+      }
     },
     {
       "id": "doomfist",
@@ -3335,7 +3581,34 @@
         "高技巧"
       ],
       "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/ff5c54f43ad253c7faeda9c4ed31d42582ea6b19205d197866f3dd0c0aa14c16.png",
-      "officialSubrole": "initiator"
+      "officialSubrole": "initiator",
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "一二连击",
+            "name": "One-Two",
+            "desc": "火箭重拳命中装满手炮弹药"
+          },
+          {
+            "nameZh": "适者生存",
+            "name": "Survival of the Fittest",
+            "desc": "最佳防御击杀给25过量血且上限+50%"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "震荡赋能",
+            "name": "Seismic Empowerment",
+            "desc": "震荡重踏击中3+敌人强化下次重拳"
+          },
+          {
+            "nameZh": "能量矩阵",
+            "name": "Power Matrix",
+            "desc": "能量阻挡前1秒可吸收投射物"
+          }
+        ],
+        "recommended": "切后排选震荡赋能,抗poke选能量矩阵"
+      }
     },
     {
       "id": "ramattra",
@@ -3438,7 +3711,34 @@
         "控制"
       ],
       "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/ddef7c9fb8ce4256e8508196b486f81950efe7aaa6cf27fec4668beb4cd15774.png",
-      "officialSubrole": "stalwart"
+      "officialSubrole": "stalwart",
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "虚空涌动",
+            "name": "Void Surge",
+            "desc": "虚空连射期间周期性多射6发"
+          },
+          {
+            "nameZh": "延展屏障",
+            "name": "Prolonged Barrier",
+            "desc": "虚空屏障持续+25%"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "纳米修复",
+            "name": "Nanite Repair",
+            "desc": "处于贪婪漩涡内每秒回50血"
+          },
+          {
+            "nameZh": "复仇漩涡",
+            "name": "Vengeful Vortex",
+            "desc": "漩涡空中时再按E引爆,50伤并下拉敌人"
+          }
+        ],
+        "recommended": "缠斗续航选纳米修复,控场选复仇漩涡"
+      }
     },
     {
       "id": "junkerqueen",
@@ -3536,7 +3836,34 @@
         "反治疗大招"
       ],
       "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/06eeecb359f311f43a8f5121d4f9f3a93c565d70b30e94ef543c05596c9a39dc.png",
-      "officialSubrole": "stalwart"
+      "officialSubrole": "stalwart",
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "撕裂回召",
+            "name": "Rending Recall",
+            "desc": "从插中目标召回锯齿刃刷新其流血"
+          },
+          {
+            "nameZh": "战斗怒吼",
+            "name": "Battle Shout",
+            "desc": "战吼满填霰弹枪且队友装填+50%"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "深度创伤",
+            "name": "Deep Wounds",
+            "desc": "霰弹命中延长该敌流血0.25秒"
+          },
+          {
+            "nameZh": "野蛮饱足",
+            "name": "Savage Satiation",
+            "desc": "狂乱冲撞冲击伤害100%吸血"
+          }
+        ],
+        "recommended": "缠斗续航选野蛮饱足,流血滚雪球选深度创伤"
+      }
     },
     {
       "id": "wreckingball",
@@ -3642,7 +3969,34 @@
         "高技巧"
       ],
       "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/9ef1d58867136e0b26f928d896000b9dab216118f6e2f59e53f2e975e1e27afa.png",
-      "officialSubrole": "initiator"
+      "officialSubrole": "initiator",
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "压路机",
+            "name": "Steamroller",
+            "desc": "滚动撞击对坦克+100%伤害"
+          },
+          {
+            "nameZh": "囤物鼠",
+            "name": "Pack Rat",
+            "desc": "拾取补给额外回100血"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "滞空",
+            "name": "Hang Time",
+            "desc": "桩击蓄力更久,获得空中操控并最多+50%伤"
+          },
+          {
+            "nameZh": "传输效率",
+            "name": "Transfer Efficiency",
+            "desc": "再激活自适应护盾每受益队友减1.5秒CD且+33%护盾"
+          }
+        ],
+        "recommended": "切坦选压路机+滞空,团队保护选传输效率"
+      }
     },
     {
       "id": "hanzo",
@@ -3741,7 +4095,34 @@
         "高技巧"
       ],
       "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/78b61c3e806fb26b02b8980fba62189155074fc15bd865b0883268e546030be5.png",
-      "officialSubrole": "sharpshooter"
+      "officialSubrole": "sharpshooter",
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "音波干扰",
+            "name": "Sonic Disruption",
+            "desc": "音波箭黑入周围补给包12秒"
+          },
+          {
+            "nameZh": "散射箭",
+            "name": "Scatter Arrows",
+            "desc": "风暴箭首次弹射分裂成3支并额外弹两次"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "龙之怒",
+            "name": "Dragon Fury",
+            "desc": "主火命中后1秒内+25%攻速"
+          },
+          {
+            "nameZh": "山神步法",
+            "name": "Yamagami Technique",
+            "desc": "爬墙使突进CD加速250%"
+          }
+        ],
+        "recommended": "爆发对枪选龙之怒,机动选山神步法"
+      }
     },
     {
       "id": "bastion",
@@ -3840,7 +4221,34 @@
         "守点"
       ],
       "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/4ede795c2a681aaccfa72d0c901cba0cb8a2c292fd6a97b2ba9faed161c2d184.png",
-      "officialSubrole": "specialist"
+      "officialSubrole": "specialist",
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "智能炸弹",
+            "name": "Smart Bomb",
+            "desc": "战术雷自击退+25%且不再自伤"
+          },
+          {
+            "nameZh": "装甲火炮",
+            "name": "Armored Artillery",
+            "desc": "火炮形态给300临时过量血"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "林霍尔炸药",
+            "name": "Lindholm Explosives",
+            "desc": "突击形态改为缓速发射爆炸弹"
+          },
+          {
+            "nameZh": "自我修复",
+            "name": "Self-Repair",
+            "desc": "按E快速自我治疗"
+          }
+        ],
+        "recommended": "守点融坦选林霍尔炸药,生存选自我修复"
+      }
     },
     {
       "id": "symmetra",
@@ -3939,7 +4347,34 @@
         "守点"
       ],
       "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/ebec57e8bd68b3d4383edfeb34f8f52dd0b94a6467d594c2fee722e8a97c32aa.png",
-      "officialSubrole": "specialist"
+      "officialSubrole": "specialist",
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "哨戒容量",
+            "name": "Sentry Capacity",
+            "desc": "哨戒炮额外+1充能"
+          },
+          {
+            "nameZh": "进阶传送",
+            "name": "Advanced Teleportation",
+            "desc": "传送门射程+50%"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "完美校准",
+            "name": "Perfect Alignment",
+            "desc": "主火每提升一档充能射程+15%"
+          },
+          {
+            "nameZh": "护盾电池",
+            "name": "Shield Battery",
+            "desc": "传送门10米内每秒回20护盾"
+          }
+        ],
+        "recommended": "守点控制选哨戒容量,对枪选完美校准"
+      }
     },
     {
       "id": "torbjorn",
@@ -4038,7 +4473,34 @@
         "反突进"
       ],
       "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/ce17118cedc29b0d2ac1e059666bed36b9531c85079b0b894bb402d12c917ba9.png",
-      "officialSubrole": "specialist"
+      "officialSubrole": "specialist",
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "工匠",
+            "name": "Craftsman",
+            "desc": "锻造锤可给队友护甲,修理治疗+25%"
+          },
+          {
+            "nameZh": "满装填",
+            "name": "Fully Loaded",
+            "desc": "过载时满填铆钉枪"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "锚栓",
+            "name": "Anchor Bolts",
+            "desc": "炮台投掷+50%并可贴墙/天花板"
+          },
+          {
+            "nameZh": "过载炮台",
+            "name": "Overloaded Turret",
+            "desc": "过载强化炮台5秒,增血增伤"
+          }
+        ],
+        "recommended": "守点选锚栓,推进选过载炮台"
+      }
     },
     {
       "id": "anran",
@@ -4589,7 +5051,34 @@
         "群疗"
       ],
       "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/795fba91376d87d441a7f359ae12a3175dfa95825ccc4414cc6b95b129fc4cb0.png",
-      "officialSubrole": "survivor"
+      "officialSubrole": "survivor",
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "屏障修复",
+            "name": "Barrier Restoration",
+            "desc": "盾击命中回复护盾100"
+          },
+          {
+            "nameZh": "士气提升",
+            "name": "Morale Boost",
+            "desc": "鞭击触发的激励多持续3秒"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "快速修复",
+            "name": "Quick Fix",
+            "desc": "维修包对危血队友额外即回35"
+          },
+          {
+            "nameZh": "鞭笞",
+            "name": "Whiplash",
+            "desc": "鞭击击退可将敌撞墙,额外+50伤"
+          }
+        ],
+        "recommended": "反突进选屏障修复,团辅选快速修复"
+      }
     },
     {
       "id": "illari",
@@ -4942,7 +5431,34 @@
         "近身爆发"
       ],
       "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/dcab9123f5f55df22e54d4e797de43c71b917e0149dd059a7fd6136f48464cd0.png",
-      "officialSubrole": "flanker"
+      "officialSubrole": "flanker",
+      "perks": {
+        "minor": [
+          {
+            "nameZh": "地震感知",
+            "name": "Seismic Sense",
+            "desc": "地下时感知25米内敌人"
+          },
+          {
+            "nameZh": "挖掘亢奋",
+            "name": "Excavation Exhilaration",
+            "desc": "地动期间CD刷新+300%"
+          }
+        ],
+        "major": [
+          {
+            "nameZh": "智能挖掘机",
+            "name": "SMART-R Excavator",
+            "desc": "钻机射程+25%"
+          },
+          {
+            "nameZh": "尘土覆身",
+            "name": "Covered in Dirt",
+            "desc": "重击造成伤害获得最多30护盾"
+          }
+        ],
+        "recommended": "切后排选地震感知,缠斗选尘土覆身"
+      }
     },
     {
       "id": "lifeweaver",
