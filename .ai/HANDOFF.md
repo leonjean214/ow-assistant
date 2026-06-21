@@ -1,5 +1,31 @@
 # Handoff
 
+## Phase 20 已完成
+
+- 已实现 Meta 视图增强，未引入框架、构建或依赖，未修改 `data/` 或 `sw.js`，未提交 git commit。
+- `index.html` 在 `#metaView .meta-layout` 新增 `#metaSeasonNote` 和 `#metaStrongList` 稳定容器，保留既有 `#tierGrid`、`#banBoard`、`#rolePassives` hook。
+- `src/app.js` 在数据加载后保存 `state.meta = data.meta || {}`；`renderMetaDashboard()` 现在渲染当前赛季/版本提示、各职业强势榜、Tier 网格、Ban 三栏和职业打法速览。
+- 版本提示读取 `meta.season` 与 `meta.updated`，显示当前 Season 3：Into the Tiger's Den (Reign of Talon) / 2026-06-16 与数据更新日期。
+- 各职业强势榜按 `tank/damage/support` 三列展示 Top 6，排序复用 `tierSortRank()`，S>A>B>C，缺失/无效 tier 垫底并显示「未定级」。
+- 强势榜项复用 `createAvatar(hero)`、`createBadge(..., "tier-badge")`，包含头像、中英名、tier 徽章，并通过 `data-jump-hero` 打开 `openDetail()`。
+- `#metaView` 新增 click 委托处理 `button[data-jump-hero]`；Tier 网格英雄项也改为 `data-jump-hero`，不影响 Ban 三栏现有 click 绑定和 `rolePassives`。
+- `src/styles.css` 新增版本提示条、强势榜三列/卡片/item、未定级区和响应式规则；`375px` 下 Meta 不产生页面横向溢出。
+- `tools/qa.mjs` 新增 Phase 20 用例：`#/meta` 深链、Season 3 提示、强势榜三列、头像/中英名/tier 结构、Tier 排序、强势榜和 Tier 网格点击开详情、缺 tier/空态兜底路径、375px 无横向溢出。
+- `README.md` 已补充 `#/meta` 深链和 Meta 功能说明；`docs/ROADMAP.md` 已标记 Phase 20 完成。
+
+## Phase 20 验证记录
+
+- 静态检查：
+  - `for f in src/*.js sw.js tools/qa.mjs; do node --check "$f" || exit 1; done`
+  - `rg -n "innerHTML|insertAdjacentHTML|outerHTML" . --glob '!node_modules/**' --glob '!*.png' --glob '!.git/**'` 无命中
+- Headless Chrome/CDP 回归：
+  - 启动 `python3 -m http.server 8125`
+  - 启动 Chrome：`"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu --no-sandbox --remote-debugging-port=9222 --user-data-dir=/tmp/ow-chrome-qa-phase20`
+  - `BASE=http://localhost:8125 node tools/qa.mjs`
+  - 结果：`77/77` 通过，`0` 个运行时错误。
+  - 覆盖 Phase 20：Season 3 版本提示正确、各职业强势榜按 Tier 排序、强势榜项含头像/中英名/tier、强势榜和 Tier 网格可点击打开详情、缺 tier/空态兜底路径存在、375px Meta 无横向溢出。
+  - 覆盖回归：英雄库列表/排序/标签/收藏、对比深链、组队深链、克制网、克制计算器、详情抽屉、主题、快捷键、工坊、个人中心、GEP 消息桥、overlay。
+
 ## Phase 19 已完成
 
 - 已实现「克制网」总览视图，未引入框架、构建或依赖，未提交 git commit。

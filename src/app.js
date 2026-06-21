@@ -32,6 +32,7 @@ const MAX_COMPARE = 4;
 const TEAM_KEY = "ow-team";
 const TEAM_ROUTE_PREFIX = "#/team/";
 const MAX_TEAM = 5;
+const META_STRONG_LIMIT = 6;
 const FOCUSABLE_SELECTOR = [
   "a[href]",
   "button:not([disabled])",
@@ -42,6 +43,7 @@ const FOCUSABLE_SELECTOR = [
 ].join(",");
 
 const state = {
+  meta: {},
   heroes: [],
   byId: new Map(),
   heroView: "grid",
@@ -103,6 +105,7 @@ async function init() {
   state.heroView = loadHeroView();
   try {
     const [data, mapMeta, patches, workshop, counterNotes] = await Promise.all([loadHeroData(), loadMapMeta(), loadPatches(), loadWorkshop(), loadCounterNotes()]);
+    state.meta = data.meta || {};
     state.heroes = data.heroes;
     state.byId = data.byId;
     state.compare = loadCompare();
@@ -158,7 +161,7 @@ function bindElements() {
     "journalCount", "journalForm", "journalResultGroup", "journalHeroSelect", "journalMapSelect", "journalEnemyNote", "journalNote",
     "saveJournal", "clearJournal", "exportJournal", "importJournal", "replaceJournalToggle", "shareJournal", "journalImportFile", "journalShareCanvas",
     "journalStatus", "journalSummary", "journalHeroTable", "journalMapTable", "journalList", "journalEmpty",
-    "mapCount", "mapModeTabs", "mapsState", "mapsGrid", "mapDetail", "tierGrid", "banBoard", "rolePassives",
+    "mapCount", "mapModeTabs", "mapsState", "mapsGrid", "mapDetail", "metaView", "metaSeasonNote", "metaStrongList", "tierGrid", "banBoard", "rolePassives",
     "overlayView", "overlayCounterMount", "overlayBan"
   ]) {
     el[id] = document.getElementById(id);
@@ -241,6 +244,10 @@ function bindEvents() {
     }
     const title = event.target.closest("button[data-matrix-hero]");
     if (title) openDetail(title.dataset.matrixHero);
+  });
+  if (el.metaView) el.metaView.addEventListener("click", (event) => {
+    const jump = event.target.closest("button[data-jump-hero]");
+    if (jump) openDetail(jump.dataset.jumpHero);
   });
   el.patchRoleFilter.addEventListener("change", () => {
     state.patchFilters.role = el.patchRoleFilter.value;
@@ -3881,9 +3888,122 @@ function createMapRecoColumn(title, items) {
 }
 
 function renderMetaDashboard() {
+  renderMetaSeasonNote();
+  renderMetaStrongList();
   renderTierGrid();
   renderBanBoard();
   renderRolePassives();
+}
+
+function renderMetaSeasonNote() {
+  if (!el.metaSeasonNote) return;
+  el.metaSeasonNote.replaceChildren();
+  const note = create("section", "meta-season-note");
+  note.setAttribute("aria-labelledby", "metaSeasonNoteTitle");
+  const title = create("strong");
+  title.id = "metaSeasonNoteTitle";
+  title.textContent = formatMetaSeasonTitle();
+  const detail = create("span");
+  detail.textContent = "tier/ban 为当前 meta 经验值，随补丁变";
+  note.append(title, detail);
+  el.metaSeasonNote.append(note);
+}
+
+function formatMetaSeasonTitle() {
+  const meta = state.meta || {};
+  const seasonRaw = String(meta.season || "").trim();
+  const updated = String(meta.updated || "").trim();
+  const [seasonPart, seasonDate] = seasonRaw.split(/\s*\/\s*/);
+  const season = seasonPart || "Season 未知";
+  const date = seasonDate || updated;
+  const dateText = date ? `（${date}）` : "";
+  const updateText = updated ? ` · 数据更新 ${updated}` : "";
+  return `当前 ${season}${dateText}${updateText}`;
+}
+
+function renderMetaStrongList() {
+  if (!el.metaStrongList) return;
+  el.metaStrongList.replaceChildren();
+  const wrap = create("section", "dashboard-card meta-strong-card");
+  wrap.setAttribute("aria-labelledby", "metaStrongTitle");
+  const titleRow = create("div", "meta-strong-head");
+  const text = create("div");
+  const title = create("h3");
+  title.id = "metaStrongTitle";
+  title.textContent = "各职业强势榜";
+  const desc = create("p");
+  desc.textContent = "按 Tier 从 S 到 C 排序，未定级英雄自动垫底。";
+  text.append(title, desc);
+  const count = createBadge(`Top ${META_STRONG_LIMIT}`, "tier-badge");
+  titleRow.append(text, count);
+  wrap.append(titleRow);
+
+  if (!state.heroes.length) {
+    const empty = create("p", "empty-state meta-empty");
+    empty.textContent = "暂无英雄数据，强势榜无法生成。";
+    wrap.append(empty);
+    el.metaStrongList.append(wrap);
+    return;
+  }
+
+  const columns = create("div", "meta-strong-columns");
+  ["tank", "damage", "support"].forEach((role) => {
+    columns.append(createMetaStrongRole(role));
+  });
+  wrap.append(columns);
+  el.metaStrongList.append(wrap);
+}
+
+function createMetaStrongRole(role) {
+  const column = create("section", "meta-strong-role");
+  const titleId = `metaStrongRole-${role}`;
+  column.setAttribute("aria-labelledby", titleId);
+  const head = create("div", "meta-strong-role-head");
+  const title = create("h4");
+  title.id = titleId;
+  title.textContent = ROLE_LABELS[role] || role;
+  const tip = create("span");
+  tip.textContent = roleNamesZh[role] || "";
+  head.append(title, tip);
+  column.append(head);
+
+  const heroes = sortedMetaHeroes(role).slice(0, META_STRONG_LIMIT);
+  if (!heroes.length) {
+    const empty = create("p", "meta-strong-empty");
+    empty.textContent = "暂无该职业英雄。";
+    column.append(empty);
+    return column;
+  }
+
+  const list = create("div", "meta-strong-list");
+  heroes.forEach((hero, index) => list.append(createMetaStrongItem(hero, index + 1)));
+  column.append(list);
+  return column;
+}
+
+function sortedMetaHeroes(role) {
+  const originalIndex = new Map(state.heroes.map((hero, index) => [hero.id, index]));
+  return state.heroes
+    .filter((hero) => hero.role === role)
+    .sort((a, b) => tierSortRank(a.tier) - tierSortRank(b.tier) || (originalIndex.get(a.id) ?? 0) - (originalIndex.get(b.id) ?? 0));
+}
+
+function createMetaStrongItem(hero, rank) {
+  const button = create("button", "meta-strong-item");
+  button.type = "button";
+  button.dataset.jumpHero = hero.id;
+  button.title = `查看 ${hero.nameZh} 详情`;
+  const rankNode = create("span", "meta-strong-rank");
+  rankNode.textContent = String(rank);
+  const names = create("span", "meta-strong-name");
+  appendText(names, "strong", hero.nameZh);
+  appendText(names, "span", hero.name);
+  button.append(rankNode, createAvatar(hero), names, createBadge(metaTierLabel(hero.tier), "tier-badge"));
+  return button;
+}
+
+function metaTierLabel(tier) {
+  return tierSortRank(tier) > 3 ? "未定级" : tier;
 }
 
 function renderTierGrid() {
@@ -3922,8 +4042,8 @@ function renderTierGrid() {
       state.heroes.filter((hero) => hero.role === role && hero.tier === tier).forEach((hero) => {
         const button = create("button", "portrait-btn");
         button.type = "button";
+        button.dataset.jumpHero = hero.id;
         button.title = hero.nameZh;
-        button.addEventListener("click", () => openDetail(hero.id));
         button.append(createAvatar(hero));
         row.append(button);
       });
@@ -3936,6 +4056,22 @@ function renderTierGrid() {
   });
   table.append(thead, tbody);
   wrap.append(table);
+  const unranked = state.heroes.filter((hero) => tierSortRank(hero.tier) > 3);
+  if (unranked.length) {
+    const unrankedBox = create("div", "tier-unranked");
+    appendText(unrankedBox, "h4", "未定级");
+    const row = create("div", "portrait-row");
+    unranked.forEach((hero) => {
+      const button = create("button", "portrait-btn");
+      button.type = "button";
+      button.dataset.jumpHero = hero.id;
+      button.title = hero.nameZh;
+      button.append(createAvatar(hero));
+      row.append(button);
+    });
+    unrankedBox.append(row);
+    wrap.append(unrankedBox);
+  }
   el.tierGrid.append(wrap);
 }
 
