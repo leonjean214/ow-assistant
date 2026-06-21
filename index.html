@@ -31,60 +31,60 @@
     <script defer src="./src/theme.js"></script>
   </head>
   <body>
-    <a class="skip-link" href="#main">跳到主内容</a>
+    <a class="skip-link" href="#main" data-i18n="skipMain">跳到主内容</a>
     <header class="topbar">
       <div class="topbar-inner">
         <div class="brand">
           <div class="brand-mark" aria-hidden="true">OW</div>
           <div>
-            <h1>OW 助手</h1>
-            <p id="dataMeta">读取英雄数据中...</p>
+            <h1 data-i18n="brandTitle">OW 助手</h1>
+            <p id="dataMeta" data-i18n="loadingHeroes">读取英雄数据中...</p>
           </div>
         </div>
-        <label class="top-search" aria-label="BattleTag 战绩搜索">
+        <label class="top-search" aria-label="BattleTag 战绩搜索" data-i18n-aria-label="battleTagSearch">
           <span>BattleTag</span>
-          <input id="playerSearchInput" type="search" placeholder="搜索玩家：Jay3 或 Jay3#1234" autocomplete="off">
+          <input id="playerSearchInput" type="search" placeholder="搜索玩家：Jay3 或 Jay3#1234" autocomplete="off" data-i18n-placeholder="playerSearchPlaceholder">
         </label>
         <div class="top-actions">
-          <button class="cmd-open" type="button" id="cmdOpen" aria-label="打开命令面板" aria-keyshortcuts="Control+K Meta+K">
-            <span>搜索</span>
+          <button class="cmd-open" type="button" id="cmdOpen" aria-label="打开命令面板" aria-keyshortcuts="Control+K Meta+K" data-i18n-aria-label="openCommand">
+            <span data-i18n="search">搜索</span>
             <kbd>⌘K</kbd>
           </button>
-          <button class="theme-toggle" type="button" id="themeToggle" aria-label="切换深浅主题" aria-pressed="false">
+          <button class="theme-toggle" type="button" id="themeToggle" aria-label="切换深浅主题" aria-pressed="false" data-i18n-aria-label="themeToggle">
             <span class="theme-toggle-icon" aria-hidden="true"></span>
-            <span class="theme-toggle-text">浅色</span>
+            <span class="theme-toggle-text" data-i18n="themeLight">浅色</span>
           </button>
           <span class="season-pill">S16</span>
-          <a class="overlay-link" href="?overlay=1" aria-label="打开 Overlay 模式">Overlay</a>
+          <a class="overlay-link" href="?overlay=1" aria-label="打开 Overlay 模式" data-i18n-aria-label="overlayMode">Overlay</a>
         </div>
       </div>
     </header>
 
-    <nav class="view-tabs" aria-label="主导航" role="tablist">
-      <button class="view-tab is-active" type="button" data-view="heroes" id="heroesTab">英雄库</button>
-      <button class="view-tab" type="button" data-view="compare" id="compareTab">英雄对比</button>
-      <button class="view-tab" type="button" data-view="matrix" id="matrixTab">克制网</button>
-      <button class="view-tab" type="button" data-view="me" id="meTab">个人中心</button>
-      <button class="view-tab" type="button" data-view="settings" id="settingsTab">设置</button>
-      <button class="view-tab" type="button" data-view="team" id="teamTab">组队</button>
-      <button class="view-tab" type="button" data-view="workshop" id="workshopTab">工坊</button>
-      <button class="view-tab" type="button" data-view="updates" id="updatesTab">更新</button>
-      <button class="view-tab" type="button" data-view="counter" id="counterTab">克制计算器</button>
-      <button class="view-tab" type="button" data-view="profile" id="profileTab">战绩查询</button>
-      <button class="view-tab" type="button" data-view="journal" id="journalTab">记录</button>
-      <button class="view-tab" type="button" data-view="maps" id="mapsTab">地图</button>
+    <nav class="view-tabs" aria-label="主导航" role="tablist" data-i18n-aria-label="mainNav">
+      <button class="view-tab is-active" type="button" data-view="heroes" id="heroesTab" data-i18n="navHeroes">英雄库</button>
+      <button class="view-tab" type="button" data-view="compare" id="compareTab" data-i18n="navCompare">英雄对比</button>
+      <button class="view-tab" type="button" data-view="matrix" id="matrixTab" data-i18n="navMatrix">克制网</button>
+      <button class="view-tab" type="button" data-view="me" id="meTab" data-i18n="navMe">个人中心</button>
+      <button class="view-tab" type="button" data-view="settings" id="settingsTab" data-i18n="navSettings">设置</button>
+      <button class="view-tab" type="button" data-view="team" id="teamTab" data-i18n="navTeam">组队</button>
+      <button class="view-tab" type="button" data-view="workshop" id="workshopTab" data-i18n="navWorkshop">工坊</button>
+      <button class="view-tab" type="button" data-view="updates" id="updatesTab" data-i18n="navUpdates">更新</button>
+      <button class="view-tab" type="button" data-view="counter" id="counterTab" data-i18n="navCounter">克制计算器</button>
+      <button class="view-tab" type="button" data-view="profile" id="profileTab" data-i18n="navProfile">战绩查询</button>
+      <button class="view-tab" type="button" data-view="journal" id="journalTab" data-i18n="navJournal">记录</button>
+      <button class="view-tab" type="button" data-view="maps" id="mapsTab" data-i18n="navMaps">地图</button>
       <button class="view-tab" type="button" data-view="meta" id="metaTab">Meta</button>
       <button class="view-tab" type="button" data-view="ban" id="banTab">Ban</button>
     </nav>
 
     <main class="app-shell" id="main" tabindex="-1">
-      <section class="overlay-shell" id="overlayView" hidden aria-label="Overlay 精简模式">
+      <section class="overlay-shell" id="overlayView" hidden aria-label="Overlay 精简模式" data-i18n-aria-label="overlayMode">
         <div class="overlay-head">
           <div>
             <p class="eyebrow">Overlay</p>
-            <h2>对局速查</h2>
+            <h2 data-i18n="overlayQuick">对局速查</h2>
           </div>
-          <a class="ghost-link" href="./">完整模式</a>
+          <a class="ghost-link" href="./" data-i18n="fullMode">完整模式</a>
         </div>
         <div class="overlay-grid">
           <div class="overlay-counter" id="overlayCounterMount"></div>
@@ -96,15 +96,15 @@
         <div class="section-head">
           <div>
             <p class="eyebrow">Hero Browser</p>
-            <h2 id="heroesTitle">英雄库</h2>
-            <p class="latest-hero-line" id="latestHeroLine">当前最新英雄：读取中...</p>
+            <h2 id="heroesTitle" data-i18n="navHeroes">英雄库</h2>
+            <p class="latest-hero-line" id="latestHeroLine" data-i18n="latestHeroLoading">当前最新英雄：读取中...</p>
           </div>
           <span class="count-pill" id="heroCount">0 位英雄</span>
         </div>
 
-        <div class="toolbar" aria-label="英雄筛选">
-          <div class="segmented" id="roleTabs" role="tablist" aria-label="职业筛选">
-            <button class="is-active" type="button" data-role="all">全部</button>
+        <div class="toolbar" aria-label="英雄筛选" data-i18n-aria-label="heroFilter">
+          <div class="segmented" id="roleTabs" role="tablist" aria-label="职业筛选" data-i18n-aria-label="roleFilter">
+            <button class="is-active" type="button" data-role="all" data-i18n="all">全部</button>
             <button type="button" data-role="tank">Tank</button>
             <button type="button" data-role="damage">Damage</button>
             <button type="button" data-role="support">Support</button>
@@ -112,7 +112,7 @@
           <label class="field">
             <span>Tier</span>
             <select id="tierFilter">
-              <option value="all">全部</option>
+              <option value="all" data-i18n="all">全部</option>
               <option value="S">S</option>
               <option value="A">A</option>
               <option value="B">B</option>
@@ -120,63 +120,63 @@
             </select>
           </label>
           <label class="field">
-            <span>Ban 优先级</span>
+            <span data-i18n="banPriority">Ban 优先级</span>
             <select id="banFilter">
-              <option value="all">全部</option>
+              <option value="all" data-i18n="all">全部</option>
               <option value="high">high</option>
               <option value="medium">medium</option>
               <option value="low">low</option>
             </select>
           </label>
           <label class="field">
-            <span>排序</span>
+            <span data-i18n="sort">排序</span>
             <select id="heroSortFilter">
-              <option value="default">默认</option>
-              <option value="tier">Tier 高→低</option>
-              <option value="diff-asc">难度 低→高</option>
-              <option value="diff-desc">难度 高→低</option>
-              <option value="hp-desc">总有效生命 高→低</option>
-              <option value="name">名称 A→Z</option>
+              <option value="default" data-i18n="sortDefault">默认</option>
+              <option value="tier" data-i18n="sortTier">Tier 高→低</option>
+              <option value="diff-asc" data-i18n="sortDifficultyAsc">难度 低→高</option>
+              <option value="diff-desc" data-i18n="sortDifficultyDesc">难度 高→低</option>
+              <option value="hp-desc" data-i18n="sortHpDesc">总有效生命 高→低</option>
+              <option value="name" data-i18n="sortName">名称 A→Z</option>
             </select>
           </label>
           <div class="field hero-view-field">
-            <span>视图</span>
-            <div class="segmented hero-view-toggle" id="heroViewToggle" role="group" aria-label="英雄库视图模式">
-              <button class="is-active" type="button" data-hero-view="grid" aria-pressed="true">卡片</button>
-              <button type="button" data-hero-view="list" aria-pressed="false">列表</button>
+            <span data-i18n="view">视图</span>
+            <div class="segmented hero-view-toggle" id="heroViewToggle" role="group" aria-label="英雄库视图模式" data-i18n-aria-label="heroViewMode">
+              <button class="is-active" type="button" data-hero-view="grid" aria-pressed="true" data-i18n="grid">卡片</button>
+              <button type="button" data-hero-view="list" aria-pressed="false" data-i18n="list">列表</button>
             </div>
           </div>
           <label class="field field-grow">
-            <span>搜索</span>
-            <input id="searchInput" type="search" placeholder="中文 / English / 标签">
+            <span data-i18n="search">搜索</span>
+            <input id="searchInput" type="search" placeholder="中文 / English / 标签" data-i18n-placeholder="heroSearchPlaceholder">
           </label>
           <label class="favorite-filter">
             <input id="favoriteOnlyToggle" type="checkbox">
-            <span>只看收藏</span>
+            <span data-i18n="favoriteOnly">只看收藏</span>
           </label>
         </div>
 
         <div class="tag-filter-panel" aria-labelledby="heroTagFilterLabel">
           <div class="tag-filter-head">
-            <span id="heroTagFilterLabel">标签筛选</span>
+            <span id="heroTagFilterLabel" data-i18n="tagFilter">标签筛选</span>
             <div class="tag-filter-actions">
-              <button class="ghost-btn tag-match-toggle" type="button" id="tagMatchToggle" aria-pressed="false">任一命中 OR</button>
-              <button class="ghost-btn" type="button" id="clearTagFilters" disabled>清空标签</button>
+              <button class="ghost-btn tag-match-toggle" type="button" id="tagMatchToggle" aria-pressed="false" data-i18n="tagAny">任一命中 OR</button>
+              <button class="ghost-btn" type="button" id="clearTagFilters" disabled data-i18n="clearTags">清空标签</button>
             </div>
           </div>
           <div class="tag-filter-list" id="heroTagFilters" role="group" aria-labelledby="heroTagFilterLabel"></div>
         </div>
 
         <details class="advisor-panel" id="heroRecommendPanel">
-          <summary>我该玩谁</summary>
-          <div class="recommend-controls" aria-label="新手英雄推荐器">
+          <summary data-i18n="beginnerAdvisor">我该玩谁</summary>
+          <div class="recommend-controls" aria-label="新手英雄推荐器" data-i18n-aria-label="beginnerAdvisorLabel">
             <label class="field">
-              <span>职业</span>
+              <span data-i18n="role">职业</span>
               <select id="recommendRole">
-                <option value="all">任意</option>
-                <option value="tank">重装</option>
-                <option value="damage">输出</option>
-                <option value="support">辅助</option>
+                <option value="all" data-i18n="any">任意</option>
+                <option value="tank" data-i18n="roleTank">重装</option>
+                <option value="damage" data-i18n="roleDamage">输出</option>
+                <option value="support" data-i18n="roleSupportAlt">辅助</option>
               </select>
             </label>
             <label class="field">
@@ -184,9 +184,9 @@
               <input id="recommendDifficulty" type="range" min="1" max="5" value="2">
             </label>
             <label class="field">
-              <span>风格标签</span>
+              <span data-i18n="styleTag">风格标签</span>
               <select id="recommendTag">
-                <option value="all">不限</option>
+                <option value="all" data-i18n="unlimited">不限</option>
               </select>
             </label>
           </div>
@@ -194,14 +194,14 @@
         </details>
 
         <div class="hero-grid" id="heroGrid" aria-live="polite" aria-busy="false"></div>
-        <p class="empty-state" id="heroEmpty" aria-live="polite" hidden>没有符合条件的英雄。</p>
+        <p class="empty-state" id="heroEmpty" aria-live="polite" hidden data-i18n="noHeroMatch">没有符合条件的英雄。</p>
       </section>
 
       <section class="panel view" id="compareView" aria-labelledby="compareTitle">
         <div class="section-head">
           <div>
             <p class="eyebrow">Hero Compare</p>
-            <h2 id="compareTitle">英雄对比</h2>
+            <h2 id="compareTitle" data-i18n="navCompare">英雄对比</h2>
           </div>
           <span class="count-pill" id="compareCount">0 / 4</span>
         </div>
@@ -212,23 +212,23 @@
         <div class="section-head">
           <div>
             <p class="eyebrow">Counter Matrix</p>
-            <h2 id="matrixTitle">克制网</h2>
+            <h2 id="matrixTitle" data-i18n="navMatrix">克制网</h2>
           </div>
           <span class="count-pill" id="matrixCount">0 位英雄</span>
         </div>
-        <div class="toolbar matrix-toolbar" aria-label="克制网筛选">
+        <div class="toolbar matrix-toolbar" aria-label="克制网筛选" data-i18n-aria-label="heroFilter">
           <div class="field matrix-role-field">
-            <span>职业</span>
-            <div class="segmented" id="matrixRoleTabs" role="group" aria-label="克制网职业筛选">
-              <button class="is-active" type="button" data-matrix-role="all" aria-pressed="true">全部</button>
-              <button type="button" data-matrix-role="tank" aria-pressed="false">坦</button>
-              <button type="button" data-matrix-role="damage" aria-pressed="false">输出</button>
-              <button type="button" data-matrix-role="support" aria-pressed="false">辅</button>
+            <span data-i18n="role">职业</span>
+            <div class="segmented" id="matrixRoleTabs" role="group" aria-label="克制网职业筛选" data-i18n-aria-label="roleFilter">
+              <button class="is-active" type="button" data-matrix-role="all" aria-pressed="true" data-i18n="all">全部</button>
+              <button type="button" data-matrix-role="tank" aria-pressed="false" data-i18n="shortTank">坦</button>
+              <button type="button" data-matrix-role="damage" aria-pressed="false" data-i18n="roleDamage">输出</button>
+              <button type="button" data-matrix-role="support" aria-pressed="false" data-i18n="shortSupport">辅</button>
             </div>
           </div>
           <label class="field field-grow">
-            <span>搜索</span>
-            <input id="matrixSearchInput" type="search" placeholder="英雄中文 / English / id">
+            <span data-i18n="search">搜索</span>
+            <input id="matrixSearchInput" type="search" placeholder="英雄中文 / English / id" data-i18n-placeholder="heroSearchPlaceholder">
           </label>
         </div>
         <div class="matrix-content" id="matrixContent" aria-live="polite"></div>
@@ -238,7 +238,7 @@
         <div class="section-head">
           <div>
             <p class="eyebrow">Team Builder</p>
-            <h2 id="teamTitle">组队 · 阵容分析</h2>
+            <h2 id="teamTitle" data-i18n="teamTitle">组队 · 阵容分析</h2>
           </div>
           <span class="count-pill" id="teamCount">0 / 5</span>
         </div>
@@ -249,7 +249,7 @@
         <div class="section-head">
           <div>
             <p class="eyebrow">Profile</p>
-            <h2 id="meTitle">个人中心</h2>
+            <h2 id="meTitle" data-i18n="navMe">个人中心</h2>
           </div>
         </div>
         <div class="me-content" id="meContent" aria-live="polite"></div>
@@ -259,9 +259,9 @@
         <div class="section-head">
           <div>
             <p class="eyebrow">Settings</p>
-            <h2 id="settingsTitle">设置</h2>
+            <h2 id="settingsTitle" data-i18n="navSettings">设置</h2>
           </div>
-          <span class="count-pill">偏好与关于</span>
+          <span class="count-pill" data-i18n="settingsSubtitle">偏好与关于</span>
         </div>
         <div class="settings-content" id="settingsContent" aria-live="polite"></div>
       </section>
@@ -270,7 +270,7 @@
         <div class="section-head">
           <div>
             <p class="eyebrow">Workshop</p>
-            <h2 id="workshopTitle">工坊代码</h2>
+            <h2 id="workshopTitle" data-i18n="workshopTitle">工坊代码</h2>
           </div>
         </div>
         <div class="workshop-content" id="workshopContent" aria-live="polite"></div>
@@ -280,14 +280,14 @@
         <div class="section-head">
           <div>
             <p class="eyebrow">Updates</p>
-            <h2 id="updatesTitle">更新</h2>
+            <h2 id="updatesTitle" data-i18n="navUpdates">更新</h2>
           </div>
-          <span class="count-pill">2026 英雄与补丁</span>
+          <span class="count-pill" data-i18n="updatesSubtitle">2026 英雄与补丁</span>
         </div>
 
         <section class="updates-section" aria-labelledby="timelineTitle">
           <div class="subsection-head">
-            <h3 id="timelineTitle">英雄时间线</h3>
+            <h3 id="timelineTitle" data-i18n="timelineTitle">英雄时间线</h3>
             <span class="badge">2026 新英雄</span>
           </div>
           <div class="timeline-grid" id="updatesTimeline" aria-live="polite"></div>
@@ -295,27 +295,27 @@
 
         <section class="updates-section" aria-labelledby="patchLogTitle">
           <div class="subsection-head">
-            <h3 id="patchLogTitle">补丁日志</h3>
+            <h3 id="patchLogTitle" data-i18n="patchLogTitle">补丁日志</h3>
           </div>
-          <div class="toolbar patch-toolbar" aria-label="补丁筛选">
+          <div class="toolbar patch-toolbar" aria-label="补丁筛选" data-i18n-aria-label="heroFilter">
             <label class="field">
-              <span>职业</span>
+              <span data-i18n="role">职业</span>
               <select id="patchRoleFilter">
-                <option value="all">全部</option>
-                <option value="tank">重装</option>
-                <option value="damage">输出</option>
-                <option value="support">支援</option>
+                <option value="all" data-i18n="all">全部</option>
+                <option value="tank" data-i18n="roleTank">重装</option>
+                <option value="damage" data-i18n="roleDamage">输出</option>
+                <option value="support" data-i18n="roleSupport">支援</option>
               </select>
             </label>
             <label class="field">
-              <span>类型</span>
+              <span data-i18n="type">类型</span>
               <select id="patchTypeFilter">
-                <option value="all">全部</option>
+                <option value="all" data-i18n="all">全部</option>
               </select>
             </label>
             <label class="field field-grow">
-              <span>搜索</span>
-              <input id="patchSearchInput" type="search" placeholder="英雄名 / 改动文本">
+              <span data-i18n="search">搜索</span>
+              <input id="patchSearchInput" type="search" placeholder="英雄名 / 改动文本" data-i18n-placeholder="patchSearchPlaceholder">
             </label>
           </div>
           <div class="patch-list" id="patchList" aria-live="polite"></div>
@@ -327,28 +327,28 @@
         <div class="section-head">
           <div>
             <p class="eyebrow">Counter Calculator</p>
-            <h2 id="counterTitle">克制计算器</h2>
+            <h2 id="counterTitle" data-i18n="navCounter">克制计算器</h2>
           </div>
-          <span class="count-pill">1-5 个敌方英雄</span>
+          <span class="count-pill" data-i18n="counterSubtitle">1-5 个敌方英雄</span>
         </div>
         <div class="counter-layout">
           <div class="counter-picker">
             <label class="field">
-              <span>输入敌方阵容</span>
-              <input id="enemyInput" type="text" placeholder="例：D.Va, 法老之鹰, ana">
+              <span data-i18n="enemyInputLabel">输入敌方阵容</span>
+              <input id="enemyInput" type="text" placeholder="例：D.Va, 法老之鹰, ana" data-i18n-placeholder="enemyInputPlaceholder">
             </label>
             <label class="field">
-              <span>我当前英雄</span>
+              <span data-i18n="currentHero">我当前英雄</span>
               <select id="currentHeroSelect">
-                <option value="">先选一个本方英雄</option>
+                <option value="" data-i18n="selectCurrentHero">先选一个本方英雄</option>
               </select>
             </label>
             <div class="mini-actions">
-              <button class="primary-btn" type="button" id="runCounter">计算推荐</button>
-              <button class="ghost-btn" type="button" id="clearCounter">清空</button>
+              <button class="primary-btn" type="button" id="runCounter" data-i18n="calculateRecommendation">计算推荐</button>
+              <button class="ghost-btn" type="button" id="clearCounter" data-i18n="clear">清空</button>
             </div>
             <div class="selected-list" id="selectedEnemies" aria-live="polite"></div>
-            <div class="chip-grid" id="enemyChips" aria-label="选择敌方英雄"></div>
+            <div class="chip-grid" id="enemyChips" aria-label="选择敌方英雄" data-i18n-aria-label="chooseEnemyHeroes"></div>
           </div>
           <div class="counter-results" id="counterResults" aria-live="polite"></div>
         </div>
@@ -358,16 +358,16 @@
         <div class="section-head">
           <div>
             <p class="eyebrow">Player Search</p>
-            <h2 id="profileTitle">战绩查询</h2>
+            <h2 id="profileTitle" data-i18n="navProfile">战绩查询</h2>
           </div>
           <span class="count-pill" id="profileStatus">OverFast API</span>
         </div>
         <div class="profile-search-grid">
           <div class="field">
-            <span>平台</span>
-            <div class="segmented" id="platformTabs" aria-label="平台切换">
+            <span data-i18n="platform">平台</span>
+            <div class="segmented" id="platformTabs" aria-label="平台切换" data-i18n-aria-label="platform">
               <button class="is-active" type="button" data-platform="pc">PC</button>
-              <button type="button" data-platform="console">主机</button>
+              <button type="button" data-platform="console" data-i18n="console">主机</button>
             </div>
           </div>
         </div>
@@ -381,53 +381,53 @@
         <div class="section-head">
           <div>
             <p class="eyebrow">Session Journal</p>
-            <h2 id="journalTitle">对局记录</h2>
+            <h2 id="journalTitle" data-i18n="journalTitle">对局记录</h2>
           </div>
           <span class="count-pill" id="journalCount">0 局</span>
         </div>
 
         <form class="journal-form" id="journalForm">
           <fieldset class="journal-result-field">
-            <legend>本局结果</legend>
-            <div class="segmented journal-result" id="journalResultGroup" aria-label="选择本局结果">
-              <button class="is-active" type="button" data-journal-result="win" aria-pressed="true">胜</button>
-              <button type="button" data-journal-result="loss" aria-pressed="false">负</button>
-              <button type="button" data-journal-result="draw" aria-pressed="false">平</button>
+            <legend data-i18n="matchResult">本局结果</legend>
+            <div class="segmented journal-result" id="journalResultGroup" aria-label="选择本局结果" data-i18n-aria-label="matchResult">
+              <button class="is-active" type="button" data-journal-result="win" aria-pressed="true" data-i18n="win">胜</button>
+              <button type="button" data-journal-result="loss" aria-pressed="false" data-i18n="loss">负</button>
+              <button type="button" data-journal-result="draw" aria-pressed="false" data-i18n="draw">平</button>
             </div>
           </fieldset>
           <label class="field">
-            <span>我方英雄</span>
+            <span data-i18n="allyHero">我方英雄</span>
             <select id="journalHeroSelect" required>
-              <option value="">选择英雄</option>
+              <option value="" data-i18n="selectHero">选择英雄</option>
             </select>
           </label>
           <label class="field">
-            <span>地图</span>
+            <span data-i18n="map">地图</span>
             <select id="journalMapSelect" required>
-              <option value="">选择地图</option>
+              <option value="" data-i18n="selectMap">选择地图</option>
             </select>
           </label>
           <label class="field">
-            <span>敌方阵容备注</span>
-            <input id="journalEnemyNote" type="text" maxlength="120" placeholder="例：双飞 / 黑影绕后">
+            <span data-i18n="enemyNote">敌方阵容备注</span>
+            <input id="journalEnemyNote" type="text" maxlength="120" placeholder="例：双飞 / 黑影绕后" data-i18n-placeholder="enemyNotePlaceholder">
           </label>
           <label class="field field-grow">
-            <span>备注</span>
-            <textarea id="journalNote" rows="2" maxlength="240" placeholder="心情、失误点、队伍节奏"></textarea>
+            <span data-i18n="note">备注</span>
+            <textarea id="journalNote" rows="2" maxlength="240" placeholder="心情、失误点、队伍节奏" data-i18n-placeholder="notePlaceholder"></textarea>
           </label>
           <div class="journal-actions">
-            <button class="primary-btn" type="submit" id="saveJournal">保存本局</button>
-            <button class="ghost-btn" type="button" id="clearJournal">清空全部</button>
+            <button class="primary-btn" type="submit" id="saveJournal" data-i18n="saveGame">保存本局</button>
+            <button class="ghost-btn" type="button" id="clearJournal" data-i18n="clearAll">清空全部</button>
           </div>
         </form>
         <div class="journal-tools" aria-label="记录导入导出与分享">
-          <button class="ghost-btn" type="button" id="exportJournal">导出 JSON</button>
-          <button class="ghost-btn" type="button" id="importJournal">导入 JSON</button>
+          <button class="ghost-btn" type="button" id="exportJournal" data-i18n="exportJson">导出 JSON</button>
+          <button class="ghost-btn" type="button" id="importJournal" data-i18n="importJson">导入 JSON</button>
           <label class="favorite-filter journal-replace-toggle">
             <input id="replaceJournalToggle" type="checkbox">
-            <span>替换全部</span>
+            <span data-i18n="replaceAll">替换全部</span>
           </label>
-          <button class="primary-btn" type="button" id="shareJournal">生成分享图</button>
+          <button class="primary-btn" type="button" id="shareJournal" data-i18n="shareImage">生成分享图</button>
           <input class="sr-only" id="journalImportFile" type="file" accept=".json,application/json">
           <canvas class="share-canvas" id="journalShareCanvas" width="1080" height="1350" aria-hidden="true"></canvas>
         </div>
@@ -438,13 +438,13 @@
         <div class="journal-tables">
           <section class="journal-block" aria-labelledby="journalHeroStatsTitle">
             <div class="subsection-head">
-              <h3 id="journalHeroStatsTitle">按英雄趋势</h3>
+              <h3 id="journalHeroStatsTitle" data-i18n="heroTrend">按英雄趋势</h3>
             </div>
             <div class="stats-table-wrap" id="journalHeroTable"></div>
           </section>
           <section class="journal-block" aria-labelledby="journalMapStatsTitle">
             <div class="subsection-head">
-              <h3 id="journalMapStatsTitle">按地图趋势</h3>
+              <h3 id="journalMapStatsTitle" data-i18n="mapTrend">按地图趋势</h3>
             </div>
             <div class="stats-table-wrap" id="journalMapTable"></div>
           </section>
@@ -452,11 +452,11 @@
 
         <section class="journal-block" aria-labelledby="journalListTitle">
           <div class="subsection-head">
-            <h3 id="journalListTitle">最近记录</h3>
-            <span class="badge">平局不计入胜率分母</span>
+            <h3 id="journalListTitle" data-i18n="recentRecords">最近记录</h3>
+            <span class="badge" data-i18n="drawExcluded">平局不计入胜率分母</span>
           </div>
           <div class="journal-list" id="journalList"></div>
-          <p class="empty-state" id="journalEmpty" aria-live="polite" hidden>记录你的第一局，长期看胜率趋势。</p>
+          <p class="empty-state" id="journalEmpty" aria-live="polite" hidden data-i18n="firstJournal">记录你的第一局，长期看胜率趋势。</p>
         </section>
       </section>
 
@@ -464,13 +464,13 @@
         <div class="section-head">
           <div>
             <p class="eyebrow">Maps</p>
-            <h2 id="mapsTitle">地图</h2>
+            <h2 id="mapsTitle" data-i18n="navMaps">地图</h2>
           </div>
           <span class="count-pill" id="mapCount">0 张地图</span>
         </div>
         <div class="toolbar maps-toolbar">
           <div class="segmented" id="mapModeTabs" aria-label="地图模式筛选">
-            <button class="is-active" type="button" data-mode="all">全部</button>
+            <button class="is-active" type="button" data-mode="all" data-i18n="all">全部</button>
           </div>
         </div>
         <div class="api-state" id="mapsState" aria-live="polite"></div>
@@ -482,9 +482,9 @@
         <div class="section-head">
           <div>
             <p class="eyebrow">Meta Dashboard</p>
-            <h2 id="metaTitle">Meta 仪表盘</h2>
+            <h2 id="metaTitle" data-i18n="metaTitle">Meta 仪表盘</h2>
           </div>
-          <span class="count-pill">本地英雄数据聚合</span>
+          <span class="count-pill" data-i18n="localMetaSubtitle">本地英雄数据聚合</span>
         </div>
         <div class="meta-layout">
           <div id="metaSeasonNote"></div>
@@ -499,7 +499,7 @@
         <div class="section-head">
           <div>
             <p class="eyebrow">Ban Assistant</p>
-            <h2 id="banTitle">当前建议 Ban 名单</h2>
+            <h2 id="banTitle" data-i18n="banTitle">当前建议 Ban 名单</h2>
           </div>
           <span class="count-pill" id="banCount">0 条建议</span>
         </div>
@@ -507,31 +507,31 @@
       </section>
     </main>
 
-    <aside class="compare-tray" id="compareTray" aria-label="英雄对比盘" hidden></aside>
+    <aside class="compare-tray" id="compareTray" aria-label="英雄对比盘" hidden data-i18n-aria-label="navCompare"></aside>
 
     <footer class="site-footer">
-      <p>功能源于社区需求调研：Reddit r/Overwatch、贴吧、OverHub 等；未伪造 workshop 代码或不存在的数据。</p>
+      <p data-i18n="footer">功能源于社区需求调研：Reddit r/Overwatch、贴吧、OverHub 等；未伪造 workshop 代码或不存在的数据。</p>
     </footer>
 
     <aside class="cmd-palette" id="cmdPalette" hidden aria-hidden="true">
       <div class="cmd-scrim" data-cmd-close></div>
-      <div class="cmd-dialog" id="cmdDialog" role="dialog" aria-modal="true" aria-label="命令面板" tabindex="-1">
+      <div class="cmd-dialog" id="cmdDialog" role="dialog" aria-modal="true" aria-label="命令面板" tabindex="-1" data-i18n-aria-label="commandPanel">
         <div class="cmd-head">
           <label class="cmd-search" for="cmdInput">
-            <span class="sr-only">搜索命令</span>
-            <input id="cmdInput" type="search" placeholder="搜索英雄、视图或 BattleTag" autocomplete="off" role="combobox" aria-controls="cmdResults" aria-expanded="true" aria-autocomplete="list">
+            <span class="sr-only" data-i18n="commandSearch">搜索命令</span>
+            <input id="cmdInput" type="search" placeholder="搜索英雄、视图或 BattleTag" autocomplete="off" role="combobox" aria-controls="cmdResults" aria-expanded="true" aria-autocomplete="list" data-i18n-placeholder="commandPlaceholder">
           </label>
-          <button class="icon-btn cmd-close" type="button" id="cmdClose" aria-label="关闭命令面板">×</button>
+          <button class="icon-btn cmd-close" type="button" id="cmdClose" aria-label="关闭命令面板" data-i18n-aria-label="closeCommand">×</button>
         </div>
-        <div class="cmd-results" id="cmdResults" role="listbox" aria-label="命令结果"></div>
-        <p class="cmd-empty empty-state" id="cmdEmpty" hidden>没有匹配的命令。</p>
+        <div class="cmd-results" id="cmdResults" role="listbox" aria-label="命令结果" data-i18n-aria-label="commandResults"></div>
+        <p class="cmd-empty empty-state" id="cmdEmpty" hidden data-i18n="commandEmpty">没有匹配的命令。</p>
       </div>
     </aside>
 
-    <aside class="drawer" id="detailDrawer" aria-hidden="true" aria-label="英雄详情">
+    <aside class="drawer" id="detailDrawer" aria-hidden="true" aria-label="英雄详情" data-i18n-aria-label="heroDetail">
       <div class="drawer-scrim" id="drawerScrim"></div>
       <div class="drawer-panel" id="detailDialog" role="dialog" aria-modal="true" aria-labelledby="detailTitle" tabindex="-1">
-        <button class="icon-btn close-btn" type="button" id="closeDrawer" aria-label="关闭详情">×</button>
+        <button class="icon-btn close-btn" type="button" id="closeDrawer" aria-label="关闭详情" data-i18n-aria-label="closeDetail">×</button>
         <div id="detailContent"></div>
       </div>
     </aside>

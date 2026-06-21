@@ -78,6 +78,71 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await c.evals(`(async()=>{ window.__qaHeroes = await fetch('/data/heroes.json').then((r)=>r.json()).then((data)=>data.heroes); return null; })()`);
 
   check("英雄库渲染", await c.evals(`document.querySelectorAll('#heroGrid .hero-card').length`) >= 40);
+  check("默认语言 zh-CN", (await c.evals(`document.documentElement.lang === 'zh-CN' && localStorage.getItem('ow-lang') === null && document.getElementById('heroesTab').textContent.trim() === '英雄库'`)) === true);
+
+  const i18nEnState = await c.evals(`(async()=>{
+    const firstHeroId=document.querySelector('#heroGrid .hero-card')?.dataset.heroId;
+    const firstHero=window.__qaHeroes.find((hero)=>hero.id===firstHeroId);
+    document.getElementById('settingsTab').click();
+    await new Promise((r)=>setTimeout(r,250));
+    document.querySelector('#settingsLanguageControl button[data-setting-lang="en"]').click();
+    await new Promise((r)=>setTimeout(r,650));
+    return {
+      stored: localStorage.getItem('ow-lang'),
+      lang: document.documentElement.lang,
+      nav: document.getElementById('heroesTab').textContent.trim(),
+      settings: document.getElementById('settingsTitle').textContent.trim(),
+      heroName: document.querySelector('#heroGrid .hero-card strong')?.textContent.trim(),
+      expectedHeroName: firstHero?.name
+    };
+  })()`);
+  await c.evals(`location.reload(); null`);
+  await sleep(1800);
+  const i18nPersisted = await c.evals(`(()=>{
+    return {
+      stored: localStorage.getItem('ow-lang'),
+      lang: document.documentElement.lang,
+      nav: document.getElementById('heroesTab').textContent.trim()
+    };
+  })()`);
+  const i18nZhState = await c.evals(`(async()=>{
+    document.getElementById('settingsTab').click();
+    await new Promise((r)=>setTimeout(r,250));
+    document.querySelector('#settingsLanguageControl button[data-setting-lang="zh"]').click();
+    await new Promise((r)=>setTimeout(r,650));
+    return {
+      stored: localStorage.getItem('ow-lang'),
+      lang: document.documentElement.lang,
+      nav: document.getElementById('heroesTab').textContent.trim()
+    };
+  })()`);
+  await c.evals(`document.getElementById('heroesTab').click(); null`);
+  await sleep(250);
+  check("切 English 后 chrome 与英雄名英文", i18nEnState.stored === "en" && i18nEnState.lang === "en" && i18nEnState.nav === "Heroes" && i18nEnState.settings === "Settings" && i18nEnState.heroName === i18nEnState.expectedHeroName, JSON.stringify(i18nEnState));
+  check("刷新保持 English", i18nPersisted.stored === "en" && i18nPersisted.lang === "en" && i18nPersisted.nav === "Heroes", JSON.stringify(i18nPersisted));
+  check("切回中文恢复", i18nZhState.stored === "zh" && i18nZhState.lang === "zh-CN" && i18nZhState.nav === "英雄库", JSON.stringify(i18nZhState));
+  await c.evals(`(async()=>{ window.__qaHeroes = await fetch('/data/heroes.json').then((r)=>r.json()).then((data)=>data.heroes); return null; })()`);
+
+  await c.evals(`(async()=>{
+    document.getElementById('settingsTab').click();
+    await new Promise((r)=>setTimeout(r,200));
+    document.querySelector('#settingsLanguageControl button[data-setting-lang="en"]').click();
+    await new Promise((r)=>setTimeout(r,450));
+    document.getElementById('heroesTab').click();
+    await new Promise((r)=>setTimeout(r,200));
+  })()`);
+  await c.send("Emulation.setDeviceMetricsOverride", { width: 375, height: 900, deviceScaleFactor: 1, mobile: true });
+  await sleep(200);
+  await checkMobileNoOverflow("375px English chrome 不横向溢出");
+  await c.send("Emulation.clearDeviceMetricsOverride");
+  await c.evals(`(async()=>{
+    document.getElementById('settingsTab').click();
+    await new Promise((r)=>setTimeout(r,200));
+    document.querySelector('#settingsLanguageControl button[data-setting-lang="zh"]').click();
+    await new Promise((r)=>setTimeout(r,450));
+    document.getElementById('heroesTab').click();
+    await new Promise((r)=>setTimeout(r,200));
+  })()`);
 
   const listInitial = await c.evals(`(()=>{
     document.querySelector('#heroViewToggle button[data-hero-view="list"]').click();
@@ -389,7 +454,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
       strongColumns: document.querySelectorAll('#metaStrongList .meta-strong-role').length,
       strongItems: document.querySelectorAll('#metaStrongList button[data-jump-hero]').length,
       itemShape: Array.from(document.querySelectorAll('#metaStrongList button[data-jump-hero]')).every((button)=>
-        button.querySelector('.avatar') && button.querySelector('.meta-strong-name strong') && button.querySelector('.meta-strong-name span') && button.querySelector('.tier-badge')
+        button.querySelector('.avatar') && button.querySelector('.meta-strong-name strong') && button.querySelector('.tier-badge')
       )
     };
   })()`);
@@ -428,7 +493,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   check("Meta Tier 网格点击打开详情", metaOpenChecks.tierOpen === true);
   const metaFallbackSourceOk = await c.evals(`(async()=>{
     const source=await fetch('/src/app.js').then((r)=>r.text());
-    return source.includes('未定级') && source.includes('暂无英雄数据') && source.includes('tierSortRank(hero.tier) > 3');
+    return source.includes('unranked') && source.includes('metaStrongEmpty') && source.includes('tierSortRank(');
   })()`);
   check("Meta 缺 tier/空态兜底路径存在", metaFallbackSourceOk === true);
   await c.evals(`location.hash='#/meta'; null`); await sleep(200);
