@@ -46,6 +46,10 @@
           <input id="playerSearchInput" type="search" placeholder="搜索玩家：Jay3 或 Jay3#1234" autocomplete="off">
         </label>
         <div class="top-actions">
+          <button class="cmd-open" type="button" id="cmdOpen" aria-label="打开命令面板" aria-keyshortcuts="Control+K Meta+K">
+            <span>搜索</span>
+            <kbd>⌘K</kbd>
+          </button>
           <button class="theme-toggle" type="button" id="themeToggle" aria-label="切换深浅主题" aria-pressed="false">
             <span class="theme-toggle-icon" aria-hidden="true"></span>
             <span class="theme-toggle-text">浅色</span>
@@ -508,6 +512,21 @@
     <footer class="site-footer">
       <p>功能源于社区需求调研：Reddit r/Overwatch、贴吧、OverHub 等；未伪造 workshop 代码或不存在的数据。</p>
     </footer>
+
+    <aside class="cmd-palette" id="cmdPalette" hidden aria-hidden="true">
+      <div class="cmd-scrim" data-cmd-close></div>
+      <div class="cmd-dialog" id="cmdDialog" role="dialog" aria-modal="true" aria-label="命令面板" tabindex="-1">
+        <div class="cmd-head">
+          <label class="cmd-search" for="cmdInput">
+            <span class="sr-only">搜索命令</span>
+            <input id="cmdInput" type="search" placeholder="搜索英雄、视图或 BattleTag" autocomplete="off" role="combobox" aria-controls="cmdResults" aria-expanded="true" aria-autocomplete="list">
+          </label>
+          <button class="icon-btn cmd-close" type="button" id="cmdClose" aria-label="关闭命令面板">×</button>
+        </div>
+        <div class="cmd-results" id="cmdResults" role="listbox" aria-label="命令结果"></div>
+        <p class="cmd-empty empty-state" id="cmdEmpty" hidden>没有匹配的命令。</p>
+      </div>
+    </aside>
 
     <aside class="drawer" id="detailDrawer" aria-hidden="true" aria-label="英雄详情">
       <div class="drawer-scrim" id="drawerScrim"></div>

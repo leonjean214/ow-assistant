@@ -289,3 +289,8 @@
 执行：Codex｜tools/qa.mjs **89/89 全过、0 运行时错误**；node 全过；0 innerHTML。主题↔顶栏双向同步、默认平台/视图持久+刷新生效、关于区版本+GitHub外链+致谢+检查更新、375px 无溢出均通过。
 
 ---
+
+## Phase 22 审查（全局命令面板 Cmd/Ctrl-K）— 无阻塞
+执行：Codex｜tools/qa.mjs **100/100 全过、0 运行时错误**；node 全过；0 innerHTML。Cmd/Ctrl-K 开/Esc 关/焦点管理、英雄→详情/视图→切换/BattleTag→战绩、↑↓Enter、overlay 短路、与详情抽屉焦点陷阱互斥、现有 / b 快捷键不回归、375px 自适应均通过。
+
+---

@@ -36,6 +36,7 @@ const TEAM_KEY = "ow-team";
 const TEAM_ROUTE_PREFIX = "#/team/";
 const MAX_TEAM = 5;
 const META_STRONG_LIMIT = 6;
+const COMMAND_RESULT_LIMIT = 20;
 const FOCUSABLE_SELECTOR = [
   "a[href]",
   "button:not([disabled])",
@@ -93,6 +94,9 @@ let overlayMode = false;
 let activeDetailHeroId = "";
 let routeViews = new Set();
 let previousDetailFocus = null;
+let previousCommandFocus = null;
+let commandResults = [];
+let selectedCommandIndex = 0;
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", init, { once: true });
@@ -155,6 +159,7 @@ function bindElements() {
   for (const id of [
     "dataMeta", "heroCount", "heroGrid", "heroEmpty", "roleTabs", "tierFilter", "banFilter", "heroSortFilter", "searchInput",
     "heroViewToggle", "favoriteOnlyToggle", "heroTagFilters", "tagMatchToggle", "clearTagFilters",
+    "cmdOpen", "cmdPalette", "cmdDialog", "cmdInput", "cmdResults", "cmdEmpty", "cmdClose",
     "compareTray", "compareContent", "compareCount",
     "matrixRoleTabs", "matrixSearchInput", "matrixContent", "matrixCount",
     "teamContent", "teamCount", "workshopContent", "meContent",
@@ -375,9 +380,40 @@ function bindEvents() {
     const copy = event.target.closest("button[data-copy-code]");
     if (copy) copyWorkshopCode(copy.dataset.copyCode, copy);
   });
+  if (el.cmdOpen) el.cmdOpen.addEventListener("click", () => openCommandPalette(el.cmdOpen));
+  if (el.cmdInput) {
+    el.cmdInput.addEventListener("input", () => renderCommandResults(el.cmdInput.value));
+  }
+  if (el.cmdResults) {
+    el.cmdResults.addEventListener("click", (event) => {
+      const item = event.target.closest("[data-command-index]");
+      if (!item) return;
+      executeCommandResult(Number(item.dataset.commandIndex));
+    });
+    el.cmdResults.addEventListener("mousemove", (event) => {
+      const item = event.target.closest("[data-command-index]");
+      if (item) selectCommandResult(Number(item.dataset.commandIndex));
+    });
+  }
+  if (el.cmdClose) el.cmdClose.addEventListener("click", () => closeCommandPalette());
+  if (el.cmdPalette) {
+    el.cmdPalette.addEventListener("click", (event) => {
+      if (event.target.closest("[data-cmd-close]")) closeCommandPalette();
+    });
+  }
   el.closeDrawer.addEventListener("click", closeDetail);
   el.drawerScrim.addEventListener("click", closeDetail);
   document.addEventListener("keydown", (event) => {
+    if (isCommandShortcut(event)) {
+      if (!overlayMode) {
+        event.preventDefault();
+        openCommandPalette(event.target);
+      }
+      return;
+    }
+    if (isCommandPaletteOpen()) {
+      if (handleCommandPaletteKeydown(event)) return;
+    }
     if (event.key === "Escape") closeDetail();
     if (event.key === "Tab") trapDrawerFocus(event);
     // 全局快捷键：仅在非输入态、无修饰键、抽屉未开、非 overlay 时生效
@@ -523,6 +559,9 @@ function setupA11y() {
   if (el.detailDrawer) {
     el.detailDrawer.inert = true;
     el.detailDrawer.setAttribute("aria-hidden", "true");
+  }
+  if (el.cmdPalette) {
+    el.cmdPalette.setAttribute("aria-hidden", "true");
   }
   [
     [el.counterResults, "polite"],
@@ -1310,6 +1349,296 @@ function isTypingTarget(node) {
   if (!(node instanceof Element)) return false;
   if (node.isContentEditable) return true;
   return ["INPUT", "TEXTAREA", "SELECT"].includes(node.tagName);
+}
+
+function isCommandShortcut(event) {
+  return (event.metaKey || event.ctrlKey) && !event.altKey && event.key.toLowerCase() === "k";
+}
+
+function isCommandPaletteOpen() {
+  return Boolean(el.cmdPalette && !el.cmdPalette.hidden);
+}
+
+function openCommandPalette(trigger = document.activeElement) {
+  if (overlayMode || !el.cmdPalette || !el.cmdInput || !el.cmdResults) return;
+  if (el.detailDrawer?.classList.contains("is-open")) closeDetail();
+  previousCommandFocus = trigger instanceof Element ? trigger : document.activeElement;
+  el.cmdPalette.hidden = false;
+  el.cmdPalette.setAttribute("aria-hidden", "false");
+  setBackgroundInert(true);
+  el.cmdInput.value = "";
+  renderCommandResults("");
+  window.requestAnimationFrame(() => {
+    el.cmdInput.focus({ preventScroll: true });
+    el.cmdInput.select();
+  });
+}
+
+function closeCommandPalette({ restoreFocus = true } = {}) {
+  if (!isCommandPaletteOpen()) return;
+  el.cmdPalette.hidden = true;
+  el.cmdPalette.setAttribute("aria-hidden", "true");
+  el.cmdInput.removeAttribute("aria-activedescendant");
+  commandResults = [];
+  selectedCommandIndex = 0;
+  setBackgroundInert(false);
+  const target = restoreFocus && isFocusable(previousCommandFocus) ? previousCommandFocus : null;
+  previousCommandFocus = null;
+  if (target) {
+    window.requestAnimationFrame(() => target.focus({ preventScroll: true }));
+  }
+}
+
+function handleCommandPaletteKeydown(event) {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeCommandPalette();
+    return true;
+  }
+  if (event.key === "Tab") {
+    trapCommandPaletteFocus(event);
+    return true;
+  }
+  if (!el.cmdPalette.contains(event.target)) return false;
+  if (event.key === "ArrowDown") {
+    event.preventDefault();
+    moveCommandSelection(1);
+    return true;
+  }
+  if (event.key === "ArrowUp") {
+    event.preventDefault();
+    moveCommandSelection(-1);
+    return true;
+  }
+  if (event.key === "Home") {
+    event.preventDefault();
+    selectCommandResult(0);
+    return true;
+  }
+  if (event.key === "End") {
+    event.preventDefault();
+    selectCommandResult(commandResults.length - 1);
+    return true;
+  }
+  if (event.key === "Enter" && !event.isComposing) {
+    event.preventDefault();
+    executeCommandResult(selectedCommandIndex);
+    return true;
+  }
+  return false;
+}
+
+function trapCommandPaletteFocus(event) {
+  const focusables = focusableElements(el.cmdPalette);
+  if (!focusables.length) {
+    event.preventDefault();
+    el.cmdDialog?.focus({ preventScroll: true });
+    return;
+  }
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  } else if (!el.cmdPalette.contains(document.activeElement)) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
+function moveCommandSelection(delta) {
+  if (!commandResults.length) return;
+  selectCommandResult((selectedCommandIndex + delta + commandResults.length) % commandResults.length);
+}
+
+function selectCommandResult(index) {
+  if (!commandResults.length) {
+    selectedCommandIndex = 0;
+    el.cmdInput?.removeAttribute("aria-activedescendant");
+    return;
+  }
+  selectedCommandIndex = Math.max(0, Math.min(index, commandResults.length - 1));
+  el.cmdResults.querySelectorAll("[data-command-index]").forEach((node) => {
+    const selected = Number(node.dataset.commandIndex) === selectedCommandIndex;
+    node.classList.toggle("is-selected", selected);
+    node.setAttribute("aria-selected", String(selected));
+    if (selected) {
+      el.cmdInput.setAttribute("aria-activedescendant", node.id);
+      node.scrollIntoView({ block: "nearest" });
+    }
+  });
+}
+
+function renderCommandResults(query) {
+  commandResults = commandMatch(query);
+  selectedCommandIndex = 0;
+  el.cmdResults.replaceChildren();
+  el.cmdEmpty.hidden = commandResults.length > 0;
+  commandResults.forEach((item, index) => {
+    el.cmdResults.append(createCommandResult(item, index));
+  });
+  selectCommandResult(0);
+}
+
+function commandMatch(query) {
+  const value = String(query || "").trim();
+  const normalized = normalizeCommandText(value);
+  if (!normalized) return defaultCommandResults();
+
+  const results = [];
+  state.heroes.forEach((hero) => {
+    const score = commandScore(normalized, [hero.nameZh, hero.name, hero.id]);
+    if (score === Infinity) return;
+    results.push({
+      type: "hero",
+      heroId: hero.id,
+      title: hero.nameZh || hero.name || hero.id,
+      subtitle: `${hero.name || hero.id} · ${ROLE_LABELS[hero.role] || hero.role}`,
+      role: hero.role,
+      hero,
+      score
+    });
+  });
+
+  commandViewItems().forEach((view) => {
+    const score = commandScore(normalized, [view.title, view.view]);
+    if (score === Infinity) return;
+    results.push({
+      type: "view",
+      view: view.view,
+      title: view.title,
+      subtitle: "切换视图",
+      score: score + 4
+    });
+  });
+
+  const ranked = results.sort(compareCommandResults).slice(0, COMMAND_RESULT_LIMIT);
+  if (shouldOfferPlayerSearch(value, ranked)) {
+    ranked.push({
+      type: "player",
+      title: `搜索玩家 “${value}”`,
+      subtitle: "BattleTag 战绩查询",
+      query: value,
+      score: 90
+    });
+  }
+  return ranked.slice(0, COMMAND_RESULT_LIMIT);
+}
+
+function defaultCommandResults() {
+  const viewOrder = ["heroes", "profile", "matrix", "counter", "team", "meta", "maps", "settings"];
+  const views = commandViewItems()
+    .filter((item) => viewOrder.includes(item.view))
+    .sort((a, b) => viewOrder.indexOf(a.view) - viewOrder.indexOf(b.view))
+    .map((item, index) => ({
+      type: "view",
+      view: item.view,
+      title: item.title,
+      subtitle: "切换视图",
+      score: index
+    }));
+  const heroes = state.heroes.slice(0, 6).map((hero, index) => ({
+    type: "hero",
+    heroId: hero.id,
+    title: hero.nameZh || hero.name || hero.id,
+    subtitle: `${hero.name || hero.id} · ${ROLE_LABELS[hero.role] || hero.role}`,
+    role: hero.role,
+    hero,
+    score: 20 + index
+  }));
+  return [...views, ...heroes].slice(0, 12);
+}
+
+function commandViewItems() {
+  return [...document.querySelectorAll(".view-tab[data-view]")].map((button) => ({
+    view: button.dataset.view,
+    title: button.textContent.trim() || button.dataset.view
+  }));
+}
+
+function normalizeCommandText(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function commandScore(query, terms) {
+  return terms.reduce((best, term) => {
+    const value = normalizeCommandText(term);
+    if (!value) return best;
+    if (value === query) return Math.min(best, 0);
+    if (value.startsWith(query)) return Math.min(best, 10 + value.length - query.length);
+    const index = value.indexOf(query);
+    if (index >= 0) return Math.min(best, 40 + index);
+    return best;
+  }, Infinity);
+}
+
+function compareCommandResults(a, b) {
+  if (a.score !== b.score) return a.score - b.score;
+  const rank = { hero: 0, view: 1, player: 2 };
+  if (rank[a.type] !== rank[b.type]) return rank[a.type] - rank[b.type];
+  return a.title.localeCompare(b.title, "zh-Hans-CN");
+}
+
+function shouldOfferPlayerSearch(query, ranked) {
+  const value = String(query || "").trim();
+  if (!value || value.length > 32 || /\s/.test(value)) return false;
+  if (value.includes("#")) return /^[^#\s]{2,24}#\d{2,8}$/.test(value);
+  if (ranked.length) return false;
+  return /^[\p{L}\p{N}_-]{2,32}$/u.test(value);
+}
+
+function createCommandResult(item, index) {
+  const row = create("button", "cmd-result");
+  row.type = "button";
+  row.id = `cmdResult-${index}`;
+  row.dataset.commandIndex = String(index);
+  row.setAttribute("role", "option");
+  row.setAttribute("aria-selected", "false");
+
+  if (item.type === "hero") {
+    row.append(createAvatar(item.hero));
+  } else {
+    const icon = create("span", `cmd-result-icon cmd-result-icon-${item.type}`);
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = item.type === "player" ? "#" : "⌘";
+    row.append(icon);
+  }
+
+  const body = create("span", "cmd-result-body");
+  appendText(body, "strong", item.title);
+  appendText(body, "span", item.subtitle);
+  const type = create("span", `cmd-result-type cmd-result-type-${item.type}`);
+  type.textContent = commandTypeLabel(item);
+  row.append(body, type);
+  return row;
+}
+
+function commandTypeLabel(item) {
+  if (item.type === "hero") return ROLE_LABELS[item.role] || "英雄";
+  if (item.type === "view") return "视图";
+  return "战绩";
+}
+
+function executeCommandResult(index) {
+  const item = commandResults[index];
+  if (!item) return;
+  closeCommandPalette({ restoreFocus: false });
+  if (item.type === "hero") {
+    openDetail(item.heroId);
+    return;
+  }
+  if (item.type === "view") {
+    switchView(item.view);
+    window.requestAnimationFrame(() => document.querySelector(`.view-tab[data-view="${CSS.escape(item.view)}"]`)?.focus({ preventScroll: true }));
+    return;
+  }
+  if (item.type === "player") {
+    lookupBattletag(item.query);
+    window.requestAnimationFrame(() => el.playerSearchInput?.focus({ preventScroll: true }));
+  }
 }
 
 // W1：处理 Overwolf overlay 中继来的对局消息（干净 schema，GEP→schema 翻译在 overlay.html）。
