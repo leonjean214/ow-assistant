@@ -12,8 +12,19 @@
         "找到地图/工坊「导入代码」（Import Code），粘贴代码 → 确定",
         "等设置加载完成（先别急着改选项）→ 返回 → 开始（START）"
       ],
-      "tip": "导入后等大厅完全加载好再调选项，避免覆盖。国服路径相同（游戏→自定义→设置→导入代码）。"
-    }
+      "tip": "导入后等大厅完全加载好再调选项，避免覆盖。国服路径相同（游戏→自定义→设置→导入代码）。",
+      "titleEn": "How to import workshop codes",
+      "stepsEn": [
+        "Main menu → Play → Custom Games",
+        "Top-right Create → Settings",
+        "Find Import Code (map/workshop), paste the code → OK",
+        "Wait for settings to finish loading (don't rush options) → back → START"
+      ],
+      "tipEn": "After importing, let the lobby fully load before changing options. CN servers use the same path."
+    },
+    "disclaimerEn": "⚠️ Workshop codes may stop working after patches or author unpublish. Verify the latest on workshop.codes before importing; codes updated within ~6 months are generally safer. Community-sourced, unofficial, availability not guaranteed.",
+    "liveSourceLabel": "打开 workshop.codes（实时最新）",
+    "liveSourceLabelEn": "Open workshop.codes (live, latest)"
   },
   "categories": [
     {
@@ -22,11 +33,41 @@
       "desc": "综合、跟枪(tracking)、甩枪(flick) 等瞄准训练。",
       "search": "https://workshop.codes/search?search=aim",
       "codes": [
-        { "code": "VAXTA", "name": "综合瞄准训练", "note": "全能型练枪", "source": "dotesports/esports.net 2026 aim 榜" },
-        { "code": "VERYD", "name": "跟枪 Tracking", "note": "练持续跟踪(猎空/狂鼠类)", "source": "dotesports 2026" },
-        { "code": "NADDS", "name": "甩枪 Flick", "note": "练瞬狙/急停(黑百合/卡西)", "source": "dotesports 2026" },
-        { "code": "KAVE5", "name": "PMAJellies Aim Trainer V5", "note": "经典综合练枪房", "source": "esports.net / progameguides" }
-      ]
+        {
+          "code": "VAXTA",
+          "name": "综合瞄准训练",
+          "note": "全能型练枪",
+          "source": "dotesports/esports.net 2026 aim 榜",
+          "nameEn": "All-around aim trainer",
+          "noteEn": "Well-rounded aim practice"
+        },
+        {
+          "code": "VERYD",
+          "name": "跟枪 Tracking",
+          "note": "练持续跟踪(猎空/狂鼠类)",
+          "source": "dotesports 2026",
+          "nameEn": "Tracking",
+          "noteEn": "Sustained tracking (Tracer/Junkrat type)"
+        },
+        {
+          "code": "NADDS",
+          "name": "甩枪 Flick",
+          "note": "练瞬狙/急停(黑百合/卡西)",
+          "source": "dotesports 2026",
+          "nameEn": "Flick",
+          "noteEn": "Flick/quick-snipe (Widow/Cassidy)"
+        },
+        {
+          "code": "KAVE5",
+          "name": "PMAJellies Aim Trainer V5",
+          "note": "经典综合练枪房",
+          "source": "esports.net / progameguides",
+          "nameEn": "PMAJellies Aim Trainer V5",
+          "noteEn": "Classic all-around aim room"
+        }
+      ],
+      "nameEn": "Aim training",
+      "descEn": "All-around, tracking and flick aim drills."
     },
     {
       "id": "aim-cn",
@@ -34,9 +75,25 @@
       "desc": "国服社区常用练枪房。",
       "search": "https://workshop.codes/search?search=aim",
       "codes": [
-        { "code": "KPDEZ", "name": "基础练枪", "note": "国服基础瞄准", "source": "知乎/网易大神 练枪代码合集" },
-        { "code": "PP823", "name": "全英雄练枪+挑战模式", "note": "覆盖各英雄+挑战", "source": "知乎 练枪代码" }
-      ]
+        {
+          "code": "KPDEZ",
+          "name": "基础练枪",
+          "note": "国服基础瞄准",
+          "source": "知乎/网易大神 练枪代码合集",
+          "nameEn": "Basic aim",
+          "noteEn": "CN basic aim training"
+        },
+        {
+          "code": "PP823",
+          "name": "全英雄练枪+挑战模式",
+          "note": "覆盖各英雄+挑战",
+          "source": "知乎 练枪代码",
+          "nameEn": "All-hero aim + challenge",
+          "noteEn": "Covers all heroes + challenge mode"
+        }
+      ],
+      "nameEn": "Aim (popular on CN servers)",
+      "descEn": "Common CN community aim-training rooms."
     },
     {
       "id": "hero",
@@ -44,8 +101,17 @@
       "desc": "单英雄机制练习。",
       "search": "https://workshop.codes/search?search=hero%20practice",
       "codes": [
-        { "code": "PTTTA", "name": "安娜睡针练习", "note": "练 Ana 睡眠镖命中", "source": "知乎 练枪代码合集" }
-      ]
+        {
+          "code": "PTTTA",
+          "name": "安娜睡针练习",
+          "note": "练 Ana 睡眠镖命中",
+          "source": "知乎 练枪代码合集",
+          "nameEn": "Ana sleep dart practice",
+          "noteEn": "Practice Ana sleep dart accuracy"
+        }
+      ],
+      "nameEn": "Hero-specific practice",
+      "descEn": "Single-hero mechanic drills."
     },
     {
       "id": "1v1",
@@ -53,8 +119,17 @@
       "desc": "单挑、随机换英雄等。",
       "search": "https://workshop.codes/search?search=1v1",
       "codes": [
-        { "code": "34204", "name": "漓江塔 1v1（死亡随机换英雄）", "note": "可加 bot/真人，难度随机", "source": "游戏果/B站 工坊合集" }
-      ]
+        {
+          "code": "34204",
+          "name": "漓江塔 1v1（死亡随机换英雄）",
+          "note": "可加 bot/真人，难度随机",
+          "source": "游戏果/B站 工坊合集",
+          "nameEn": "Lijiang 1v1 (random hero on death)",
+          "noteEn": "Add bots/players, randomized difficulty"
+        }
+      ],
+      "nameEn": "1v1 / duels",
+      "descEn": "Duels, random hero swaps, etc."
     }
   ]
 }
