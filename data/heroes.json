@@ -2,7 +2,7 @@
   "meta": {
     "game": "Overwatch (2026 起官方去掉 \"2\")",
     "season": "Season 3：Into the Tiger's Den (Reign of Talon) / 2026-06-16",
-    "note": "evergreen 字段=英雄基础kit与经典克制(稳定)；tier/ban/分段=当前meta(随补丁变，见 docs/SOURCES.md)。Perk为2选1天赋。最新英雄 Shion(Hero 52, S3, 2026-06-16) 已联网核实。 Perk(双天赋)已补全(英文官方名+中文效果,来源 dotesports/dexerto/sportskeeda/fandom 2026-06,domina/anran/vendetta 因官方未公开暂缺)。",
+    "note": "evergreen 字段=英雄基础kit与经典克制(稳定)；tier/ban/分段=当前meta(随补丁变，见 docs/SOURCES.md)。Perk为2选1天赋,已补全全52英雄(英文官方名+中文效果,来源 pcgamer/owperks/mobalytics/dotesports/fandom 2026-06,跨源名差就高取信)。最新英雄 Shion(Hero 52, S3, 2026-06-16)。",
     "updated": "2026-06-20"
   },
   "heroes": [
