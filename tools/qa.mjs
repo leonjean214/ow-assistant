@@ -917,6 +917,17 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const overlayComp = await c.evals(`(()=>{const chip=document.querySelector('#overlayCounterMount .select-chip');if(!chip)return 'no-chip';chip.click();return document.querySelectorAll('#overlayCounterMount .enemy-comp').length})()`);
   check("overlay 选敌后显示对面阵容", overlayComp === 1, `v=${overlayComp}`);
 
+  // 数据完整性（保护已补全的 perks / 克制为什么，防未来误改）
+  const dataCoverage = await c.evals(`(async()=>{
+    const heroes=await fetch('/data/heroes.json').then((r)=>r.json()).then((d)=>d.heroes);
+    const notes=await fetch('/data/counter-notes.json').then((r)=>r.json()).then((d)=>d.notes);
+    const perkFull=heroes.filter((h)=>(h.perks&&h.perks.minor&&h.perks.minor.length>=2)&&(h.perks.major&&h.perks.major.length>=2)).length;
+    const whyFull=heroes.filter((h)=>notes[h.id]&&String(notes[h.id]).length>0).length;
+    return { total: heroes.length, perkFull, whyFull };
+  })()`);
+  check("全英雄 Perk 双天赋完整(2+2)", dataCoverage.perkFull === dataCoverage.total, `${dataCoverage.perkFull}/${dataCoverage.total}`);
+  check("全英雄克制为什么完整", dataCoverage.whyFull === dataCoverage.total, `${dataCoverage.whyFull}/${dataCoverage.total}`);
+
   await sleep(300);
   console.log(out.join("\n"));
   console.log("\n=== console 错误/异常 (" + c.errors.length + ") ===");
