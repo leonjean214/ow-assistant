@@ -59,6 +59,7 @@
     <nav class="view-tabs" aria-label="主导航" role="tablist">
       <button class="view-tab is-active" type="button" data-view="heroes" id="heroesTab">英雄库</button>
       <button class="view-tab" type="button" data-view="compare" id="compareTab">英雄对比</button>
+      <button class="view-tab" type="button" data-view="matrix" id="matrixTab">克制网</button>
       <button class="view-tab" type="button" data-view="me" id="meTab">个人中心</button>
       <button class="view-tab" type="button" data-view="team" id="teamTab">组队</button>
       <button class="view-tab" type="button" data-view="workshop" id="workshopTab">工坊</button>
@@ -200,6 +201,32 @@
           <span class="count-pill" id="compareCount">0 / 4</span>
         </div>
         <div class="compare-content" id="compareContent" aria-live="polite"></div>
+      </section>
+
+      <section class="panel view" id="matrixView" aria-labelledby="matrixTitle">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Counter Matrix</p>
+            <h2 id="matrixTitle">克制网</h2>
+          </div>
+          <span class="count-pill" id="matrixCount">0 位英雄</span>
+        </div>
+        <div class="toolbar matrix-toolbar" aria-label="克制网筛选">
+          <div class="field matrix-role-field">
+            <span>职业</span>
+            <div class="segmented" id="matrixRoleTabs" role="group" aria-label="克制网职业筛选">
+              <button class="is-active" type="button" data-matrix-role="all" aria-pressed="true">全部</button>
+              <button type="button" data-matrix-role="tank" aria-pressed="false">坦</button>
+              <button type="button" data-matrix-role="damage" aria-pressed="false">输出</button>
+              <button type="button" data-matrix-role="support" aria-pressed="false">辅</button>
+            </div>
+          </div>
+          <label class="field field-grow">
+            <span>搜索</span>
+            <input id="matrixSearchInput" type="search" placeholder="英雄中文 / English / id">
+          </label>
+        </div>
+        <div class="matrix-content" id="matrixContent" aria-live="polite"></div>
       </section>
 
       <section class="panel view" id="teamView" aria-labelledby="teamTitle">
