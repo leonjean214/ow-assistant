@@ -311,3 +311,9 @@
 - 保守抽离(按「宁可少拆不出bug」),app.js 仍较大;后续可继续抽自包含视图模块。无阻塞。
 
 ---
+
+## Phase 26 审查（i18n 中英双语 UI）— 无阻塞
+执行：Codex(限流前完成主体)+Claude(收尾:修2条因i18n变脆的meta qa断言,非bug)｜tools/qa.mjs **129/129 全过、0运行时错误**。默认zh不变、切English界面chrome+英雄名英文(Heroes/Settings/Reinhardt)、刷新保持、切回恢复、375px英文不溢出；i18n.js进sw v17；0innerHTML(data-i18n用textContent)。数据长文本本期不译(README注明,范围非bug)。
+- Claude 改的2条qa:itemShape去掉强制span(D.Va等中英名相同正确只显一个);兜底grep改查i18n key(未定级→t(unranked))。
+
+---

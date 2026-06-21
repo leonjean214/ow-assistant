@@ -1,3 +1,5 @@
+import { t } from "./i18n.js";
+
 const UPDATE_TOAST_ID = "pwaUpdateToast";
 
 if (canUseServiceWorker()) {
@@ -35,7 +37,7 @@ function showUpdateToast(worker) {
   toast.id = UPDATE_TOAST_ID;
   toast.className = "pwa-update-toast";
   toast.type = "button";
-  toast.textContent = "有更新，点击刷新";
+  toast.textContent = t("pwaUpdateToast");
   toast.addEventListener("click", () => {
     toast.disabled = true;
     worker.postMessage({ type: "SKIP_WAITING" });

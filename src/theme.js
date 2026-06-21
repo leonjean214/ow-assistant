@@ -4,11 +4,18 @@
   if (!button) return;
 
   const label = button.querySelector(".theme-toggle-text");
+  const lang = () => {
+    try {
+      return window.localStorage.getItem("ow-lang") === "en" ? "en" : "zh";
+    } catch {
+      return "zh";
+    }
+  };
   const apply = (theme) => {
     const next = theme === "dark" ? "dark" : "light";
     root.dataset.theme = next;
     button.setAttribute("aria-pressed", String(next === "dark"));
-    if (label) label.textContent = next === "dark" ? "深色" : "浅色";
+    if (label) label.textContent = next === "dark" ? (lang() === "en" ? "Dark" : "深色") : (lang() === "en" ? "Light" : "浅色");
   };
 
   apply(root.dataset.theme);
@@ -21,4 +28,5 @@
       // Theme persistence is optional.
     }
   });
+  window.addEventListener("ow:langchange", () => apply(root.dataset.theme));
 })();

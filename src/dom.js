@@ -1,4 +1,5 @@
 import { fallback } from "./data.js";
+import { getLang } from "./i18n.js";
 
 export function create(tagName, className = "") {
   const node = document.createElement(tagName);
@@ -35,13 +36,14 @@ export function createCornerBadge(text, className) {
 
 export function createAvatar(hero) {
   const avatar = create("div", "avatar");
+  const name = getLang() === "en" ? (hero.name || hero.nameZh || "?") : (hero.nameZh || hero.name || "?");
   const initial = create("span");
-  initial.textContent = (hero.nameZh || hero.name || "?").slice(0, 1).toUpperCase();
+  initial.textContent = name.slice(0, 1).toUpperCase();
   avatar.append(initial);
   const url = safeUrl(hero.portrait || hero.avatar || hero.image);
   if (url) {
     const img = document.createElement("img");
-    img.alt = `${hero.nameZh} 头像`;
+    img.alt = getLang() === "en" ? `${name} avatar` : `${name} 头像`;
     img.src = url;
     img.loading = "lazy";
     img.addEventListener("error", () => img.remove());

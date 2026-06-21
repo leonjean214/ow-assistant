@@ -8,6 +8,7 @@ import { analyzeTeam, teamArchetype, teamRoleCount, ROLE_ZH as TEAM_ROLE_ZH } fr
 import { loadProfile, saveProfile, localOverview, exportAllLocal, parseBackup, importAllLocal, clearAllLocal, ROLE_OPTIONS } from "./profile.js";
 import { appendText, create, createAvatar, createBadge, createCornerBadge, createKeyValueGrid, detailSection, safeUrl, textBadge } from "./dom.js";
 import { createRouter } from "./router.js";
+import { applyLang, getLang, roleLabel, setLang, t } from "./i18n.js";
 
 const roleNamesZh = { tank: "重装", damage: "输出", support: "支援" };
 const modeLabels = {
@@ -23,6 +24,20 @@ const roleTips = {
   tank: "重装负责开空间和吃关键资源，优先选择能稳定控图或保护后排的英雄。",
   damage: "输出围绕地图视野和敌方后排压力选角，当前更重视稳定击杀窗口。",
   support: "支援既要保核心也要提供先手控制，反打技能和生存位移价值很高。"
+};
+const roleTipsEn = {
+  tank: "Tanks create space and absorb key resources. Prefer heroes that can hold map control or protect the backline.",
+  damage: "Damage picks should fit sightlines and backline pressure. Reliable kill windows matter most right now.",
+  support: "Supports need to sustain carries while offering engage control. Counter-engage tools and escape mobility are valuable."
+};
+const modeLabelsEn = {
+  assault: "Assault",
+  control: "Control",
+  escort: "Escort",
+  flashpoint: "Flashpoint",
+  hybrid: "Hybrid",
+  push: "Push",
+  clash: "Clash"
 };
 const FAVORITES_KEY = "ow-favorites";
 const COMPARE_KEY = "ow-compare";
@@ -97,14 +112,61 @@ let previousCommandFocus = null;
 let commandResults = [];
 let selectedCommandIndex = 0;
 
+function isEnglish() {
+  return getLang() === "en";
+}
+
+function appRoleLabel(role) {
+  return roleLabel(role) || ROLE_LABELS[role] || role;
+}
+
+function shortRoleLabel(role) {
+  if (role === "tank") return isEnglish() ? t("roleTank") : t("shortTank");
+  if (role === "support") return isEnglish() ? t("roleSupport") : t("shortSupport");
+  return appRoleLabel(role);
+}
+
+function modeLabel(mode) {
+  return (isEnglish() ? modeLabelsEn[mode] : modeLabels[mode]) || mode;
+}
+
+function heroPrimaryName(hero = {}) {
+  return isEnglish() ? (hero.name || hero.nameZh || hero.id || "") : (hero.nameZh || hero.name || hero.id || "");
+}
+
+function heroSecondaryName(hero = {}) {
+  return isEnglish() ? (hero.nameZh || "") : (hero.name || "");
+}
+
+function heroFullName(hero = {}) {
+  const primary = heroPrimaryName(hero);
+  const secondary = heroSecondaryName(hero);
+  return secondary && secondary !== primary ? `${primary} / ${secondary}` : primary;
+}
+
+function appendHeroName(parent, hero = {}, primaryTag = "strong", secondaryTag = "span") {
+  appendText(parent, primaryTag, heroPrimaryName(hero));
+  const secondary = heroSecondaryName(hero);
+  if (secondary && secondary !== heroPrimaryName(hero)) appendText(parent, secondaryTag, secondary);
+}
+
+function formatCount(key, count, extra = {}) {
+  return t(key, { count, ...extra });
+}
+
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", init, { once: true });
 } else {
   init();
 }
 
+window.addEventListener("ow:langchange", () => {
+  rerenderForLanguage();
+});
+
 async function init() {
   bindElements();
+  applyLang({ emit: false });
   setupA11y();
   state.platform = loadDefaultPlatform();
   syncPlatformControls();
@@ -148,10 +210,46 @@ async function init() {
     initRouter();
   } catch (error) {
     console.warn(error);
-    el.dataMeta.textContent = "数据加载失败，请确认使用 http.server 从项目根目录打开。";
+    el.dataMeta.textContent = t("dataLoadFailed");
     el.heroEmpty.hidden = false;
-    el.heroEmpty.textContent = "无法加载 data/heroes.json。";
+    el.heroEmpty.textContent = t("heroesJsonFailed");
   }
+}
+
+function rerenderForLanguage() {
+  applyLang({ emit: false });
+  syncPlatformControls();
+  renderMetaText(state.meta);
+  renderLatestHeroLine();
+  renderRecommendControls();
+  renderHeroRecommendations();
+  renderCurrentHeroOptions();
+  renderJournalOptions();
+  renderTagFilters();
+  renderHeroGrid();
+  renderCompareTray();
+  renderCompareView();
+  renderMatrix();
+  renderTeam();
+  renderWorkshop();
+  renderMe();
+  renderSettings();
+  renderUpdates();
+  renderEnemyChips();
+  renderCounter();
+  renderBanList();
+  renderMetaDashboard();
+  renderRecentPlayers();
+  renderJournal();
+  if (state.mapsLoaded) {
+    renderMapModeTabs();
+    renderMapsGrid();
+  }
+  if (activeDetailHeroId) {
+    const hero = state.byId.get(activeDetailHeroId);
+    if (hero) renderDetail(hero);
+  }
+  if (overlayMode) renderOverlay();
 }
 
 function bindElements() {
@@ -504,7 +602,7 @@ function bindEvents() {
     el.themeToggle.addEventListener("click", () => {
       window.setTimeout(() => {
         syncSettingsThemeControls();
-        announceSettings(`已切换为${currentTheme() === "dark" ? "深色" : "浅色"}主题`);
+        announceSettings(t("switchedTheme", { theme: currentTheme() === "dark" ? t("themeDark") : t("themeLight") }));
       }, 0);
     });
   }
@@ -658,25 +756,25 @@ function handleViewTabKeydown(event) {
 function renderMetaText(meta) {
   const season = fallback(meta?.season);
   const updated = fallback(meta?.updated);
-  el.dataMeta.textContent = `赛季 ${season} · 更新 ${updated}`;
+  el.dataMeta.textContent = t("seasonUpdated", { season, updated });
 }
 
 function renderLatestHeroLine() {
   const latest = getLatestHero();
   if (!latest) {
-    el.latestHeroLine.textContent = "当前最新英雄：暂无补丁数据";
+    el.latestHeroLine.textContent = t("currentLatestHeroNone");
     return;
   }
   const timeline = getLatestTimelineItem(latest.id);
   const season = timeline?.season ? `(${timeline.season})` : "";
-  el.latestHeroLine.textContent = `当前最新英雄：${latest.nameZh} ${latest.name}${season}`;
+  el.latestHeroLine.textContent = t("currentLatestHero", { name: heroFullName(latest), season });
 }
 
 function renderRecommendControls() {
   el.recommendTag.replaceChildren();
   const all = document.createElement("option");
   all.value = "all";
-  all.textContent = "不限";
+  all.textContent = t("unlimited");
   el.recommendTag.append(all);
   const tags = [...new Set(state.heroes.flatMap((hero) => toArray(hero.tags).map(String)))].sort((a, b) => a.localeCompare(b, "zh-Hans-CN"));
   tags.forEach((tag) => {
@@ -689,7 +787,7 @@ function renderRecommendControls() {
 
 function renderHeroRecommendations() {
   const maxDifficulty = Number(el.recommendDifficulty.value) || 2;
-  el.recommendDifficultyLabel.textContent = `上手难度 ≤${maxDifficulty}`;
+  el.recommendDifficultyLabel.textContent = t("difficultyMax", { value: maxDifficulty });
   const results = recommendHeroes({
     role: el.recommendRole.value,
     maxDifficulty,
@@ -699,7 +797,7 @@ function renderHeroRecommendations() {
   el.recommendResults.replaceChildren();
   if (!results.length) {
     const empty = create("p", "empty-state");
-    empty.textContent = "没有匹配的低难英雄，放宽职业、标签或难度上限再试。";
+    empty.textContent = t("noBeginnerMatch");
     el.recommendResults.append(empty);
     return;
   }
@@ -715,9 +813,8 @@ function createBeginnerHeroCard(item) {
   const body = create("div");
   const title = create("div", "hero-title-row");
   const names = create("div");
-  appendText(names, "strong", item.nameZh);
-  appendText(names, "span", item.name);
-  title.append(names, createBadge(`难度 ${item.difficulty}/5`, "tier-badge"));
+  appendHeroName(names, item);
+  title.append(names, createBadge(`${t("difficulty")} ${item.difficulty}/5`, "tier-badge"));
   const tags = create("div", "tag-row");
   item.tags.slice(0, 3).forEach((tag) => tags.append(textBadge(tag, "tag")));
   const reason = create("p", "recommend-reason");
@@ -731,15 +828,15 @@ function renderCurrentHeroOptions() {
   el.currentHeroSelect.replaceChildren();
   const blank = document.createElement("option");
   blank.value = "";
-  blank.textContent = "先选一个本方英雄";
+  blank.textContent = t("selectCurrentHero");
   el.currentHeroSelect.append(blank);
   ["tank", "damage", "support"].forEach((role) => {
     const group = document.createElement("optgroup");
-    group.label = roleNamesZh[role] || ROLE_LABELS[role] || role;
+    group.label = appRoleLabel(role);
     state.heroes.filter((hero) => hero.role === role).forEach((hero) => {
       const option = document.createElement("option");
       option.value = hero.id;
-      option.textContent = `${hero.nameZh} / ${hero.name}`;
+      option.textContent = heroFullName(hero);
       group.append(option);
     });
     el.currentHeroSelect.append(group);
@@ -750,15 +847,15 @@ function renderJournalOptions() {
   el.journalHeroSelect.replaceChildren();
   const heroBlank = document.createElement("option");
   heroBlank.value = "";
-  heroBlank.textContent = "选择英雄";
+  heroBlank.textContent = t("selectHero");
   el.journalHeroSelect.append(heroBlank);
   ["tank", "damage", "support"].forEach((role) => {
     const group = document.createElement("optgroup");
-    group.label = roleNamesZh[role] || ROLE_LABELS[role] || role;
+    group.label = appRoleLabel(role);
     state.heroes.filter((hero) => hero.role === role).forEach((hero) => {
       const option = document.createElement("option");
       option.value = hero.id;
-      option.textContent = `${hero.nameZh} / ${hero.name}`;
+      option.textContent = heroFullName(hero);
       group.append(option);
     });
     el.journalHeroSelect.append(group);
@@ -767,12 +864,12 @@ function renderJournalOptions() {
   el.journalMapSelect.replaceChildren();
   const mapBlank = document.createElement("option");
   mapBlank.value = "";
-  mapBlank.textContent = "选择地图";
+  mapBlank.textContent = t("selectMap");
   el.journalMapSelect.append(mapBlank);
   localMapOptions().forEach((map) => {
     const option = document.createElement("option");
     option.value = map.key;
-    option.textContent = map.mode ? `${map.name} · ${modeLabels[map.mode] || map.mode}` : map.name;
+    option.textContent = map.mode ? `${map.name} · ${modeLabel(map.mode)}` : map.name;
     option.dataset.mapName = map.name;
     el.journalMapSelect.append(option);
   });
@@ -799,7 +896,7 @@ function saveJournalForm() {
   const mapOption = el.journalMapSelect.selectedOptions[0];
   const mapKey = el.journalMapSelect.value;
   if (!hero || !mapKey) {
-    renderJournal("请选择英雄和地图后再保存。");
+    renderJournal(isEnglish() ? "Choose a hero and map before saving." : "请选择英雄和地图后再保存。");
     return;
   }
   state.journalEntries = addJournalEntry(state.journalEntries, {
@@ -815,18 +912,18 @@ function saveJournalForm() {
   });
   el.journalForm.reset();
   setJournalResult("win");
-  renderJournal("已保存本局记录。");
+  renderJournal(isEnglish() ? "Game saved." : "已保存本局记录。");
 }
 
 function renderJournal(message = "") {
   if (!el.journalSummary) return;
   const summary = summarizeJournal(state.journalEntries, state.byId);
-  el.journalCount.textContent = `${summary.total.games} 局`;
+  el.journalCount.textContent = formatCount("journalCount", summary.total.games);
   syncJournalToolState(summary.total.games);
   if (message) {
     el.journalStatus.textContent = message;
   } else {
-    el.journalStatus.textContent = summary.total.games ? "胜率按 胜 / (胜 + 负) 计算，平局单列。" : "";
+    el.journalStatus.textContent = summary.total.games ? (isEnglish() ? "Win rate uses wins / (wins + losses); draws are listed separately." : "胜率按 胜 / (胜 + 负) 计算，平局单列。") : "";
   }
   renderJournalSummary(summary);
   renderJournalHeroTable(summary.heroes);
@@ -842,13 +939,13 @@ function syncJournalToolState(totalGames) {
 
 function exportJournalFile() {
   if (!state.journalEntries.length) {
-    renderJournal("先记录几局再导出。");
+    renderJournal(isEnglish() ? "Record a few games before exporting." : "先记录几局再导出。");
     return;
   }
   const payload = serializeJournal(state.journalEntries);
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
   downloadBlob(blob, `ow-journal-${dateFilePart()}.json`);
-  renderJournal("已生成 JSON 导出文件。");
+  renderJournal(isEnglish() ? "JSON export generated." : "已生成 JSON 导出文件。");
 }
 
 async function importJournalFile() {
@@ -858,20 +955,20 @@ async function importJournalFile() {
     const text = await file.text();
     const parsed = parseImportedJournal(text);
     if (parsed.error) {
-      renderJournal(`导入失败：${parsed.error}`);
+      renderJournal(`${isEnglish() ? "Import failed" : "导入失败"}：${parsed.error}`);
       return;
     }
     const replaceAll = Boolean(el.replaceJournalToggle?.checked);
     if (replaceAll && state.journalEntries.length && !window.confirm("确定用导入文件替换全部本地记录？")) {
-      renderJournal("已取消导入。");
+      renderJournal(isEnglish() ? "Import canceled." : "已取消导入。");
       return;
     }
     state.journalEntries = replaceAll
       ? saveJournal(parsed.entries)
       : saveJournal(mergeJournal(state.journalEntries, parsed.entries));
-    renderJournal(`导入 ${parsed.entries.length} 条，去重后共 ${state.journalEntries.length} 条。`);
+    renderJournal(isEnglish() ? `Imported ${parsed.entries.length}; ${state.journalEntries.length} total after dedupe.` : `导入 ${parsed.entries.length} 条，去重后共 ${state.journalEntries.length} 条。`);
   } catch {
-    renderJournal("导入失败：无法读取这个文件。");
+    renderJournal(isEnglish() ? "Import failed: could not read this file." : "导入失败：无法读取这个文件。");
   } finally {
     if (el.journalImportFile) el.journalImportFile.value = "";
   }
@@ -879,7 +976,7 @@ async function importJournalFile() {
 
 async function shareJournalCard() {
   if (!state.journalEntries.length) {
-    renderJournal("先记录几局再分享。");
+    renderJournal(isEnglish() ? "Record a few games before sharing." : "先记录几局再分享。");
     return;
   }
   try {
@@ -888,28 +985,28 @@ async function shareJournalCard() {
     const blob = await canvasToBlob(canvas);
     downloadBlob(blob, `ow-journal-share-${dateFilePart()}.png`);
     const copied = await copyBlobToClipboard(blob);
-    renderJournal(copied ? "已生成分享图，并尝试复制到剪贴板。" : "已生成分享图，当前浏览器未允许复制图片。");
+    renderJournal(copied ? (isEnglish() ? "Share image generated; attempted to copy to clipboard." : "已生成分享图，并尝试复制到剪贴板。") : (isEnglish() ? "Share image generated, but this browser did not allow image copy." : "已生成分享图，当前浏览器未允许复制图片。"));
   } catch {
-    renderJournal("生成分享图失败，请稍后重试。");
+    renderJournal(isEnglish() ? "Failed to generate share image. Try again later." : "生成分享图失败，请稍后重试。");
   }
 }
 
 async function shareHeroCard(heroId = activeDetailHeroId) {
   const hero = state.byId.get(heroId);
   if (!hero) {
-    announceHeroShare("没有找到要分享的英雄。");
+    announceHeroShare(isEnglish() ? "Could not find the hero to share." : "没有找到要分享的英雄。");
     return;
   }
-  announceHeroShare("正在生成分享图...");
+  announceHeroShare(isEnglish() ? "Generating share image..." : "正在生成分享图...");
   try {
     const canvas = document.createElement("canvas");
     drawHeroShareCard(canvas, hero);
     const blob = await canvasToBlob(canvas);
     downloadBlob(blob, `ow-hero-${hero.id}-${dateFilePart()}.png`);
     const copied = await copyBlobToClipboard(blob);
-    announceHeroShare(copied ? "已生成 PNG，并尝试复制到剪贴板。" : "已生成 PNG，当前浏览器未允许复制图片。");
+    announceHeroShare(copied ? (isEnglish() ? "PNG generated; attempted to copy to clipboard." : "已生成 PNG，并尝试复制到剪贴板。") : (isEnglish() ? "PNG generated, but this browser did not allow image copy." : "已生成 PNG，当前浏览器未允许复制图片。"));
   } catch {
-    announceHeroShare("生成分享图失败，请稍后重试。");
+    announceHeroShare(isEnglish() ? "Failed to generate share image. Try again later." : "生成分享图失败，请稍后重试。");
   }
 }
 
@@ -1275,10 +1372,10 @@ function dateFilePart(value = new Date()) {
 function renderJournalSummary(summary) {
   el.journalSummary.replaceChildren();
   el.journalSummary.append(
-    createJournalMetric("总场次", `${summary.total.games}`, `胜 ${summary.total.wins} / 负 ${summary.total.losses} / 平 ${summary.total.draws}`),
-    createJournalMetric("总胜率", percentText(summary.total), "平局不计入分母"),
-    createJournalMetric("今日", `${summary.today.games} 局 · ${percentText(summary.today)}`, `胜 ${summary.today.wins} / 负 ${summary.today.losses}`),
-    createJournalMetric("当前趋势", summary.streak.label, "从最近一局往前计算"),
+    createJournalMetric(isEnglish() ? "Total games" : "总场次", `${summary.total.games}`, isEnglish() ? `W ${summary.total.wins} / L ${summary.total.losses} / D ${summary.total.draws}` : `胜 ${summary.total.wins} / 负 ${summary.total.losses} / 平 ${summary.total.draws}`),
+    createJournalMetric(isEnglish() ? "Win rate" : "总胜率", percentText(summary.total), isEnglish() ? "Draws excluded" : "平局不计入分母"),
+    createJournalMetric(isEnglish() ? "Today" : "今日", isEnglish() ? `${summary.today.games} games · ${percentText(summary.today)}` : `${summary.today.games} 局 · ${percentText(summary.today)}`, isEnglish() ? `W ${summary.today.wins} / L ${summary.today.losses}` : `胜 ${summary.today.wins} / 负 ${summary.today.losses}`),
+    createJournalMetric(isEnglish() ? "Current trend" : "当前趋势", summary.streak.label, isEnglish() ? "Calculated from most recent game backward" : "从最近一局往前计算"),
     createRecentTrend(summary.recent)
   );
 }
@@ -1293,10 +1390,10 @@ function createJournalMetric(label, value, note) {
 
 function createRecentTrend(recent) {
   const card = create("div", "metric journal-metric journal-trend-card");
-  appendText(card, "span", "最近 10 局");
+  appendText(card, "span", isEnglish() ? "Last 10 games" : "最近 10 局");
   const row = create("div", "journal-trend");
   if (!recent.length) {
-    row.append(textBadge("暂无记录"));
+    row.append(textBadge(isEnglish() ? "No records" : "暂无记录"));
   } else {
     recent.forEach((entry) => {
       const mark = create("span", `trend-dot result-${entry.result}`);
@@ -1306,17 +1403,17 @@ function createRecentTrend(recent) {
     });
   }
   card.append(row);
-  appendText(card, "small", "左侧为最近一局");
+  appendText(card, "small", isEnglish() ? "Leftmost is most recent" : "左侧为最近一局");
   return card;
 }
 
 function renderJournalHeroTable(rows) {
   el.journalHeroTable.replaceChildren();
   if (!rows.length) {
-    el.journalHeroTable.append(journalEmptyText("暂无英雄趋势。"));
+    el.journalHeroTable.append(journalEmptyText(isEnglish() ? "No hero trends." : "暂无英雄趋势。"));
     return;
   }
-  const table = createJournalStatsTable("英雄胜率趋势表", ["英雄", "场次", "胜率", "胜", "负", "平"]);
+  const table = createJournalStatsTable(isEnglish() ? "Hero win-rate trend table" : "英雄胜率趋势表", [t("hero"), isEnglish() ? "Games" : "场次", isEnglish() ? "Win rate" : "胜率", t("win"), t("loss"), t("draw")]);
   const tbody = document.createElement("tbody");
   rows.forEach((row) => tbody.append(createJournalHeroRow(row)));
   table.append(tbody);
@@ -1326,10 +1423,10 @@ function renderJournalHeroTable(rows) {
 function renderJournalMapTable(rows) {
   el.journalMapTable.replaceChildren();
   if (!rows.length) {
-    el.journalMapTable.append(journalEmptyText("暂无地图趋势。"));
+    el.journalMapTable.append(journalEmptyText(isEnglish() ? "No map trends." : "暂无地图趋势。"));
     return;
   }
-  const table = createJournalStatsTable("地图胜率趋势表", ["地图", "场次", "胜率", "胜", "负", "平"]);
+  const table = createJournalStatsTable(isEnglish() ? "Map win-rate trend table" : "地图胜率趋势表", [t("map"), isEnglish() ? "Games" : "场次", isEnglish() ? "Win rate" : "胜率", t("win"), t("loss"), t("draw")]);
   const tbody = document.createElement("tbody");
   rows.forEach((row) => tbody.append(createJournalMapRow(row)));
   table.append(tbody);
@@ -1362,7 +1459,7 @@ function createJournalHeroRow(row) {
   button.dataset.journalHero = row.heroId;
   if (row.hero) button.append(createAvatar(row.hero));
   const name = create("span");
-  name.textContent = row.nameZh;
+  name.textContent = row.hero ? heroPrimaryName(row.hero) : (isEnglish() ? row.name : row.nameZh);
   button.append(name);
   th.append(button);
   tr.append(th);
@@ -1403,7 +1500,7 @@ function createJournalEntryRow(entry) {
   heroButton.dataset.journalHero = entry.heroId;
   if (hero) heroButton.append(createAvatar(hero));
   const heroNameNode = create("span");
-  heroNameNode.textContent = hero?.nameZh || entry.heroId;
+  heroNameNode.textContent = hero ? heroPrimaryName(hero) : entry.heroId;
   heroButton.append(heroNameNode);
 
   const body = create("div", "journal-entry-body");
@@ -1411,16 +1508,16 @@ function createJournalEntryRow(entry) {
   title.append(result, heroButton);
   body.append(title);
   const meta = create("div", "hero-meta");
-  meta.append(textBadge(formatJournalDate(entry.ts)), textBadge(entry.mapName || entry.mapKey || "未知地图"));
-  if (entry.role) meta.append(textBadge(ROLE_LABELS[entry.role] || entry.role));
+  meta.append(textBadge(formatJournalDate(entry.ts)), textBadge(entry.mapName || entry.mapKey || (isEnglish() ? "Unknown map" : "未知地图")));
+  if (entry.role) meta.append(textBadge(appRoleLabel(entry.role)));
   body.append(meta);
-  if (entry.enemyNote) appendText(body, "p", `敌方：${entry.enemyNote}`);
+  if (entry.enemyNote) appendText(body, "p", `${isEnglish() ? "Enemy" : "敌方"}：${entry.enemyNote}`);
   if (entry.note) appendText(body, "p", entry.note);
 
   const remove = create("button", "icon-btn journal-delete");
   remove.type = "button";
   remove.dataset.journalDelete = entry.id;
-  remove.setAttribute("aria-label", `删除 ${formatJournalDate(entry.ts)} 的记录`);
+  remove.setAttribute("aria-label", isEnglish() ? `Delete record from ${formatJournalDate(entry.ts)}` : `删除 ${formatJournalDate(entry.ts)} 的记录`);
   remove.textContent = "×";
   item.append(body, remove);
   return item;
@@ -1437,9 +1534,9 @@ function percentText(row) {
 }
 
 function resultLabel(result) {
-  if (result === "win") return "胜";
-  if (result === "loss") return "负";
-  return "平";
+  if (result === "win") return isEnglish() ? "Win" : "胜";
+  if (result === "loss") return isEnglish() ? "Loss" : "负";
+  return isEnglish() ? "Draw" : "平";
 }
 
 function formatJournalDate(ts) {
@@ -1640,8 +1737,8 @@ function commandMatch(query) {
     results.push({
       type: "hero",
       heroId: hero.id,
-      title: hero.nameZh || hero.name || hero.id,
-      subtitle: `${hero.name || hero.id} · ${ROLE_LABELS[hero.role] || hero.role}`,
+      title: heroPrimaryName(hero),
+      subtitle: `${heroSecondaryName(hero) || hero.id} · ${appRoleLabel(hero.role)}`,
       role: hero.role,
       hero,
       score
@@ -1655,7 +1752,7 @@ function commandMatch(query) {
       type: "view",
       view: view.view,
       title: view.title,
-      subtitle: "切换视图",
+      subtitle: isEnglish() ? "Switch view" : "切换视图",
       score: score + 4
     });
   });
@@ -1664,8 +1761,8 @@ function commandMatch(query) {
   if (shouldOfferPlayerSearch(value, ranked)) {
     ranked.push({
       type: "player",
-      title: `搜索玩家 “${value}”`,
-      subtitle: "BattleTag 战绩查询",
+      title: isEnglish() ? `Search player "${value}"` : `搜索玩家 “${value}”`,
+      subtitle: t("navProfile"),
       query: value,
       score: 90
     });
@@ -1682,14 +1779,14 @@ function defaultCommandResults() {
       type: "view",
       view: item.view,
       title: item.title,
-      subtitle: "切换视图",
+      subtitle: isEnglish() ? "Switch view" : "切换视图",
       score: index
     }));
   const heroes = state.heroes.slice(0, 6).map((hero, index) => ({
     type: "hero",
     heroId: hero.id,
-    title: hero.nameZh || hero.name || hero.id,
-    subtitle: `${hero.name || hero.id} · ${ROLE_LABELS[hero.role] || hero.role}`,
+    title: heroPrimaryName(hero),
+    subtitle: `${heroSecondaryName(hero) || hero.id} · ${appRoleLabel(hero.role)}`,
     role: hero.role,
     hero,
     score: 20 + index
@@ -1762,9 +1859,9 @@ function createCommandResult(item, index) {
 }
 
 function commandTypeLabel(item) {
-  if (item.type === "hero") return ROLE_LABELS[item.role] || "英雄";
-  if (item.type === "view") return "视图";
-  return "战绩";
+  if (item.type === "hero") return appRoleLabel(item.role) || t("hero");
+  if (item.type === "view") return isEnglish() ? "View" : "视图";
+  return isEnglish() ? "Stats" : "战绩";
 }
 
 function executeCommandResult(index) {
@@ -1839,13 +1936,13 @@ function renderHeroGrid() {
   syncHeroSortFilter();
   el.heroGrid.classList.toggle("hero-grid", !listMode);
   el.heroGrid.classList.toggle("hero-list-mount", listMode);
-  el.heroCount.textContent = `${heroes.length} 位英雄`;
+  el.heroCount.textContent = formatCount("heroCount", heroes.length);
   el.heroEmpty.hidden = heroes.length !== 0;
   el.heroEmpty.textContent = state.filters.favoritesOnly && !state.favorites.size
-    ? "还没有收藏英雄，点卡片右上角 ★ 添加"
+    ? t("noFavoriteHeroes")
     : state.filters.tags.length
-      ? "没有符合条件的英雄，试试减少标签或清空筛选。"
-      : "没有符合条件的英雄。";
+      ? t("noTagMatch")
+      : t("noHeroMatch");
   if (listMode) {
     renderHeroList(heroes);
     return;
@@ -1858,7 +1955,7 @@ function renderHeroList(heroes) {
   const wrap = create("div", "hero-list-wrap");
   const table = create("table", "hero-list-table");
   const caption = create("caption", "sr-only");
-  caption.textContent = "英雄库列表";
+  caption.textContent = t("heroListCaption");
   table.append(caption, createHeroListHead(), createHeroListBody(heroes));
   wrap.append(table);
   el.heroGrid.append(wrap);
@@ -1868,13 +1965,13 @@ function createHeroListHead() {
   const thead = document.createElement("thead");
   const row = document.createElement("tr");
   [
-    { label: "英雄", sort: "name" },
-    { label: "职业" },
+    { label: t("hero"), sort: "name" },
+    { label: t("role") },
     { label: "Tier", sort: "tier" },
-    { label: "难度", sort: "difficulty" },
-    { label: "总有效生命", sort: "hp" },
-    { label: "代表标签" },
-    { label: "收藏" }
+    { label: t("difficulty"), sort: "difficulty" },
+    { label: t("hpTotal"), sort: "hp" },
+    { label: t("tags") },
+    { label: t("favorite") }
   ].forEach((column) => row.append(createHeroListHeader(column)));
   thead.append(row);
   return thead;
@@ -1906,10 +2003,10 @@ function createHeroListRow(hero) {
   const tr = create("tr", hero.id === state.patches.meta.latestHero ? "hero-list-row is-new-hero" : "hero-list-row");
   tr.dataset.heroId = hero.id;
   tr.tabIndex = 0;
-  tr.setAttribute("aria-label", `${hero.nameZh} ${hero.name} 详情`);
+  tr.setAttribute("aria-label", `${heroFullName(hero)} ${t("detailSuffix")}`);
   tr.append(
     createHeroListNameCell(hero),
-    createHeroListTextCell(ROLE_LABELS[hero.role] || hero.role),
+    createHeroListTextCell(appRoleLabel(hero.role)),
     createHeroListTierCell(hero),
     createHeroListNumberCell(hero.difficulty == null ? "—" : `${hero.difficulty}/5`, "difficulty"),
     createHeroListNumberCell(String(totalHealth(hero)), "health"),
@@ -1925,8 +2022,7 @@ function createHeroListNameCell(hero) {
   const body = create("div", "hero-list-name");
   body.append(createAvatar(hero));
   const names = create("span", "hero-list-names");
-  appendText(names, "strong", hero.nameZh);
-  appendText(names, "span", hero.name);
+  appendHeroName(names, hero);
   body.append(names);
   th.append(body);
   return th;
@@ -2043,7 +2139,7 @@ function applyThemePreference(theme) {
   if (el.themeToggle) {
     el.themeToggle.setAttribute("aria-pressed", String(next === "dark"));
     const label = el.themeToggle.querySelector(".theme-toggle-text");
-    if (label) label.textContent = next === "dark" ? "深色" : "浅色";
+    if (label) label.textContent = next === "dark" ? t("themeDark") : t("themeLight");
   }
   try {
     window.localStorage.setItem(THEME_KEY, next);
@@ -2064,7 +2160,7 @@ function renderSettings(message = "") {
   feedback.id = "settingsFeedback";
   feedback.setAttribute("role", "status");
   feedback.setAttribute("aria-live", "polite");
-  feedback.textContent = message || "设置改动会自动保存到此设备。";
+  feedback.textContent = message || t("settingsSaved");
 
   el.settingsContent.append(grid, feedback);
 }
@@ -2072,46 +2168,58 @@ function renderSettings(message = "") {
 function createSettingsPreferences() {
   const card = create("section", "settings-card");
   card.setAttribute("aria-labelledby", "settingsPrefsTitle");
-  const title = appendText(card, "h3", "偏好");
+  const title = appendText(card, "h3", t("preference"));
   title.id = "settingsPrefsTitle";
+
+  const language = createSegmentedPreference({
+    id: "settingsLanguageControl",
+    label: t("language"),
+    hint: t("languageHint"),
+    dataName: "settingLang",
+    activeValue: getLang(),
+    options: [
+      ["zh", t("languageZh")],
+      ["en", t("languageEn")]
+    ]
+  });
 
   const theme = createSegmentedPreference({
     id: "settingsThemeControl",
-    label: "主题",
-    hint: "与顶栏主题按钮同步。",
+    label: t("theme"),
+    hint: t("themeHint"),
     dataName: "settingTheme",
     activeValue: currentTheme(),
     options: [
-      ["light", "浅色"],
-      ["dark", "深色"]
+      ["light", t("themeLight")],
+      ["dark", t("themeDark")]
     ]
   });
 
   const platform = createSegmentedPreference({
     id: "settingsPlatformControl",
-    label: "战绩默认平台",
-    hint: "刷新或下次打开时作为战绩查询初始平台。",
+    label: t("defaultPlatform"),
+    hint: t("defaultPlatformHint"),
     dataName: "settingPlatform",
     activeValue: loadDefaultPlatform(),
     options: [
       ["pc", "PC"],
-      ["console", "主机"]
+      ["console", t("console")]
     ]
   });
 
   const heroView = createSegmentedPreference({
     id: "settingsHeroViewControl",
-    label: "英雄库默认视图",
-    hint: "与英雄库视图偏好共用 ow-hero-view。",
+    label: t("defaultHeroView"),
+    hint: t("defaultHeroViewHint"),
     dataName: "settingHeroView",
     activeValue: state.heroView,
     options: [
-      ["grid", "卡片"],
-      ["list", "列表"]
+      ["grid", t("grid")],
+      ["list", t("list")]
     ]
   });
 
-  card.append(theme, platform, heroView);
+  card.append(language, theme, platform, heroView);
   return card;
 }
 
@@ -2141,31 +2249,31 @@ function createSegmentedPreference({ id, label, hint, dataName, activeValue, opt
 function createSettingsAbout() {
   const card = create("section", "settings-card settings-about");
   card.setAttribute("aria-labelledby", "settingsAboutTitle");
-  const title = appendText(card, "h3", "关于");
+  const title = appendText(card, "h3", t("about"));
   title.id = "settingsAboutTitle";
 
   const appName = create("div", "settings-about-head");
-  appendText(appName, "strong", "OW 助手");
-  appendText(appName, "span", `版本 ${APP_VERSION}`);
+  appendText(appName, "strong", t("brandTitle"));
+  appendText(appName, "span", t("version", { version: APP_VERSION }));
 
   const link = create("a", "ghost-link settings-github");
   link.href = "https://github.com/leonjean214/ow-assistant";
   link.target = "_blank";
   link.rel = "noopener noreferrer";
-  link.textContent = "在 GitHub 查看源码";
+  link.textContent = t("githubSource");
 
-  appendText(card, "p", "数据与灵感来自 OverFast API、workshop.codes 与守望先锋社区调研，应用仅做本地聚合与辅助展示。");
+  appendText(card, "p", t("aboutText"));
 
   const updateRow = create("div", "settings-update-row");
   const update = create("button", "primary-btn");
   update.id = "settingsCheckUpdate";
   update.type = "button";
-  update.textContent = "检查更新";
+  update.textContent = t("checkUpdate");
   const status = create("p", "api-state settings-update-status");
   status.id = "settingsUpdateStatus";
   status.setAttribute("role", "status");
   status.setAttribute("aria-live", "polite");
-  status.textContent = "PWA 更新检查会在支持 Service Worker 时运行。";
+  status.textContent = t("updateStatus");
   updateRow.append(update, status);
 
   card.append(appName, link, updateRow);
@@ -2173,10 +2281,18 @@ function createSettingsAbout() {
 }
 
 function handleSettingsClick(event) {
+  const language = event.target.closest("button[data-setting-lang]");
+  if (language) {
+    setLang(language.dataset.settingLang);
+    syncSettingsLanguageControls();
+    announceSettings(t("switchedLanguage"));
+    return;
+  }
+
   const theme = event.target.closest("button[data-setting-theme]");
   if (theme) {
     applyThemePreference(theme.dataset.settingTheme);
-    announceSettings(`已切换为${currentTheme() === "dark" ? "深色" : "浅色"}主题`);
+    announceSettings(t("switchedTheme", { theme: currentTheme() === "dark" ? t("themeDark") : t("themeLight") }));
     return;
   }
 
@@ -2186,7 +2302,7 @@ function handleSettingsClick(event) {
     saveDefaultPlatform(next);
     setPlatform(next);
     syncSettingsPlatformControls();
-    announceSettings(`已设默认平台为${next === "console" ? "主机" : "PC"}`);
+    announceSettings(t("switchedPlatform", { platform: next === "console" ? t("console") : "PC" }));
     return;
   }
 
@@ -2195,7 +2311,7 @@ function handleSettingsClick(event) {
     setHeroView(heroView.dataset.settingHeroView);
     renderHeroGrid();
     syncSettingsHeroViewControls();
-    announceSettings(`已设英雄库默认视图为${state.heroView === "list" ? "列表" : "卡片"}`);
+    announceSettings(t("switchedHeroView", { view: state.heroView === "list" ? t("list") : t("grid") }));
     return;
   }
 
@@ -2206,6 +2322,10 @@ function handleSettingsClick(event) {
 
 function syncSettingsThemeControls() {
   syncSettingsSegmented("settingsThemeControl", "settingTheme", currentTheme());
+}
+
+function syncSettingsLanguageControls() {
+  syncSettingsSegmented("settingsLanguageControl", "settingLang", getLang());
 }
 
 function syncSettingsPlatformControls() {
@@ -2235,26 +2355,26 @@ async function checkPwaUpdate() {
   const button = document.getElementById("settingsCheckUpdate");
   const status = document.getElementById("settingsUpdateStatus");
   if (button) button.disabled = true;
-  if (status) setApiState(status, "loading", "正在检查更新...");
+  if (status) setApiState(status, "loading", t("checkingUpdate"));
   try {
     if (!("serviceWorker" in navigator)) {
-      if (status) setApiState(status, "empty", "当前浏览器不支持 Service Worker，无法检查更新。");
-      announceSettings("当前环境不支持 PWA 更新检查。");
+      if (status) setApiState(status, "empty", t("noServiceWorker"));
+      announceSettings(t("noServiceWorker"));
       return;
     }
     const registration = await navigator.serviceWorker.getRegistration();
     if (!registration) {
-      if (status) setApiState(status, "empty", "当前页面尚未注册 Service Worker。");
-      announceSettings("当前页面尚未注册 Service Worker。");
+      if (status) setApiState(status, "empty", t("noRegistration"));
+      announceSettings(t("noRegistration"));
       return;
     }
     await registration.update();
-    if (status) setApiState(status, "", "已检查更新；如有新版，浏览器会在后台安装。");
-    announceSettings("已完成 PWA 更新检查。");
+    if (status) setApiState(status, "", t("checkedUpdate"));
+    announceSettings(t("checkedUpdateDone"));
   } catch (error) {
     console.warn("PWA update check skipped:", error);
-    if (status) setApiState(status, "empty", "当前环境无法检查更新，请稍后再试。");
-    announceSettings("当前环境无法检查 PWA 更新。");
+    if (status) setApiState(status, "empty", t("updateFailed"));
+    announceSettings(t("updateFailedShort"));
   } finally {
     if (button) button.disabled = false;
   }
@@ -2325,7 +2445,7 @@ function syncTagFilterControls() {
   });
   if (el.tagMatchToggle) {
     el.tagMatchToggle.setAttribute("aria-pressed", String(state.filters.tagsMatchAll));
-    el.tagMatchToggle.textContent = state.filters.tagsMatchAll ? "全部命中 AND" : "任一命中 OR";
+    el.tagMatchToggle.textContent = state.filters.tagsMatchAll ? t("tagAll") : t("tagAny");
   }
   if (el.clearTagFilters) el.clearTagFilters.disabled = state.filters.tags.length === 0;
 }
@@ -2341,7 +2461,7 @@ function renderTimeline() {
   const items = [...state.patches.timeline].sort((a, b) => String(a.date).localeCompare(String(b.date)));
   if (!items.length) {
     const empty = create("p", "empty-state");
-    empty.textContent = "暂无英雄发布时间线。";
+    empty.textContent = isEnglish() ? "No hero release timeline." : "暂无英雄发布时间线。";
     el.updatesTimeline.append(empty);
     return;
   }
@@ -2354,12 +2474,12 @@ function renderTimeline() {
     card.append(createAvatar(hero || item));
     const body = create("div", "timeline-body");
     const head = create("div", "timeline-head");
-    appendText(head, "strong", hero ? `${hero.nameZh} / ${hero.name}` : `${item.nameZh} / ${item.hero}`);
-    if (item.hero === state.patches.meta.latestHero) head.append(createBadge("★最新", "latest-badge"));
+    appendText(head, "strong", hero ? heroFullName(hero) : `${item.nameZh} / ${item.hero}`);
+    if (item.hero === state.patches.meta.latestHero) head.append(createBadge(isEnglish() ? "Latest" : "★最新", "latest-badge"));
     body.append(head);
     const meta = create("div", "hero-meta");
     meta.append(
-      textBadge(ROLE_LABELS[item.role] || ROLE_LABELS[hero?.role] || item.role),
+      textBadge(appRoleLabel(item.role || hero?.role)),
       textBadge(item.date),
       textBadge(item.season)
     );
@@ -2375,12 +2495,12 @@ function renderPatchTypeOptions() {
   el.patchTypeFilter.replaceChildren();
   const all = document.createElement("option");
   all.value = "all";
-  all.textContent = "全部";
+  all.textContent = t("all");
   el.patchTypeFilter.append(all);
   Object.entries(PATCH_TYPE_LABELS).forEach(([type, label]) => {
     const option = document.createElement("option");
     option.value = type;
-    option.textContent = label;
+    option.textContent = isEnglish() ? patchTypeEn(type) : label;
     el.patchTypeFilter.append(option);
   });
   el.patchTypeFilter.value = current;
@@ -2391,7 +2511,7 @@ function renderPatchList() {
   const patches = toArray(state.patches.patches);
   el.patchEmpty.hidden = patches.length !== 0;
   if (!patches.length) {
-    el.patchEmpty.textContent = "暂无补丁日志。";
+    el.patchEmpty.textContent = t("patchEmpty");
     return;
   }
   patches.forEach((patch) => {
@@ -2404,15 +2524,15 @@ function renderPatchList() {
     card.append(head);
     appendText(card, "p", patch.headline).className = "patch-headline";
     const extras = create("div", "tag-row patch-extras");
-    if (patch.newHero) extras.append(textBadge(`新英雄 ${heroName(patch.newHero)}`, "tag"));
-    if (patch.newMap) extras.append(textBadge(`新图 ${patch.newMap}`, "tag"));
+    if (patch.newHero) extras.append(textBadge(`${isEnglish() ? "New hero" : "新英雄"} ${heroName(patch.newHero)}`, "tag"));
+    if (patch.newMap) extras.append(textBadge(`${isEnglish() ? "New map" : "新图"} ${patch.newMap}`, "tag"));
     if (extras.children.length) card.append(extras);
     const list = create("div", "patch-change-list");
     const changes = filteredPatchChanges(patch.changes);
     changes.forEach((change) => list.append(createPatchChangeRow(change)));
     if (!changes.length) {
       const empty = create("p", "empty-state");
-      empty.textContent = "当前筛选下没有改动。";
+      empty.textContent = isEnglish() ? "No changes under the current filters." : "当前筛选下没有改动。";
       list.append(empty);
     }
     card.append(list);
@@ -2437,9 +2557,9 @@ function createPatchStats(changes) {
   ["buff", "nerf", "adjust", "rework"].forEach((type) => {
     const count = counts[type] || 0;
     if (!count) return;
-    stats.append(createPatchTypeBadge(type, `${count}${PATCH_TYPE_LABELS[type]}`));
+    stats.append(createPatchTypeBadge(type, `${count}${isEnglish() ? patchTypeEn(type) : PATCH_TYPE_LABELS[type]}`));
   });
-  if (!stats.children.length) stats.append(textBadge("0 条改动"));
+  if (!stats.children.length) stats.append(textBadge(isEnglish() ? "0 changes" : "0 条改动"));
   return stats;
 }
 
@@ -2459,7 +2579,7 @@ function createPatchChangeRow(change) {
   row.append(createAvatar(hero || { nameZh: change.hero }));
   const body = create("div", "patch-change-body");
   const head = create("div", "patch-change-head");
-  appendText(head, "strong", hero ? `${hero.nameZh} / ${hero.name}` : change.hero);
+  appendText(head, "strong", hero ? heroFullName(hero) : change.hero);
   head.append(createPatchTypeBadge(change.type));
   body.append(head);
   appendText(body, "p", change.text);
@@ -2542,10 +2662,10 @@ function renderMatrix() {
   syncMatrixRoleTabs();
   el.matrixContent.replaceChildren();
   const heroes = filteredMatrixHeroes();
-  if (el.matrixCount) el.matrixCount.textContent = `${heroes.length} 位英雄`;
+  if (el.matrixCount) el.matrixCount.textContent = formatCount("matrixCount", heroes.length);
   if (!heroes.length) {
     const empty = create("p", "empty-state matrix-empty");
-    empty.textContent = "没有符合条件的英雄，换个职业或搜索词再试。";
+    empty.textContent = isEnglish() ? "No heroes match. Try another role or search term." : "没有符合条件的英雄，换个职业或搜索词再试。";
     el.matrixContent.append(empty);
     return;
   }
@@ -2578,9 +2698,9 @@ function syncMatrixRoleTabs() {
 function createMatrixSection(role, heroes) {
   const section = create("section", "matrix-section");
   const head = create("div", "matrix-section-head");
-  appendText(head, "h3", ROLE_LABELS[role] || role);
+  appendText(head, "h3", appRoleLabel(role));
   const count = create("span", "badge");
-  count.textContent = `${heroes.length} 位`;
+  count.textContent = isEnglish() ? `${heroes.length}` : `${heroes.length} 位`;
   head.append(count);
   const list = create("div", "matrix-list");
   heroes.forEach((hero) => list.append(createMatrixCard(hero)));
@@ -2596,15 +2716,14 @@ function createMatrixCard(hero) {
   heroButton.dataset.matrixHero = hero.id;
   heroButton.append(createAvatar(hero));
   const names = create("span", "matrix-hero-names");
-  appendText(names, "strong", hero.nameZh);
-  appendText(names, "span", hero.name);
+  appendHeroName(names, hero);
   heroButton.append(names);
   const links = create("div", "matrix-links");
   const counters = hero.counters || {};
   links.append(
-    createHeroLinkGroup("我克制", counters.strongAgainst, "strong"),
-    createHeroLinkGroup("我怕", counters.weakAgainst, "weak"),
-    createHeroLinkGroup("协同", counters.synergy, "synergy")
+    createHeroLinkGroup(isEnglish() ? "Strong against" : "我克制", counters.strongAgainst, "strong"),
+    createHeroLinkGroup(isEnglish() ? "Weak against" : "我怕", counters.weakAgainst, "weak"),
+    createHeroLinkGroup(isEnglish() ? "Synergy" : "协同", counters.synergy, "synergy")
   );
   card.append(heroButton, links);
   return card;
@@ -2614,7 +2733,7 @@ function createHeroCard(hero) {
   const card = create("div", hero.id === state.patches.meta.latestHero ? "hero-card is-new-hero" : "hero-card");
   card.setAttribute("role", "button");
   card.tabIndex = 0;
-  card.setAttribute("aria-label", `${hero.nameZh} ${hero.name} 详情`);
+  card.setAttribute("aria-label", `${heroFullName(hero)} ${t("detailSuffix")}`);
   card.dataset.heroId = hero.id;
   card.append(createFavoriteButton(hero, "card"));
   card.append(createCompareButton(hero, "card"));
@@ -2623,7 +2742,7 @@ function createHeroCard(hero) {
   const recentChanges = getLatestChanges(hero.id);
   if (recentChanges.length) {
     const badge = createCornerBadge(recentChangeIcon(recentChanges), `recent-corner ${recentChanges[0].type}`);
-    badge.title = "近期有调整";
+    badge.title = t("recentChangeTitle");
     card.append(badge);
   }
   card.append(createAvatar(hero));
@@ -2631,14 +2750,13 @@ function createHeroCard(hero) {
   const body = create("div", "hero-card-body");
   const titleRow = create("div", "hero-title-row");
   const nameBox = create("div");
-  appendText(nameBox, "strong", hero.nameZh);
-  appendText(nameBox, "span", hero.name);
+  appendHeroName(nameBox, hero);
   titleRow.append(nameBox, createBadge(hero.tier, "tier-badge"));
   body.append(titleRow);
 
   const meta = create("div", "hero-meta");
   meta.append(
-    textBadge(ROLE_LABELS[hero.role] || hero.role),
+    textBadge(appRoleLabel(hero.role)),
     textBadge(fallback(hero.subrole)),
     textBadge(`Ban ${BAN_LABELS[hero.ban.priority] || fallback(hero.ban.priority)}`)
   );
@@ -2663,8 +2781,8 @@ function createFavoriteButton(hero, context) {
 function updateFavoriteButton(button, hero) {
   const active = isFavorite(hero.id);
   button.setAttribute("aria-pressed", String(active));
-  button.setAttribute("aria-label", `${active ? "取消收藏" : "收藏"} ${hero.nameZh}`);
-  button.title = active ? "取消收藏" : "收藏";
+  button.setAttribute("aria-label", `${active ? t("cancelFavorite") : t("addFavorite")} ${heroPrimaryName(hero)}`);
+  button.title = active ? t("cancelFavorite") : t("addFavorite");
   button.textContent = active ? "★" : "☆";
 }
 
@@ -2836,9 +2954,9 @@ function createHeroShareButton(hero) {
   const button = create("button", "hero-share-btn detail-share");
   button.type = "button";
   button.dataset.shareHero = hero.id;
-  button.setAttribute("aria-label", `生成 ${hero.nameZh} 分享图`);
-  button.title = "生成分享图";
-  button.textContent = "分享图";
+  button.setAttribute("aria-label", t("shareHeroImage", { name: heroPrimaryName(hero) }));
+  button.title = t("shareImage");
+  button.textContent = t("shareImageShort");
   return button;
 }
 
@@ -2850,9 +2968,9 @@ function updateTeamButton(button = null, hero = null) {
     const active = isInTeam(currentHero.id);
     item.classList.toggle("is-active", active);
     item.setAttribute("aria-pressed", String(active));
-    item.setAttribute("aria-label", `${active ? "移出队伍" : "加入队伍"} ${currentHero.nameZh}`);
-    item.title = active ? "移出队伍" : "加入队伍";
-    item.textContent = active ? "✓队" : "+队";
+    item.setAttribute("aria-label", `${active ? t("removeTeam") : t("addTeam")} ${heroPrimaryName(currentHero)}`);
+    item.title = active ? t("removeTeam") : t("addTeam");
+    item.textContent = active ? `✓${t("teamShort")}` : `+${t("teamShort")}`;
   });
 }
 
@@ -2877,18 +2995,18 @@ function renderTeam(message = "") {
     if (hero) {
       slot.append(createAvatar(hero));
       const name = create("div", "team-slot-name");
-      appendText(name, "strong", hero.nameZh);
-      appendText(name, "span", ROLE_LABELS[hero.role] || hero.role);
+      appendText(name, "strong", heroPrimaryName(hero));
+      appendText(name, "span", appRoleLabel(hero.role));
       slot.append(name);
       const remove = create("button", "icon-btn");
       remove.type = "button";
       remove.dataset.removeTeam = hero.id;
-      remove.setAttribute("aria-label", `移出队伍 ${hero.nameZh}`);
+      remove.setAttribute("aria-label", `${t("removeTeam")} ${heroPrimaryName(hero)}`);
       remove.textContent = "×";
       slot.append(remove);
     } else {
       const ph = create("span", "team-slot-empty");
-      ph.textContent = "空位";
+      ph.textContent = isEnglish() ? "Empty" : "空位";
       slot.append(ph);
     }
     slots.append(slot);
@@ -2897,8 +3015,8 @@ function renderTeam(message = "") {
 
   if (!state.team.length) {
     const empty = create("div", "empty-state team-empty");
-    appendText(empty, "strong", "阵容为空");
-    appendText(empty, "span", "从英雄库点卡片上的「+队」搭建你的阵容（最多 5 人）。");
+    appendText(empty, "strong", isEnglish() ? "No team yet" : "阵容为空");
+    appendText(empty, "span", isEnglish() ? "Use +team on hero cards to build a lineup of up to 5 heroes." : "从英雄库点卡片上的「+队」搭建你的阵容（最多 5 人）。");
     el.teamContent.append(empty);
     return;
   }
@@ -2907,12 +3025,12 @@ function renderTeam(message = "") {
 
   // 职业配比
   const roleCard = create("div", "team-card");
-  appendText(roleCard, "h3", "职业配比");
+  appendText(roleCard, "h3", isEnglish() ? "Role mix" : "职业配比");
   const roleRow = create("div", "tag-row");
   ["tank", "damage", "support"].forEach((role) => {
     const have = analysis.roleCount[role] || 0;
     const want = ({ tank: 1, damage: 2, support: 2 })[role];
-    const badge = textBadge(`${TEAM_ROLE_ZH[role]} ${have}/${want}`, have === want ? "tag ok" : "tag warn");
+    const badge = textBadge(`${appRoleLabel(role)} ${have}/${want}`, have === want ? "tag ok" : "tag warn");
     roleRow.append(badge);
   });
   roleCard.append(roleRow);
@@ -2920,28 +3038,29 @@ function renderTeam(message = "") {
 
   // 阵容原型
   const archCard = create("div", "team-card");
-  appendText(archCard, "h3", "阵容原型");
+  appendText(archCard, "h3", isEnglish() ? "Team archetype" : "阵容原型");
   appendText(archCard, "p", analysis.archetype.label + (analysis.archetype.mixed ? "（多原型并存）" : ""));
   const archRow = create("div", "tag-row");
   [["dive", "突进"], ["poke", "消耗"], ["brawl", "缠斗"]].forEach(([k, zh]) => {
-    if (analysis.archetype.counts[k]) archRow.append(textBadge(`${zh} ${analysis.archetype.counts[k]}`, "tag"));
+    const label = isEnglish() ? ({ dive: "Dive", poke: "Poke", brawl: "Brawl" })[k] : zh;
+    if (analysis.archetype.counts[k]) archRow.append(textBadge(`${label} ${analysis.archetype.counts[k]}`, "tag"));
   });
   if (archRow.children.length) archCard.append(archRow);
 
   // 内部配合
   const synCard = create("div", "team-card");
-  appendText(synCard, "h3", `内部配合（${analysis.synergies.length}）`);
+  appendText(synCard, "h3", `${isEnglish() ? "Internal synergy" : "内部配合"}（${analysis.synergies.length}）`);
   if (analysis.synergies.length) {
     const list = create("div", "tag-row");
     analysis.synergies.forEach((p) => list.append(textBadge(`${p.aName} + ${p.bName}`, "tag ok")));
     synCard.append(list);
   } else {
-    appendText(synCard, "p", "暂无显著配合数据。");
+    appendText(synCard, "p", isEnglish() ? "No notable synergy data." : "暂无显著配合数据。");
   }
 
   // 整体弱点
   const threatCard = create("div", "team-card");
-  appendText(threatCard, "h3", "整体弱点（敌方威胁）");
+  appendText(threatCard, "h3", isEnglish() ? "Team weaknesses (enemy threats)" : "整体弱点（敌方威胁）");
   if (analysis.threats.length) {
     const table = create("div", "team-threats");
     analysis.threats.slice(0, 6).forEach((t) => {
@@ -2952,7 +3071,7 @@ function renderTeam(message = "") {
       row.append(createAvatar(enemy || { nameZh: t.name }));
       const body = create("div");
       appendText(body, "strong", t.name);
-      appendText(body, "span", `克制你方 ${t.count} 名英雄`);
+      appendText(body, "span", isEnglish() ? `Counters ${t.count} ally heroes` : `克制你方 ${t.count} 名英雄`);
       row.append(body);
       table.append(row);
     });
@@ -2960,10 +3079,10 @@ function renderTeam(message = "") {
     const toCounter = create("button", "primary-btn");
     toCounter.type = "button";
     toCounter.dataset.teamToCounter = "true";
-    toCounter.textContent = "拿威胁去克制计算器";
+    toCounter.textContent = isEnglish() ? "Send threats to counter calculator" : "拿威胁去克制计算器";
     threatCard.append(toCounter);
   } else {
-    appendText(threatCard, "p", "暂无明显被克数据。");
+    appendText(threatCard, "p", isEnglish() ? "No obvious counter threats." : "暂无明显被克数据。");
   }
 
   const grid = create("div", "team-analysis");
@@ -2980,7 +3099,7 @@ function renderTeam(message = "") {
   const clear = create("button", "ghost-btn");
   clear.type = "button";
   clear.dataset.clearTeam = "true";
-  clear.textContent = "清空阵容";
+  clear.textContent = isEnglish() ? "Clear team" : "清空阵容";
   tools.append(clear);
   el.teamContent.append(tools);
 }
@@ -3096,19 +3215,19 @@ function renderMe(message = "") {
   const card = create("div", "team-card me-profile");
   const head = create("div", "me-head");
   const avatarHero = p.avatarHeroId ? state.byId.get(p.avatarHeroId) : null;
-  head.append(createAvatar(avatarHero || { nameZh: p.nickname || "我" }));
+  head.append(createAvatar(avatarHero || { nameZh: p.nickname || "我", name: p.nickname || "Me" }));
   const idBox = create("div");
-  appendText(idBox, "strong", p.nickname || "未命名玩家");
-  appendText(idBox, "span", p.battletag ? p.battletag : "未绑定 BattleTag");
+  appendText(idBox, "strong", p.nickname || (isEnglish() ? "Unnamed player" : "未命名玩家"));
+  appendText(idBox, "span", p.battletag ? p.battletag : (isEnglish() ? "BattleTag not linked" : "未绑定 BattleTag"));
   head.append(idBox);
   card.append(head);
 
   const form = create("div", "me-form");
   form.append(
-    meField("昵称", textInput(p.nickname, (v) => updateProfile({ nickname: v }))),
+    meField(isEnglish() ? "Nickname" : "昵称", textInput(p.nickname, (v) => updateProfile({ nickname: v }))),
     meField("BattleTag", battletagRow(p.battletag)),
-    meField("主玩定位", roleSelect(p.mainRole, (v) => updateProfile({ mainRole: v }))),
-    meField("头像英雄", avatarSelect(p.avatarHeroId, (v) => updateProfile({ avatarHeroId: v })))
+    meField(isEnglish() ? "Main role" : "主玩定位", roleSelect(p.mainRole, (v) => updateProfile({ mainRole: v }))),
+    meField(isEnglish() ? "Avatar hero" : "头像英雄", avatarSelect(p.avatarHeroId, (v) => updateProfile({ avatarHeroId: v })))
   );
   card.append(form);
   el.meContent.append(card);
@@ -3117,17 +3236,17 @@ function renderMe(message = "") {
   const ov = localOverview();
   const journal = summarizeJournal(loadJournal(), state.byId);
   const overview = create("div", "team-card");
-  appendText(overview, "h3", "我的数据概览");
+  appendText(overview, "h3", isEnglish() ? "My data overview" : "我的数据概览");
   const grid = create("div", "me-stats");
   grid.append(
-    meStat("收藏英雄", String(ov.favorites), "heroes", () => { state.filters.favoritesOnly = true; if (el.favoriteOnlyToggle) el.favoriteOnlyToggle.checked = true; renderHeroGrid(); }),
-    meStat("对比中", String(ov.compare), "compare"),
-    meStat("队伍", String(ov.team), "team"),
-    meStat("对局记录", `${journal.total.games} 局 · ${journal.total.games ? journal.total.winrate.toFixed(0) + "% 胜" : "—"}`, "journal")
+    meStat(isEnglish() ? "Favorite heroes" : "收藏英雄", String(ov.favorites), "heroes", () => { state.filters.favoritesOnly = true; if (el.favoriteOnlyToggle) el.favoriteOnlyToggle.checked = true; renderHeroGrid(); }),
+    meStat(isEnglish() ? "Comparing" : "对比中", String(ov.compare), "compare"),
+    meStat(isEnglish() ? "Team" : "队伍", String(ov.team), "team"),
+    meStat(t("navJournal"), isEnglish() ? `${journal.total.games} games · ${journal.total.games ? journal.total.winrate.toFixed(0) + "% win" : "—"}` : `${journal.total.games} 局 · ${journal.total.games ? journal.total.winrate.toFixed(0) + "% 胜" : "—"}`, "journal")
   );
   overview.append(grid);
   if (ov.recentPlayers.length) {
-    appendText(overview, "h4", "最近查询玩家");
+    appendText(overview, "h4", isEnglish() ? "Recent players" : "最近查询玩家");
     const chips = create("div", "tag-row");
     ov.recentPlayers.slice(0, 6).forEach((name) => {
       const b = create("button", "recent-chip");
@@ -3142,20 +3261,20 @@ function renderMe(message = "") {
 
   // 数据管理（云同步前的本地备份/迁移）
   const data = create("div", "team-card");
-  appendText(data, "h3", "数据备份与迁移");
-  appendText(data, "p", "全部本地数据（资料/收藏/对比/队伍/记录/主题）可导出为 JSON 备份，换设备时导入恢复。云同步功能预留中。");
+  appendText(data, "h3", isEnglish() ? "Data backup and migration" : "数据备份与迁移");
+  appendText(data, "p", isEnglish() ? "All local data (profile, favorites, compare, team, journal, theme) can be exported as a JSON backup and imported on another device. Cloud sync is reserved for later." : "全部本地数据（资料/收藏/对比/队伍/记录/主题）可导出为 JSON 备份，换设备时导入恢复。云同步功能预留中。");
   const tools = create("div", "me-actions");
   const exportBtn = create("button", "primary-btn");
   exportBtn.type = "button";
-  exportBtn.textContent = "导出全部备份";
+  exportBtn.textContent = isEnglish() ? "Export full backup" : "导出全部备份";
   exportBtn.addEventListener("click", exportProfileBackup);
   const importBtn = create("button", "ghost-btn");
   importBtn.type = "button";
-  importBtn.textContent = "导入备份";
+  importBtn.textContent = isEnglish() ? "Import backup" : "导入备份";
   importBtn.addEventListener("click", importProfileBackup);
   const clearBtn = create("button", "ghost-btn");
   clearBtn.type = "button";
-  clearBtn.textContent = "清空本地数据";
+  clearBtn.textContent = isEnglish() ? "Clear local data" : "清空本地数据";
   clearBtn.addEventListener("click", () => {
     if (window.confirm("确定清空本应用全部本地数据？此操作不可撤销。")) {
       clearAllLocal();
@@ -3203,7 +3322,7 @@ function battletagRow(value) {
   input.addEventListener("change", () => updateProfile({ battletag: input.value.trim() }));
   const go = create("button", "ghost-btn");
   go.type = "button";
-  go.textContent = "查战绩";
+  go.textContent = isEnglish() ? "Search stats" : "查战绩";
   go.addEventListener("click", () => { if (input.value.trim()) lookupBattletag(input.value.trim()); });
   row.append(input, go);
   return row;
@@ -3213,7 +3332,7 @@ function roleSelect(value, onChange) {
   const sel = document.createElement("select");
   ROLE_OPTIONS.forEach(([v, label]) => {
     const o = document.createElement("option");
-    o.value = v; o.textContent = label;
+    o.value = v; o.textContent = v ? appRoleLabel(v) : label;
     if (v === (value || "")) o.selected = true;
     sel.append(o);
   });
@@ -3224,11 +3343,11 @@ function roleSelect(value, onChange) {
 function avatarSelect(value, onChange) {
   const sel = document.createElement("select");
   const blank = document.createElement("option");
-  blank.value = ""; blank.textContent = "默认占位";
+  blank.value = ""; blank.textContent = isEnglish() ? "Default placeholder" : "默认占位";
   sel.append(blank);
   [...state.heroes].sort((a, b) => a.nameZh.localeCompare(b.nameZh, "zh-Hans-CN")).forEach((hero) => {
     const o = document.createElement("option");
-    o.value = hero.id; o.textContent = hero.nameZh;
+    o.value = hero.id; o.textContent = heroPrimaryName(hero);
     if (hero.id === (value || "")) o.selected = true;
     sel.append(o);
   });
@@ -3347,8 +3466,8 @@ function updateCompareButton(button = null, hero = null) {
     const active = isInCompare(currentHero.id);
     item.classList.toggle("is-active", active);
     item.setAttribute("aria-pressed", String(active));
-    item.setAttribute("aria-label", `${active ? "移出对比" : "加入对比"} ${currentHero.nameZh}`);
-    item.title = active ? "移出对比" : "加入对比";
+    item.setAttribute("aria-label", `${active ? t("removeCompare") : t("addCompare")} ${heroPrimaryName(currentHero)}`);
+    item.title = active ? t("removeCompare") : t("addCompare");
     item.textContent = active ? "✓" : "⇄";
   });
 }
@@ -3362,7 +3481,7 @@ function renderCompareTray() {
   el.compareTray.hidden = false;
   const inner = create("div", "compare-tray-inner");
   const summary = create("div", "compare-tray-summary");
-  appendText(summary, "strong", `已选 ${state.compare.length}/${MAX_COMPARE}`);
+  appendText(summary, "strong", t("selectedCompare", { count: state.compare.length, max: MAX_COMPARE }));
   if (state.compareMessage) appendText(summary, "span", state.compareMessage);
   const heroes = create("div", "compare-tray-heroes");
   state.compare.forEach((id) => {
@@ -3374,11 +3493,11 @@ function renderCompareTray() {
   const view = create("button", "primary-btn");
   view.type = "button";
   view.dataset.viewCompare = "true";
-  view.textContent = "查看对比";
+  view.textContent = t("viewCompare");
   const clear = create("button", "ghost-btn");
   clear.type = "button";
   clear.dataset.clearCompare = "true";
-  clear.textContent = "清空";
+  clear.textContent = t("clear");
   actions.append(view, clear);
   inner.append(summary, heroes, actions);
   el.compareTray.append(inner);
@@ -3388,11 +3507,11 @@ function createCompareChip(hero) {
   const chip = create("div", "compare-chip");
   chip.append(createAvatar(hero));
   const name = create("span");
-  name.textContent = hero.nameZh;
+  name.textContent = heroPrimaryName(hero);
   const remove = create("button", "icon-btn");
   remove.type = "button";
   remove.dataset.removeCompare = hero.id;
-  remove.setAttribute("aria-label", `移出对比 ${hero.nameZh}`);
+  remove.setAttribute("aria-label", `${t("removeCompare")} ${heroPrimaryName(hero)}`);
   remove.textContent = "×";
   chip.append(name, remove);
   return chip;
@@ -3410,15 +3529,15 @@ function renderCompareView() {
   const heroes = state.compare.map((id) => state.byId.get(id)).filter(Boolean);
   if (heroes.length < 2) {
     const empty = create("div", "empty-state compare-empty");
-    appendText(empty, "strong", "选择至少 2 位英雄开始对比。");
-    appendText(empty, "span", "可在英雄卡或详情头部点击对比按钮，最多 4 位。");
+    appendText(empty, "strong", t("compareEmptyTitle"));
+    appendText(empty, "span", t("compareEmptyText"));
     el.compareContent.append(empty);
     return;
   }
   const wrap = create("div", "compare-table-wrap");
   const table = create("table", "compare-table");
   const caption = create("caption", "sr-only");
-  caption.textContent = "英雄对比表";
+  caption.textContent = t("compareCaption");
   table.append(caption);
   table.append(createCompareHead(heroes), createCompareBody(heroes));
   wrap.append(table);
@@ -3430,7 +3549,7 @@ function createCompareHead(heroes) {
   const row = document.createElement("tr");
   const empty = document.createElement("th");
   empty.scope = "col";
-  empty.textContent = "维度";
+  empty.textContent = t("dimension");
   row.append(empty);
   heroes.forEach((hero) => {
     const th = document.createElement("th");
@@ -3440,12 +3559,12 @@ function createCompareHead(heroes) {
     button.dataset.compareDetail = hero.id;
     button.append(createAvatar(hero));
     const text = create("span");
-    text.textContent = `${hero.nameZh} / ${hero.name}`;
+    text.textContent = heroFullName(hero);
     button.append(text);
     const remove = create("button", "icon-btn");
     remove.type = "button";
     remove.dataset.removeCompare = hero.id;
-    remove.setAttribute("aria-label", `移出对比 ${hero.nameZh}`);
+    remove.setAttribute("aria-label", `${t("removeCompare")} ${heroPrimaryName(hero)}`);
     remove.textContent = "×";
     th.append(button, remove);
     row.append(th);
@@ -3462,10 +3581,10 @@ function createCompareBody(heroes) {
 
 function compareRows() {
   return [
-    { label: "职业", get: (hero) => ROLE_LABELS[hero.role] || hero.role },
+    { label: t("role"), get: (hero) => appRoleLabel(hero.role) },
     { label: "Tier", get: (hero) => `Tier ${fallback(hero.tier)}` },
-    { label: "难度", numeric: true, best: "min", get: (hero) => hero.difficulty, format: (value) => `${value}/5` },
-    { label: "总有效生命", numeric: true, best: "max", get: (hero) => hero.health.hp + hero.health.armor + hero.health.shield },
+    { label: t("difficulty"), numeric: true, best: "min", get: (hero) => hero.difficulty, format: (value) => `${value}/5` },
+    { label: t("hpTotal"), numeric: true, best: "max", get: (hero) => hero.health.hp + hero.health.armor + hero.health.shield },
     { label: "血量 HP", numeric: true, best: "max", get: (hero) => hero.health.hp },
     { label: "护甲 Armor", numeric: true, best: "max", get: (hero) => hero.health.armor },
     { label: "护盾 Shield", numeric: true, best: "max", get: (hero) => hero.health.shield },
@@ -3476,7 +3595,7 @@ function compareRows() {
     { label: "站位", get: (hero) => `${DEPTH_LABELS[hero.position.depth] || hero.position.depth} · ${hero.position.zh}` },
     { label: "标签", get: (hero) => hero.tags.join("、") },
     { label: "Ban 优先级", get: (hero) => BAN_LABELS[hero.ban.priority] || hero.ban.priority },
-    { label: "代表克制", get: (hero) => hero.counters.strongAgainst.slice(0, 3).map(heroName).join("、") }
+    { label: isEnglish() ? "Key counters" : "代表克制", get: (hero) => hero.counters.strongAgainst.slice(0, 3).map(heroName).join(isEnglish() ? ", " : "、") }
   ];
 }
 
@@ -3640,9 +3759,9 @@ function renderDetail(hero) {
   const names = create("div");
   const title = create("h2");
   title.id = "detailTitle";
-  title.textContent = hero.nameZh;
+  title.textContent = heroPrimaryName(hero);
   const subtitle = create("p");
-  subtitle.textContent = `${hero.name} · ${ROLE_LABELS[hero.role] || hero.role} · Tier ${fallback(hero.tier)}`;
+  subtitle.textContent = `${heroSecondaryName(hero) || hero.id} · ${appRoleLabel(hero.role)} · Tier ${fallback(hero.tier)}`;
   names.append(title, subtitle);
   heroHead.append(names);
   const headActions = create("div", "detail-head-actions");
@@ -3653,34 +3772,34 @@ function renderDetail(hero) {
   shareStatus.setAttribute("aria-live", "polite");
   el.detailContent.append(heroHead, shareStatus);
 
-  if (state.detailStat) el.detailContent.append(detailSection("你的此英雄战绩", [createHeroStatSummary(state.detailStat)]));
+  if (state.detailStat) el.detailContent.append(detailSection(isEnglish() ? "Your stats on this hero" : "你的此英雄战绩", [createHeroStatSummary(state.detailStat)]));
   const recentChanges = getLatestChanges(hero.id);
-  if (recentChanges.length) el.detailContent.append(detailSection("近期调整", [createRecentChangesBlock(recentChanges)]));
+  if (recentChanges.length) el.detailContent.append(detailSection(isEnglish() ? "Recent changes" : "近期调整", [createRecentChangesBlock(recentChanges)]));
 
   el.detailContent.append(
-    detailSection("参数与血量", [createHealthBlock(hero), createKeyValueGrid([
-      ["定位", hero.subrole],
-      ["难度", hero.difficulty ? `${hero.difficulty}/5` : "—"],
-      ["主输出", hero.params.primary],
-      ["射程", hero.params.range],
-      ["机动性", hero.params.mobility ? `${hero.params.mobility}/5` : "—"],
+    detailSection(isEnglish() ? "Stats and health" : "参数与血量", [createHealthBlock(hero), createKeyValueGrid([
+      [isEnglish() ? "Position" : "定位", hero.subrole],
+      [t("difficulty"), hero.difficulty ? `${hero.difficulty}/5` : "—"],
+      [isEnglish() ? "Primary damage" : "主输出", hero.params.primary],
+      [isEnglish() ? "Range" : "射程", hero.params.range],
+      [isEnglish() ? "Mobility" : "机动性", hero.params.mobility ? `${hero.params.mobility}/5` : "—"],
       ["DPS", hero.params.dps],
       ["HPS", hero.params.healingPerSec],
-      ["备注", hero.params.note]
+      [t("note"), hero.params.note]
     ])]),
-    detailSection("被动 / 武器 / 技能", [createAbilityBlock(hero)]),
+    detailSection(isEnglish() ? "Passive / weapon / abilities" : "被动 / 武器 / 技能", [createAbilityBlock(hero)]),
     detailSection("Perk", [createPerkBlock(hero)]),
-    detailSection("站位", [createPositionBlock(hero)]),
-    detailSection("克制关系", [createCounterBlock(hero)]),
-    detailSection("地图强势 / 劣势", [createMapBlock(hero)]),
-    detailSection("Ban 位", [createKeyValueGrid([
-      ["优先级", BAN_LABELS[hero.ban.priority] || hero.ban.priority],
-      ["理由", hero.ban.reason]
+    detailSection(isEnglish() ? "Positioning" : "站位", [createPositionBlock(hero)]),
+    detailSection(isEnglish() ? "Counter relationships" : "克制关系", [createCounterBlock(hero)]),
+    detailSection(isEnglish() ? "Map strengths / weaknesses" : "地图强势 / 劣势", [createMapBlock(hero)]),
+    detailSection(isEnglish() ? "Ban slot" : "Ban 位", [createKeyValueGrid([
+      [isEnglish() ? "Priority" : "优先级", BAN_LABELS[hero.ban.priority] || hero.ban.priority],
+      [isEnglish() ? "Reason" : "理由", hero.ban.reason]
     ])]),
-    detailSection("各分段打法", [createKeyValueGrid([
-      ["青铜-黄金", hero.rankPlay.bronzeGold],
-      ["铂金-钻石", hero.rankPlay.platDiamond],
-      ["大师-GM", hero.rankPlay.masterGM]
+    detailSection(isEnglish() ? "Rank-band notes" : "各分段打法", [createKeyValueGrid([
+      [isEnglish() ? "Bronze-Gold" : "青铜-黄金", hero.rankPlay.bronzeGold],
+      [isEnglish() ? "Platinum-Diamond" : "铂金-钻石", hero.rankPlay.platDiamond],
+      [isEnglish() ? "Master-GM" : "大师-GM", hero.rankPlay.masterGM]
     ])])
   );
 }
@@ -3711,7 +3830,7 @@ function createHealthBlock(hero) {
   const total = hero.health.hp + hero.health.armor + hero.health.shield;
   const wrap = create("div", "health-block");
   const label = create("div", "health-label");
-  label.textContent = total ? `总计 ${total} · HP ${hero.health.hp} / Armor ${hero.health.armor} / Shield ${hero.health.shield}` : "—";
+  label.textContent = total ? `${isEnglish() ? "Total" : "总计"} ${total} · HP ${hero.health.hp} / Armor ${hero.health.armor} / Shield ${hero.health.shield}` : "—";
   const bar = create("div", "health-bar");
   const segments = [["hp", hero.health.hp], ["armor", hero.health.armor], ["shield", hero.health.shield]];
   for (const [type, value] of segments) {
@@ -3727,20 +3846,20 @@ function createHealthBlock(hero) {
 
 function createAbilityBlock(hero) {
   const wrap = create("div", "stack");
-  wrap.append(createKeyValueGrid([["被动", hero.abilities.passive], ["武器", formatNamed(hero.abilities.weapon)]]));
-  wrap.append(createList("主动技能", hero.abilities.actives.map((ability) => {
+  wrap.append(createKeyValueGrid([[isEnglish() ? "Passive" : "被动", hero.abilities.passive], [isEnglish() ? "Weapon" : "武器", formatNamed(hero.abilities.weapon)]]));
+  wrap.append(createList(isEnglish() ? "Active abilities" : "主动技能", hero.abilities.actives.map((ability) => {
     const cooldown = ability.cooldown === 0 || ability.cooldown ? `CD ${ability.cooldown}s` : "CD —";
     return `${formatNamed(ability)} · ${cooldown}`;
   })));
-  wrap.append(createKeyValueGrid([["大招", formatNamed(hero.abilities.ultimate)]]));
+  wrap.append(createKeyValueGrid([[isEnglish() ? "Ultimate" : "大招", formatNamed(hero.abilities.ultimate)]]));
   return wrap;
 }
 
 function createPerkBlock(hero) {
   const wrap = create("div", "stack");
-  wrap.append(createList("小天赋 2 选 1", hero.perks.minor.map(formatNamed)));
-  wrap.append(createList("大天赋 2 选 1", hero.perks.major.map(formatNamed)));
-  wrap.append(createKeyValueGrid([["推荐", hero.perks.recommended]]));
+  wrap.append(createList(isEnglish() ? "Minor perks: pick 1 of 2" : "小天赋 2 选 1", hero.perks.minor.map(formatNamed)));
+  wrap.append(createList(isEnglish() ? "Major perks: pick 1 of 2" : "大天赋 2 选 1", hero.perks.major.map(formatNamed)));
+  wrap.append(createKeyValueGrid([[isEnglish() ? "Recommended" : "推荐", hero.perks.recommended]]));
   return wrap;
 }
 
@@ -3759,14 +3878,14 @@ function createCounterBlock(hero) {
   const why = state.counterNotes.get(hero.id);
   if (why) {
     const note = create("p", "counter-why");
-    appendText(note, "strong", "为什么：");
+    appendText(note, "strong", isEnglish() ? "Why: " : "为什么：");
     note.append(document.createTextNode(why));
     wrap.append(note);
   }
   wrap.append(
-    createHeroLinkGroup("我克制 strongAgainst", hero.counters.strongAgainst, "strong"),
-    createHeroLinkGroup("我怕 weakAgainst", hero.counters.weakAgainst, "weak"),
-    createHeroLinkGroup("协同 synergy", hero.counters.synergy, "synergy")
+    createHeroLinkGroup(isEnglish() ? "Strong against" : "我克制 strongAgainst", hero.counters.strongAgainst, "strong"),
+    createHeroLinkGroup(isEnglish() ? "Weak against" : "我怕 weakAgainst", hero.counters.weakAgainst, "weak"),
+    createHeroLinkGroup(isEnglish() ? "Synergy" : "协同 synergy", hero.counters.synergy, "synergy")
   );
   return wrap;
 }
@@ -3784,7 +3903,7 @@ function createHeroLinkGroup(title, ids, kind = "") {
       const button = create("button", kind ? `hero-link hero-link-${kind}` : "hero-link");
       button.type = "button";
       button.dataset.jumpHero = id;
-      button.textContent = hero ? `${hero.nameZh} / ${hero.name}` : id;
+      button.textContent = hero ? heroFullName(hero) : id;
       if (!hero) button.disabled = true;
       links.append(button);
     });
@@ -3795,9 +3914,9 @@ function createHeroLinkGroup(title, ids, kind = "") {
 
 function createMapBlock(hero) {
   const wrap = create("div", "stack");
-  wrap.append(createList("强势地图", hero.maps.strong));
-  wrap.append(createList("劣势地图", hero.maps.weak));
-  wrap.append(createKeyValueGrid([["备注", hero.maps.note]]));
+  wrap.append(createList(isEnglish() ? "Strong maps" : "强势地图", hero.maps.strong));
+  wrap.append(createList(isEnglish() ? "Weak maps" : "劣势地图", hero.maps.weak));
+  wrap.append(createKeyValueGrid([[t("note"), hero.maps.note]]));
   return wrap;
 }
 
@@ -3834,7 +3953,7 @@ function renderEnemyChips() {
     chip.type = "button";
     chip.dataset.enemyId = hero.id;
     chip.classList.toggle("is-selected", state.selectedEnemies.includes(hero.id));
-    chip.textContent = `${hero.nameZh} ${hero.name}`;
+    chip.textContent = heroFullName(hero);
     el.enemyChips.append(chip);
   }
 }
@@ -3867,13 +3986,13 @@ function mergeEnemyParts(current, parts) {
 function renderCounter() {
   el.selectedEnemies.replaceChildren();
   if (!state.selectedEnemies.length) {
-    el.selectedEnemies.append(textBadge("尚未选择敌方英雄"));
+    el.selectedEnemies.append(textBadge(t("selectedEnemyEmpty")));
   } else {
     state.selectedEnemies.forEach((id) => {
       const hero = state.byId.get(id);
       const chip = create("button", "selected-chip");
       chip.type = "button";
-      chip.textContent = `${hero?.nameZh || id} ×`;
+      chip.textContent = `${hero ? heroPrimaryName(hero) : id} ×`;
       chip.addEventListener("click", () => toggleEnemy(id));
       el.selectedEnemies.append(chip);
     });
@@ -3887,7 +4006,7 @@ function renderCounterResults(container, result) {
   container.replaceChildren();
   if (!result.enemies.length) {
     const empty = create("p", "empty-state");
-    empty.textContent = "选择或输入敌方英雄后，会按职业给出 Top counter 推荐。";
+    empty.textContent = t("counterIntro");
     container.append(empty);
     return;
   }
@@ -3897,7 +4016,7 @@ function renderCounterResults(container, result) {
   }
   for (const role of ["tank", "damage", "support"]) {
     const section = create("div", "result-role");
-    appendText(section, "h3", `${ROLE_LABELS[role]} Top 推荐`);
+    appendText(section, "h3", t("topRecommend", { role: appRoleLabel(role) }));
     const list = create("div", "result-list");
     result.byRole[role].slice(0, 5).forEach((item) => list.append(createResultRow(item)));
     if (!list.children.length) list.append(textBadge("—"));
@@ -3915,9 +4034,9 @@ const ENEMY_COMP_HINT = {
 function createEnemyCompSummary(enemies) {
   const heroes = toArray(enemies).map((id) => state.byId.get(id)).filter(Boolean);
   const wrap = create("div", "enemy-comp");
-  appendText(wrap, "h3", "对面阵容");
+  appendText(wrap, "h3", t("enemyComp"));
   if (!heroes.length) {
-    appendText(wrap, "p", "选择敌方英雄后，这里会判断对面的阵容原型与职业配比。");
+    appendText(wrap, "p", isEnglish() ? "After choosing enemies, this summarizes their archetype and role mix." : "选择敌方英雄后，这里会判断对面的阵容原型与职业配比。");
     return wrap;
   }
   const arche = teamArchetype(heroes);
@@ -3925,7 +4044,7 @@ function createEnemyCompSummary(enemies) {
   const row = create("div", "tag-row");
   row.append(textBadge(arche.label, "tag"));
   ["tank", "damage", "support"].forEach((role) => {
-    if (roleCount[role]) row.append(textBadge(`${TEAM_ROLE_ZH[role]} ${roleCount[role]}`, "tag"));
+    if (roleCount[role]) row.append(textBadge(`${appRoleLabel(role)} ${roleCount[role]}`, "tag"));
   });
   wrap.append(row);
   if (arche.primary && ENEMY_COMP_HINT[arche.primary]) appendText(wrap, "p", ENEMY_COMP_HINT[arche.primary]);
@@ -3934,15 +4053,15 @@ function createEnemyCompSummary(enemies) {
 
 function createSwapAdvisor(result) {
   const wrap = create("div", "swap-advisor");
-  appendText(wrap, "h3", "换不换顾问");
+  appendText(wrap, "h3", t("swapAdvisor"));
   if (!state.currentHeroId) {
-    appendText(wrap, "p", "先选择“我当前英雄”，这里会判断这把是能打、该稳住，还是同职业有更优解。");
+    appendText(wrap, "p", isEnglish() ? "Choose your current hero first to judge whether to stay or swap within the same role." : "先选择“我当前英雄”，这里会判断这把是能打、该稳住，还是同职业有更优解。");
     return wrap;
   }
 
   const current = state.byId.get(state.currentHeroId);
   if (!current) {
-    appendText(wrap, "p", "当前英雄无法识别，先换一个本地英雄再计算。");
+    appendText(wrap, "p", isEnglish() ? "Current hero is not recognized. Choose a local hero first." : "当前英雄无法识别，先换一个本地英雄再计算。");
     return wrap;
   }
 
@@ -3952,21 +4071,21 @@ function createSwapAdvisor(result) {
   const currentStat = state.heroStatById.get(current.id) || null;
   const playerLine = createPlayerFamiliarityLine(currentStat);
   const title = create("strong");
-  title.textContent = `${current.nameZh} 对当前阵容得分 ${formatScore(matchup.score)}`;
+  title.textContent = isEnglish() ? `${heroPrimaryName(current)} score into current comp: ${formatScore(matchup.score)}` : `${current.nameZh} 对当前阵容得分 ${formatScore(matchup.score)}`;
   wrap.append(title);
 
   const message = create("p");
   if (matchup.score >= 0) {
-    message.textContent = "🟢 你这英雄能打，别急着换。counterswap 不是必须，先看地图、资源和队友节奏。";
+    message.textContent = isEnglish() ? "You can play this hero. Do not rush a swap; read the map, resources, and team tempo first." : "🟢 你这英雄能打，别急着换。counterswap 不是必须，先看地图、资源和队友节奏。";
   } else if (currentStat && currentStat.games >= 10 && currentStat.winrate >= 48 && matchup.score >= -2) {
-    message.textContent = "🟢 略偏劣势，但你在这个英雄上更熟练，可继续打，不必为了纸面 counter 无脑换。";
+    message.textContent = isEnglish() ? "Slightly disadvantaged, but your experience on this hero can justify staying." : "🟢 略偏劣势，但你在这个英雄上更熟练，可继续打，不必为了纸面 counter 无脑换。";
   } else if (better.length) {
-    message.textContent = `🟡 偏劣势，考虑换 ${better.map((item) => item.nameZh).join(" / ")}。只在你确实会玩、队伍需要时再换。`;
+    message.textContent = isEnglish() ? `Disadvantaged. Consider ${better.map((item) => heroPrimaryName(item)).join(" / ")} only if you can play them and the team needs it.` : `🟡 偏劣势，考虑换 ${better.map((item) => item.nameZh).join(" / ")}。只在你确实会玩、队伍需要时再换。`;
   } else {
-    message.textContent = "🟡 偏劣势，但同职业没有明显更优解。先调整站位和交技能节奏，别为了换而换。";
+    message.textContent = isEnglish() ? "Disadvantaged, but there is no obvious same-role upgrade. Adjust position and cooldown timing first." : "🟡 偏劣势，但同职业没有明显更优解。先调整站位和交技能节奏，别为了换而换。";
   }
   wrap.append(message);
-  if (matchup.reasons.length) wrap.append(createList("命中原因", matchup.reasons));
+  if (matchup.reasons.length) wrap.append(createList(isEnglish() ? "Matched reasons" : "命中原因", matchup.reasons));
   if (playerLine) appendText(wrap, "p", playerLine).className = "swap-note";
   if (better.length) wrap.append(createSwapOptions(better));
   return wrap;
@@ -3974,17 +4093,17 @@ function createSwapAdvisor(result) {
 
 function createPlayerFamiliarityLine(stat) {
   if (!stat) {
-    return state.heroStats.length ? "已加载玩家战绩：你在当前英雄上暂无记录，纸面推荐要谨慎试。" : "";
+    return state.heroStats.length ? (isEnglish() ? "Player stats loaded: you have no sample on the current hero, so treat paper recommendations carefully." : "已加载玩家战绩：你在当前英雄上暂无记录，纸面推荐要谨慎试。") : "";
   }
-  const base = `已加载玩家战绩：${stat.games} 场，胜率 ${stat.winrate.toFixed(1)}%。`;
-  if (stat.games >= 10) return `${base} 场次较多，熟练度会软化换人建议。`;
-  if (stat.games > 0) return `${base} 样本偏少，别只看胜率。`;
+  const base = isEnglish() ? `Player stats loaded: ${stat.games} games, ${stat.winrate.toFixed(1)}% win rate.` : `已加载玩家战绩：${stat.games} 场，胜率 ${stat.winrate.toFixed(1)}%。`;
+  if (stat.games >= 10) return `${base} ${isEnglish() ? "A larger sample can soften swap advice." : "场次较多，熟练度会软化换人建议。"}`;
+  if (stat.games > 0) return `${base} ${isEnglish() ? "Small sample; do not over-read win rate." : "样本偏少，别只看胜率。"}`;
   return "";
 }
 
 function createSwapOptions(items) {
   const group = create("div", "swap-options");
-  appendText(group, "h4", "同职业更优解");
+  appendText(group, "h4", isEnglish() ? "Better same-role options" : "同职业更优解");
   items.forEach((item) => {
     const stat = state.heroStatById.get(item.id);
     const button = create("button", "mini-hero-row");
@@ -3992,8 +4111,8 @@ function createSwapOptions(items) {
     button.addEventListener("click", () => openDetail(item.id, stat || null));
     button.append(createAvatar(state.byId.get(item.id) || item));
     const body = create("div");
-    appendText(body, "strong", `${item.nameZh} ${formatScore(item.score)}`);
-    const note = stat ? `你的记录：${stat.games} 场 / ${stat.winrate.toFixed(1)}%` : state.heroStats.length ? "你不熟，谨慎" : "未加载玩家战绩";
+    appendText(body, "strong", `${heroPrimaryName(item)} ${formatScore(item.score)}`);
+    const note = stat ? (isEnglish() ? `Your record: ${stat.games} games / ${stat.winrate.toFixed(1)}%` : `你的记录：${stat.games} 场 / ${stat.winrate.toFixed(1)}%`) : state.heroStats.length ? (isEnglish() ? "No personal sample; use caution" : "你不熟，谨慎") : (isEnglish() ? "Player stats not loaded" : "未加载玩家战绩");
     appendText(body, "span", note);
     button.append(body);
     group.append(button);
@@ -4006,9 +4125,9 @@ function createResultRow(item) {
   row.type = "button";
   row.addEventListener("click", () => openDetail(item.id));
   const name = create("div");
-  appendText(name, "strong", `${item.nameZh} / ${item.name}`);
+  appendText(name, "strong", heroFullName(item));
   const reason = create("span");
-  reason.textContent = item.reasons.length ? item.reasons.join("；") : "无直接克制命中";
+  reason.textContent = item.reasons.length ? item.reasons.join("；") : t("noDirectCounter");
   name.append(reason);
   const score = create("b");
   score.textContent = item.score > 0 ? `+${item.score}` : String(item.score);
@@ -4018,7 +4137,7 @@ function createResultRow(item) {
 
 function renderBanList() {
   const heroes = sortedBanHeroes();
-  el.banCount.textContent = `${heroes.length} 条建议`;
+  el.banCount.textContent = formatCount("banCount", heroes.length);
   el.banList.replaceChildren();
   for (const hero of heroes) el.banList.append(createBanItem(hero));
 }
@@ -4037,7 +4156,7 @@ function createBanItem(hero) {
   item.type = "button";
   item.addEventListener("click", () => openDetail(hero.id));
   const left = create("div");
-  appendText(left, "strong", `${hero.nameZh} / ${hero.name}`);
+  appendText(left, "strong", heroFullName(hero));
   appendText(left, "span", hero.ban.reason);
   const right = create("div", "ban-rank");
   right.append(createBadge(BAN_LABELS[hero.ban.priority] || hero.ban.priority, `ban-${hero.ban.priority}`));
@@ -4053,15 +4172,15 @@ async function runPlayerSearch() {
     setApiState(el.playerSearchState, "");
     return;
   }
-  setApiState(el.playerSearchState, "loading", "正在搜索玩家...");
+  setApiState(el.playerSearchState, "loading", t("loadingPlayers"));
   try {
     const payload = await searchPlayers(query);
     const results = toArray(payload?.results);
-    setApiState(el.playerSearchState, results.length ? "" : "empty", results.length ? "" : "没有找到候选玩家。");
+    setApiState(el.playerSearchState, results.length ? "" : "empty", results.length ? "" : t("noPlayers"));
     renderPlayerResults(results);
   } catch (error) {
     console.warn(error);
-    setApiState(el.playerSearchState, "error", friendlyApiError(error, "玩家搜索失败"));
+    setApiState(el.playerSearchState, "error", friendlyApiError(error, t("playerSearchFailed")));
   }
 }
 
@@ -4081,14 +4200,14 @@ function createPlayerResult(player) {
   if (imgUrl) {
     const img = document.createElement("img");
     img.src = imgUrl;
-    img.alt = "玩家头像";
+    img.alt = t("playerAvatar");
     img.loading = "lazy";
     img.addEventListener("error", () => img.remove());
     avatar.append(img);
   }
   const body = create("div");
-  appendText(body, "strong", player.name || "未知玩家");
-  appendText(body, "span", player.title || "无头衔");
+  appendText(body, "strong", player.name || t("unknownPlayer"));
+  appendText(body, "span", player.title || t("noTitle"));
   button.append(avatar, body);
   return button;
 }
@@ -4101,7 +4220,7 @@ async function selectPlayer(playerId, options = {}) {
   state.selectedPlayer = known || { player_id: id };
   if (!options.keepResults) el.playerResults.replaceChildren();
   el.playerProfile.replaceChildren();
-  setApiState(el.playerSearchState, "loading", "正在加载段位与英雄战绩...");
+  setApiState(el.playerSearchState, "loading", t("loadingProfile"));
   try {
     const [summary, stats] = await Promise.all([getSummary(id), getStatsSummary(id, { platform: state.platform })]);
     if (requestId !== state.playerRequestId) return;
@@ -4116,7 +4235,7 @@ async function selectPlayer(playerId, options = {}) {
   } catch (error) {
     console.warn(error);
     if (requestId !== state.playerRequestId) return;
-    setApiState(el.playerSearchState, "error", friendlyApiError(error, "玩家数据加载失败"));
+    setApiState(el.playerSearchState, "error", friendlyApiError(error, isEnglish() ? "Player data failed to load" : "玩家数据加载失败"));
     renderPlayerShell(state.selectedPlayer, null);
   }
 }
@@ -4137,14 +4256,14 @@ function renderPlayerShell(summary, stats) {
   if (avatarUrl) {
     const img = document.createElement("img");
     img.src = avatarUrl;
-    img.alt = "玩家头像";
+    img.alt = t("playerAvatar");
     img.addEventListener("error", () => img.remove());
     avatar.append(img);
   }
   const titleBox = create("div");
-  appendText(titleBox, "h3", summary?.username || summary?.name || state.selectedPlayer?.name || "未知玩家");
-  appendText(titleBox, "p", summary?.title || "无头衔");
-  const endorse = createBadge(`点赞等级 ${fallback(summary?.endorsement?.level)}`);
+  appendText(titleBox, "h3", summary?.username || summary?.name || state.selectedPlayer?.name || t("unknownPlayer"));
+  appendText(titleBox, "p", summary?.title || t("noTitle"));
+  const endorse = createBadge(isEnglish() ? `Endorsement ${fallback(summary?.endorsement?.level)}` : `点赞等级 ${fallback(summary?.endorsement?.level)}`);
   head.append(avatar, titleBox, endorse);
   wrap.append(head, createRankCards(summary?.competitive?.[state.platform]));
   if (stats) wrap.append(createOverview(stats));
@@ -4155,7 +4274,7 @@ function createRankCards(platformRanks) {
   const grid = create("div", "rank-grid");
   for (const role of ["tank", "damage", "support"]) {
     const card = create("div", "rank-card");
-    appendText(card, "span", roleNamesZh[role] || role);
+    appendText(card, "span", appRoleLabel(role));
     const rank = platformRanks?.[role] || null;
     const title = create("strong");
     title.textContent = formatRank(rank);
@@ -4164,7 +4283,7 @@ function createRankCards(platformRanks) {
     if (icon) {
       const img = document.createElement("img");
       img.src = icon;
-      img.alt = "段位图标";
+      img.alt = t("rankIcon");
       img.loading = "lazy";
       img.addEventListener("error", () => img.remove());
       card.append(img);
@@ -4178,11 +4297,11 @@ function createOverview(stats) {
   const wrap = create("div", "overview-grid");
   const general = stats?.general || {};
   [
-    ["总胜率", `${numText(general.winrate, 1)}%`],
+    [isEnglish() ? "Total win rate" : "总胜率", `${numText(general.winrate, 1)}%`],
     ["KDA", numText(general.kda, 2)],
-    ["总场次", fallback(general.games_played, 0)]
+    [isEnglish() ? "Total games" : "总场次", fallback(general.games_played, 0)]
   ].forEach(([label, value]) => wrap.append(createMetric(label, value)));
-  summarizeRoles(stats).forEach((role) => wrap.append(createMetric(`${roleNamesZh[role.role]}胜率`, `${role.winrate.toFixed(1)}%`)));
+  summarizeRoles(stats).forEach((role) => wrap.append(createMetric(isEnglish() ? `${appRoleLabel(role.role)} win rate` : `${roleNamesZh[role.role]}胜率`, `${role.winrate.toFixed(1)}%`)));
   return wrap;
 }
 
@@ -4204,19 +4323,19 @@ function renderHeroStatsTable() {
   const rows = sortHeroStats(state.heroStats, state.heroSort.key, state.heroSort.direction);
   if (!rows.length) {
     const empty = create("p", "empty-state");
-    empty.textContent = "暂无可展示的英雄战绩。";
+    empty.textContent = isEnglish() ? "No hero stats to show." : "暂无可展示的英雄战绩。";
     tableWrap.append(empty);
     return;
   }
   const table = create("table", "stats-table");
   const caption = create("caption", "sr-only");
-  caption.textContent = "玩家英雄战绩表";
+  caption.textContent = isEnglish() ? "Player hero stats table" : "玩家英雄战绩表";
   table.append(caption);
   const thead = document.createElement("thead");
   const headRow = document.createElement("tr");
   [
-    ["hero", "英雄"], ["games", "场次"], ["winrate", "胜率"], ["kda", "KDA"],
-    ["damageAvg", "场均伤害"], ["healingAvg", "场均治疗"], ["time", "游戏时长"]
+    ["hero", t("hero")], ["games", isEnglish() ? "Games" : "场次"], ["winrate", isEnglish() ? "Win rate" : "胜率"], ["kda", "KDA"],
+    ["damageAvg", isEnglish() ? "Avg damage" : "场均伤害"], ["healingAvg", isEnglish() ? "Avg healing" : "场均治疗"], ["time", isEnglish() ? "Time played" : "游戏时长"]
   ].forEach(([key, label]) => {
     const th = document.createElement("th");
     th.scope = "col";
@@ -4225,7 +4344,7 @@ function renderHeroStatsTable() {
       const button = create("button", "table-sort");
       button.type = "button";
       button.dataset.sort = key;
-      button.setAttribute("aria-label", `${label}，当前${sortAriaLabel(key)}，点击切换排序`);
+      button.setAttribute("aria-label", isEnglish() ? `${label}, currently ${sortAriaLabel(key)}, click to toggle sort` : `${label}，当前${sortAriaLabel(key)}，点击切换排序`);
       button.textContent = state.heroSort.key === key ? `${label} ${state.heroSort.direction === "desc" ? "↓" : "↑"}` : label;
       th.append(button);
     } else {
@@ -4246,8 +4365,8 @@ function sortAriaValue(key) {
 }
 
 function sortAriaLabel(key) {
-  if (state.heroSort.key !== key) return "未排序";
-  return state.heroSort.direction === "asc" ? "升序" : "降序";
+  if (state.heroSort.key !== key) return isEnglish() ? "not sorted" : "未排序";
+  return state.heroSort.direction === "asc" ? (isEnglish() ? "ascending" : "升序") : (isEnglish() ? "descending" : "降序");
 }
 
 function renderPerformanceCards() {
@@ -4282,7 +4401,8 @@ function createPerformanceCard(card) {
   const value = create("strong");
   value.textContent = card.value;
   const heroName = create("b");
-  heroName.textContent = card.heroNameZh || card.heroName || card.heroId;
+  const cardHero = state.byId.get(card.heroId);
+  heroName.textContent = cardHero ? heroPrimaryName(cardHero) : (isEnglish() ? card.heroName : card.heroNameZh) || card.heroId;
   const note = create("p");
   note.textContent = card.note;
   button.append(label, value, heroName, note);
@@ -4304,7 +4424,7 @@ function createHeroStatRow(row) {
   heroBox.dataset.statHero = row.id;
   if (row.portrait) heroBox.append(createAvatar(row.hero || row));
   const name = create("span");
-  name.textContent = row.nameZh;
+  name.textContent = row.hero ? heroPrimaryName(row.hero) : (isEnglish() ? row.name : row.nameZh);
   heroBox.append(name);
   heroCell.append(heroBox);
   tr.append(heroCell);
@@ -4358,12 +4478,12 @@ function renderRecentPlayers() {
   const recent = getRecentPlayers();
   el.recentPlayers.replaceChildren();
   if (!recent.length) return;
-  appendText(el.recentPlayers, "span", "最近查询");
+  appendText(el.recentPlayers, "span", t("recentSearch"));
   recent.forEach((player) => {
     const button = create("button", "recent-chip");
     button.type = "button";
     button.dataset.playerId = player.player_id;
-    button.textContent = player.name || "未知玩家";
+    button.textContent = player.name || t("unknownPlayer");
     el.recentPlayers.append(button);
   });
 }
@@ -4378,23 +4498,23 @@ function findKnownPlayer(playerId) {
 async function loadMapsOnce() {
   if (state.mapsLoaded) return;
   state.mapsLoaded = true;
-  setApiState(el.mapsState, "loading", "正在加载地图...");
+  setApiState(el.mapsState, "loading", t("loadingMaps"));
   try {
     const maps = await getMaps();
     state.maps = Array.isArray(maps) ? maps : [];
-    setApiState(el.mapsState, state.maps.length ? "" : "empty", state.maps.length ? "" : "没有可展示的地图。");
+    setApiState(el.mapsState, state.maps.length ? "" : "empty", state.maps.length ? "" : t("noMaps"));
     renderMapModeTabs();
     renderMapsGrid();
   } catch (error) {
     console.warn(error);
     state.maps = localMapsFromMeta();
     if (state.maps.length) {
-      setApiState(el.mapsState, "error", `${friendlyApiError(error, "地图加载失败")} 已显示本地地图静态数据。`);
+      setApiState(el.mapsState, "error", t("localMapsFallback", { message: friendlyApiError(error, t("mapLoadFailed")) }));
       renderMapModeTabs();
       renderMapsGrid();
       return;
     }
-    setApiState(el.mapsState, "error", friendlyApiError(error, "地图加载失败"));
+    setApiState(el.mapsState, "error", friendlyApiError(error, t("mapLoadFailed")));
   }
 }
 
@@ -4420,14 +4540,14 @@ function createModeButton(mode) {
   const button = create("button", mode === state.mapMode ? "is-active" : "");
   button.type = "button";
   button.dataset.mode = mode;
-  button.textContent = mode === "all" ? "全部" : modeLabels[mode] || mode;
+  button.textContent = mode === "all" ? t("all") : modeLabel(mode);
   return button;
 }
 
 function renderMapsGrid() {
   el.mapsGrid.replaceChildren();
   const maps = state.maps.filter((map) => state.mapMode === "all" || toArray(map.gamemodes).includes(state.mapMode));
-  el.mapCount.textContent = `${maps.length} 张地图`;
+  el.mapCount.textContent = formatCount("mapCount", maps.length);
   maps.forEach((map) => el.mapsGrid.append(createMapCard(map)));
   if (maps[0]) renderMapDetail(maps[0]);
 }
@@ -4442,7 +4562,7 @@ function createMapCard(map) {
   if (src) {
     const img = document.createElement("img");
     img.src = src;
-    img.alt = "地图截图";
+    img.alt = t("mapScreenshot");
     img.loading = "lazy";
     img.addEventListener("error", () => img.remove());
     shot.append(img);
@@ -4450,9 +4570,9 @@ function createMapCard(map) {
   const body = create("div", "map-card-body");
   appendText(body, "strong", `${countryFlag(map.country_code)} ${fallback(map.name)}`);
   const tags = create("div", "tag-row");
-  toArray(map.gamemodes).forEach((mode) => tags.append(textBadge(modeLabels[mode] || mode, "tag")));
+  toArray(map.gamemodes).forEach((mode) => tags.append(textBadge(modeLabel(mode), "tag")));
   if (meta) tags.append(textBadge(shortArchetype(meta.archetype), "tag map-meta-tag"));
-  appendText(body, "span", map.location || "未知地点");
+  appendText(body, "span", map.location || t("unknownLocation"));
   body.append(tags);
   card.append(shot, body);
   return card;
@@ -4465,40 +4585,40 @@ function renderMapDetail(map) {
   const left = create("div");
   appendText(left, "p", "Map Matchup").className = "eyebrow";
   appendText(left, "h3", `${countryFlag(map.country_code)} ${meta?.nameZh || fallback(map.name)}`);
-  title.append(left, createBadge(toArray(map.gamemodes).map((mode) => modeLabels[mode] || mode).join(" / ") || "—"));
+  title.append(left, createBadge(toArray(map.gamemodes).map((mode) => modeLabel(mode)).join(" / ") || "—"));
   if (meta) {
     el.mapDetail.append(title, createMapMetaDetail(meta));
     return;
   }
   const aggregate = aggregateMapHeroes(map);
   const grid = create("div", "map-reco-grid");
-  grid.append(createMapRecoColumn("强势英雄", aggregate.strong), createMapRecoColumn("劣势英雄", aggregate.weak));
+  grid.append(createMapRecoColumn(t("strongHeroes"), aggregate.strong), createMapRecoColumn(t("weakHeroes"), aggregate.weak));
   el.mapDetail.append(title, grid);
 }
 
 function createMapMetaDetail(meta) {
   const wrap = create("div", "map-meta-detail");
   wrap.append(createKeyValueGrid([
-    ["地形类型", meta.archetype],
-    ["地形要点", meta.terrain],
-    ["利于打法", meta.favors.join("、")],
-    ["不利打法", meta.against.join("、")],
-    ["提示", meta.tip]
+    [isEnglish() ? "Terrain type" : "地形类型", meta.archetype],
+    [isEnglish() ? "Terrain notes" : "地形要点", meta.terrain],
+    [isEnglish() ? "Favors" : "利于打法", meta.favors.join("、")],
+    [isEnglish() ? "Works against" : "不利打法", meta.against.join("、")],
+    [isEnglish() ? "Tip" : "提示", meta.tip]
   ]));
   const heroSection = create("div", "map-picks");
-  appendText(heroSection, "h4", "此图强势英雄");
+  appendText(heroSection, "h4", t("mapStrongHeroes"));
   const row = create("div", "portrait-row");
   meta.heroPicks.forEach((id) => {
     const hero = state.byId.get(id);
     if (!hero) return;
     const button = create("button", "portrait-btn");
     button.type = "button";
-    button.title = hero.nameZh;
+    button.title = heroPrimaryName(hero);
     button.addEventListener("click", () => openDetail(hero.id));
     button.append(createAvatar(hero));
     row.append(button);
   });
-  if (!row.children.length) row.append(textBadge("暂无头像数据"));
+  if (!row.children.length) row.append(textBadge(t("noAvatarData")));
   heroSection.append(row);
   wrap.append(heroSection);
   return wrap;
@@ -4553,7 +4673,7 @@ function createMapRecoColumn(title, items) {
   const column = create("div", "map-reco");
   appendText(column, "h4", title);
   if (!items.length) {
-    column.append(textBadge("暂无明确匹配"));
+    column.append(textBadge(t("noMatch")));
     return column;
   }
   items.forEach(({ hero, score }) => {
@@ -4562,8 +4682,8 @@ function createMapRecoColumn(title, items) {
     button.addEventListener("click", () => openDetail(hero.id));
     button.append(createAvatar(hero));
     const body = create("div");
-    appendText(body, "strong", hero.nameZh);
-    appendText(body, "span", `匹配 ${score} 个关键词 · Tier ${fallback(hero.tier)}`);
+    appendText(body, "strong", heroPrimaryName(hero));
+    appendText(body, "span", t("matchedKeywords", { score, tier: fallback(hero.tier) }));
     button.append(body);
     column.append(button);
   });
@@ -4587,7 +4707,7 @@ function renderMetaSeasonNote() {
   title.id = "metaSeasonNoteTitle";
   title.textContent = formatMetaSeasonTitle();
   const detail = create("span");
-  detail.textContent = "tier/ban 为当前 meta 经验值，随补丁变";
+  detail.textContent = t("metaSeasonDetail");
   note.append(title, detail);
   el.metaSeasonNote.append(note);
 }
@@ -4613,9 +4733,9 @@ function renderMetaStrongList() {
   const text = create("div");
   const title = create("h3");
   title.id = "metaStrongTitle";
-  title.textContent = "各职业强势榜";
+  title.textContent = t("metaStrongTitle");
   const desc = create("p");
-  desc.textContent = "按 Tier 从 S 到 C 排序，未定级英雄自动垫底。";
+  desc.textContent = t("metaStrongDesc");
   text.append(title, desc);
   const count = createBadge(`Top ${META_STRONG_LIMIT}`, "tier-badge");
   titleRow.append(text, count);
@@ -4623,7 +4743,7 @@ function renderMetaStrongList() {
 
   if (!state.heroes.length) {
     const empty = create("p", "empty-state meta-empty");
-    empty.textContent = "暂无英雄数据，强势榜无法生成。";
+    empty.textContent = t("metaStrongEmpty");
     wrap.append(empty);
     el.metaStrongList.append(wrap);
     return;
@@ -4644,16 +4764,16 @@ function createMetaStrongRole(role) {
   const head = create("div", "meta-strong-role-head");
   const title = create("h4");
   title.id = titleId;
-  title.textContent = ROLE_LABELS[role] || role;
+  title.textContent = appRoleLabel(role);
   const tip = create("span");
-  tip.textContent = roleNamesZh[role] || "";
+  tip.textContent = isEnglish() ? "" : roleNamesZh[role] || "";
   head.append(title, tip);
   column.append(head);
 
   const heroes = sortedMetaHeroes(role).slice(0, META_STRONG_LIMIT);
   if (!heroes.length) {
     const empty = create("p", "meta-strong-empty");
-    empty.textContent = "暂无该职业英雄。";
+    empty.textContent = t("noRoleHeroes");
     column.append(empty);
     return column;
   }
@@ -4675,33 +4795,32 @@ function createMetaStrongItem(hero, rank) {
   const button = create("button", "meta-strong-item");
   button.type = "button";
   button.dataset.jumpHero = hero.id;
-  button.title = `查看 ${hero.nameZh} 详情`;
+  button.title = isEnglish() ? `View ${heroPrimaryName(hero)} details` : `查看 ${hero.nameZh} 详情`;
   const rankNode = create("span", "meta-strong-rank");
   rankNode.textContent = String(rank);
   const names = create("span", "meta-strong-name");
-  appendText(names, "strong", hero.nameZh);
-  appendText(names, "span", hero.name);
+  appendHeroName(names, hero);
   button.append(rankNode, createAvatar(hero), names, createBadge(metaTierLabel(hero.tier), "tier-badge"));
   return button;
 }
 
 function metaTierLabel(tier) {
-  return tierSortRank(tier) > 3 ? "未定级" : tier;
+  return tierSortRank(tier) > 3 ? t("unranked") : tier;
 }
 
 function renderTierGrid() {
   el.tierGrid.replaceChildren();
   const wrap = create("div", "dashboard-card");
-  appendText(wrap, "h3", "Tier 榜");
+  appendText(wrap, "h3", t("tierBoard"));
   const table = create("table", "meta-table tier-table");
   const caption = create("caption", "sr-only");
-  caption.textContent = "Meta Tier 榜表";
+  caption.textContent = t("tierCaption");
   table.append(caption);
   const thead = document.createElement("thead");
   const headRow = document.createElement("tr");
   const roleHead = document.createElement("th");
   roleHead.scope = "col";
-  roleHead.textContent = "职业";
+  roleHead.textContent = t("role");
   headRow.append(roleHead);
   ["S", "A", "B", "C"].forEach((tier) => {
     const th = document.createElement("th");
@@ -4715,18 +4834,18 @@ function renderTierGrid() {
     const tr = document.createElement("tr");
     const rowHead = document.createElement("th");
     rowHead.scope = "row";
-    rowHead.textContent = ROLE_LABELS[role] || role;
+    rowHead.textContent = appRoleLabel(role);
     tr.append(rowHead);
     ["S", "A", "B", "C"].forEach((tier) => {
       const td = document.createElement("td");
       const cell = create("div", "tier-cell");
-      appendText(cell, "h4", `${ROLE_LABELS[role]} · ${tier}`);
+      appendText(cell, "h4", `${appRoleLabel(role)} · ${tier}`);
       const row = create("div", "portrait-row");
       state.heroes.filter((hero) => hero.role === role && hero.tier === tier).forEach((hero) => {
         const button = create("button", "portrait-btn");
         button.type = "button";
         button.dataset.jumpHero = hero.id;
-        button.title = hero.nameZh;
+        button.title = heroPrimaryName(hero);
         button.append(createAvatar(hero));
         row.append(button);
       });
@@ -4742,13 +4861,13 @@ function renderTierGrid() {
   const unranked = state.heroes.filter((hero) => tierSortRank(hero.tier) > 3);
   if (unranked.length) {
     const unrankedBox = create("div", "tier-unranked");
-    appendText(unrankedBox, "h4", "未定级");
+    appendText(unrankedBox, "h4", t("unranked"));
     const row = create("div", "portrait-row");
     unranked.forEach((hero) => {
       const button = create("button", "portrait-btn");
       button.type = "button";
       button.dataset.jumpHero = hero.id;
-      button.title = hero.nameZh;
+      button.title = heroPrimaryName(hero);
       button.append(createAvatar(hero));
       row.append(button);
     });
@@ -4761,16 +4880,16 @@ function renderTierGrid() {
 function renderBanBoard() {
   el.banBoard.replaceChildren();
   const wrap = create("div", "dashboard-card");
-  appendText(wrap, "h3", "Ban 优先级");
+  appendText(wrap, "h3", t("banPriority"));
   const columns = create("div", "ban-columns");
   ["high", "medium", "low"].forEach((priority) => {
     const column = create("div", "ban-column");
-    appendText(column, "h4", `${BAN_LABELS[priority]}优先级`);
+    appendText(column, "h4", isEnglish() ? `${priority} priority` : `${BAN_LABELS[priority]}优先级`);
     state.heroes.filter((hero) => hero.ban.priority === priority).slice(0, 8).forEach((hero) => {
       const button = create("button", "ban-mini");
       button.type = "button";
       button.addEventListener("click", () => openDetail(hero.id));
-      button.textContent = `${hero.nameZh} · ${hero.ban.reason}`;
+      button.textContent = `${heroPrimaryName(hero)} · ${hero.ban.reason}`;
       column.append(button);
     });
     columns.append(column);
@@ -4782,11 +4901,11 @@ function renderBanBoard() {
 function renderRolePassives() {
   el.rolePassives.replaceChildren();
   const wrap = create("div", "dashboard-card");
-  appendText(wrap, "h3", "职业被动 / 打法速览");
+  appendText(wrap, "h3", t("rolePassives"));
   const list = create("div", "role-tips");
-  Object.entries(roleTips).forEach(([role, text]) => {
+  Object.entries(isEnglish() ? roleTipsEn : roleTips).forEach(([role, text]) => {
     const item = create("div", "role-tip");
-    appendText(item, "strong", ROLE_LABELS[role] || role);
+    appendText(item, "strong", appRoleLabel(role));
     appendText(item, "span", text);
     list.append(item);
   });
@@ -4798,20 +4917,20 @@ function renderOverlay() {
   el.overlayCounterMount.replaceChildren();
   el.overlayBan.replaceChildren();
   const picker = create("div", "overlay-panel");
-  appendText(picker, "h3", "克制计算器");
+  appendText(picker, "h3", t("navCounter"));
   const field = create("label", "field");
-  appendText(field, "span", "敌方英雄");
+  appendText(field, "span", isEnglish() ? "Enemy heroes" : "敌方英雄");
   const input = document.createElement("input");
   input.type = "text";
-  input.placeholder = "例：源氏 ana";
+  input.placeholder = t("overlayEnemyPlaceholder");
   field.append(input);
   const actions = create("div", "mini-actions");
   const run = create("button", "primary-btn");
   run.type = "button";
-  run.textContent = "计算";
+  run.textContent = t("calculate");
   const clear = create("button", "ghost-btn");
   clear.type = "button";
-  clear.textContent = "清空";
+  clear.textContent = t("clear");
   actions.append(run, clear);
   const selected = create("div", "selected-list");
   const chips = create("div", "chip-grid overlay-chips");
@@ -4821,13 +4940,16 @@ function renderOverlay() {
 
   const rerender = () => {
     selected.replaceChildren();
-    state.overlayEnemies.forEach((id) => selected.append(textBadge(state.byId.get(id)?.nameZh || id)));
+    state.overlayEnemies.forEach((id) => {
+      const hero = state.byId.get(id);
+      selected.append(textBadge(hero ? heroPrimaryName(hero) : id));
+    });
     chips.replaceChildren();
     state.heroes.forEach((hero) => {
       const chip = create("button", "select-chip");
       chip.type = "button";
       chip.classList.toggle("is-selected", state.overlayEnemies.includes(hero.id));
-      chip.textContent = hero.nameZh;
+      chip.textContent = heroPrimaryName(hero);
       chip.addEventListener("click", () => {
         state.overlayEnemies = state.overlayEnemies.includes(hero.id)
           ? state.overlayEnemies.filter((item) => item !== hero.id)
@@ -4854,12 +4976,12 @@ function renderOverlay() {
   rerender();
 
   const ban = create("div", "overlay-panel");
-  appendText(ban, "h3", "Meta Ban 速览");
+  appendText(ban, "h3", t("metaBanOverview"));
   sortedBanHeroes().filter((hero) => hero.ban.priority !== "low").slice(0, 8).forEach((hero) => {
     const item = create("button", "ban-mini");
     item.type = "button";
     item.addEventListener("click", () => openDetail(hero.id));
-    item.textContent = `${BAN_LABELS[hero.ban.priority]} · ${hero.nameZh}`;
+    item.textContent = `${BAN_LABELS[hero.ban.priority]} · ${heroPrimaryName(hero)}`;
     ban.append(item);
   });
   el.overlayBan.append(ban);
@@ -4876,8 +4998,12 @@ function setApiState(container, type, message = "") {
 
 function createPatchTypeBadge(type, text = "") {
   const safeType = PATCH_TYPE_LABELS[type] ? type : "adjust";
-  const badge = createBadge(text || `${patchTypeIcon(safeType)} ${PATCH_TYPE_LABELS[safeType]}`, `patch-type type-${safeType}`);
+  const badge = createBadge(text || `${patchTypeIcon(safeType)} ${isEnglish() ? patchTypeEn(safeType) : PATCH_TYPE_LABELS[safeType]}`, `patch-type type-${safeType}`);
   return badge;
+}
+
+function patchTypeEn(type) {
+  return { buff: "Buff", nerf: "Nerf", adjust: "Adjust", rework: "Rework" }[type] || "Adjust";
 }
 
 function patchTypeIcon(type) {
@@ -4906,7 +5032,7 @@ function getLatestTimelineItem(heroId) {
 
 function heroName(heroId) {
   const hero = state.byId.get(heroId);
-  return hero ? `${hero.nameZh} ${hero.name}` : heroId;
+  return hero ? heroFullName(hero) : heroId;
 }
 
 function countryFlag(code) {
