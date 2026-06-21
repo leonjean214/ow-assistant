@@ -25,6 +25,9 @@ const roleTips = {
 const FAVORITES_KEY = "ow-favorites";
 const COMPARE_KEY = "ow-compare";
 const HERO_VIEW_KEY = "ow-hero-view";
+const DEFAULT_PLATFORM_KEY = "ow-default-platform";
+const THEME_KEY = "ow-theme";
+const APP_VERSION = "1.0";
 const DEFAULT_VIEW = "heroes";
 const HERO_ROUTE_PREFIX = "#/hero/";
 const COMPARE_ROUTE_PREFIX = "#/compare/";
@@ -100,6 +103,8 @@ if (document.readyState === "loading") {
 async function init() {
   bindElements();
   setupA11y();
+  state.platform = loadDefaultPlatform();
+  syncPlatformControls();
   bindEvents();
   state.favorites = loadFavorites();
   state.heroView = loadHeroView();
@@ -153,6 +158,7 @@ function bindElements() {
     "compareTray", "compareContent", "compareCount",
     "matrixRoleTabs", "matrixSearchInput", "matrixContent", "matrixCount",
     "teamContent", "teamCount", "workshopContent", "meContent",
+    "settingsContent", "themeToggle",
     "latestHeroLine", "updatesTimeline", "patchRoleFilter", "patchTypeFilter", "patchSearchInput", "patchList", "patchEmpty",
     "heroRecommendPanel", "recommendRole", "recommendDifficulty", "recommendDifficultyLabel", "recommendTag", "recommendResults",
     "enemyInput", "currentHeroSelect", "runCounter", "clearCounter", "selectedEnemies", "enemyChips", "counterResults",
@@ -429,10 +435,21 @@ function bindEvents() {
   el.platformTabs.addEventListener("click", (event) => {
     const button = event.target.closest("button[data-platform]");
     if (!button) return;
-    state.platform = button.dataset.platform;
-    el.platformTabs.querySelectorAll("button").forEach((item) => item.classList.toggle("is-active", item === button));
-    if (state.selectedPlayer) selectPlayer(state.selectedPlayer.player_id, { keepResults: true });
+    setPlatform(button.dataset.platform);
   });
+
+  if (el.themeToggle) {
+    el.themeToggle.addEventListener("click", () => {
+      window.setTimeout(() => {
+        syncSettingsThemeControls();
+        announceSettings(`已切换为${currentTheme() === "dark" ? "深色" : "浅色"}主题`);
+      }, 0);
+    });
+  }
+
+  if (el.settingsContent) {
+    el.settingsContent.addEventListener("click", handleSettingsClick);
+  }
 
   el.journalResultGroup.addEventListener("click", (event) => {
     const button = event.target.closest("button[data-journal-result]");
@@ -1186,6 +1203,7 @@ function switchView(view) {
   if (view === "team") renderTeam();
   if (view === "workshop") renderWorkshop();
   if (view === "me") renderMe();
+  if (view === "settings") renderSettings();
   if (view === "journal") renderJournal();
   activeDetailHeroId = "";
   if (!isRouting) closeDetailPanel();
@@ -1543,6 +1561,7 @@ function setHeroView(view) {
   state.heroView = view === "list" ? "list" : "grid";
   saveHeroView();
   syncHeroViewControls();
+  syncSettingsHeroViewControls();
 }
 
 function syncHeroViewControls() {
@@ -1552,6 +1571,269 @@ function syncHeroViewControls() {
     button.classList.toggle("is-active", active);
     button.setAttribute("aria-pressed", String(active));
   });
+}
+
+function loadDefaultPlatform() {
+  try {
+    return window.localStorage.getItem(DEFAULT_PLATFORM_KEY) === "console" ? "console" : "pc";
+  } catch {
+    return "pc";
+  }
+}
+
+function saveDefaultPlatform(platform) {
+  try {
+    window.localStorage.setItem(DEFAULT_PLATFORM_KEY, platform === "console" ? "console" : "pc");
+  } catch {
+    // Platform preference is optional if storage is unavailable.
+  }
+}
+
+function setPlatform(platform, options = {}) {
+  const next = platform === "console" ? "console" : "pc";
+  const changed = state.platform !== next;
+  state.platform = next;
+  syncPlatformControls();
+  syncSettingsPlatformControls();
+  if ((changed || options.forceRefresh) && options.refreshProfile !== false && state.selectedPlayer) {
+    selectPlayer(state.selectedPlayer.player_id, { keepResults: true });
+  }
+}
+
+function syncPlatformControls() {
+  if (!el.platformTabs) return;
+  el.platformTabs.querySelectorAll("button[data-platform]").forEach((button) => {
+    const active = button.dataset.platform === state.platform;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function currentTheme() {
+  return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+}
+
+function applyThemePreference(theme) {
+  const next = theme === "dark" ? "dark" : "light";
+  document.documentElement.dataset.theme = next;
+  if (el.themeToggle) {
+    el.themeToggle.setAttribute("aria-pressed", String(next === "dark"));
+    const label = el.themeToggle.querySelector(".theme-toggle-text");
+    if (label) label.textContent = next === "dark" ? "深色" : "浅色";
+  }
+  try {
+    window.localStorage.setItem(THEME_KEY, next);
+  } catch {
+    // Theme preference is optional if storage is unavailable.
+  }
+  syncSettingsThemeControls();
+}
+
+function renderSettings(message = "") {
+  if (!el.settingsContent) return;
+  el.settingsContent.replaceChildren();
+
+  const grid = create("div", "settings-grid");
+  grid.append(createSettingsPreferences(), createSettingsAbout());
+
+  const feedback = create("p", "api-state settings-feedback");
+  feedback.id = "settingsFeedback";
+  feedback.setAttribute("role", "status");
+  feedback.setAttribute("aria-live", "polite");
+  feedback.textContent = message || "设置改动会自动保存到此设备。";
+
+  el.settingsContent.append(grid, feedback);
+}
+
+function createSettingsPreferences() {
+  const card = create("section", "settings-card");
+  card.setAttribute("aria-labelledby", "settingsPrefsTitle");
+  const title = appendText(card, "h3", "偏好");
+  title.id = "settingsPrefsTitle";
+
+  const theme = createSegmentedPreference({
+    id: "settingsThemeControl",
+    label: "主题",
+    hint: "与顶栏主题按钮同步。",
+    dataName: "settingTheme",
+    activeValue: currentTheme(),
+    options: [
+      ["light", "浅色"],
+      ["dark", "深色"]
+    ]
+  });
+
+  const platform = createSegmentedPreference({
+    id: "settingsPlatformControl",
+    label: "战绩默认平台",
+    hint: "刷新或下次打开时作为战绩查询初始平台。",
+    dataName: "settingPlatform",
+    activeValue: loadDefaultPlatform(),
+    options: [
+      ["pc", "PC"],
+      ["console", "主机"]
+    ]
+  });
+
+  const heroView = createSegmentedPreference({
+    id: "settingsHeroViewControl",
+    label: "英雄库默认视图",
+    hint: "与英雄库视图偏好共用 ow-hero-view。",
+    dataName: "settingHeroView",
+    activeValue: state.heroView,
+    options: [
+      ["grid", "卡片"],
+      ["list", "列表"]
+    ]
+  });
+
+  card.append(theme, platform, heroView);
+  return card;
+}
+
+function createSegmentedPreference({ id, label, hint, dataName, activeValue, options }) {
+  const group = create("fieldset", "settings-fieldset");
+  const legend = appendText(group, "legend", label);
+  const buttons = create("div", "segmented settings-segmented");
+  buttons.id = id;
+  buttons.setAttribute("role", "group");
+  buttons.setAttribute("aria-label", label);
+  options.forEach(([value, text]) => {
+    const button = create("button", value === activeValue ? "is-active" : "");
+    button.type = "button";
+    button.dataset[dataName] = value;
+    button.setAttribute("aria-pressed", String(value === activeValue));
+    button.textContent = text;
+    buttons.append(button);
+  });
+  const note = appendText(group, "p", hint);
+  note.id = `${id}Hint`;
+  buttons.setAttribute("aria-describedby", note.id);
+  legend.id = `${id}Legend`;
+  group.append(buttons);
+  return group;
+}
+
+function createSettingsAbout() {
+  const card = create("section", "settings-card settings-about");
+  card.setAttribute("aria-labelledby", "settingsAboutTitle");
+  const title = appendText(card, "h3", "关于");
+  title.id = "settingsAboutTitle";
+
+  const appName = create("div", "settings-about-head");
+  appendText(appName, "strong", "OW 助手");
+  appendText(appName, "span", `版本 ${APP_VERSION}`);
+
+  const link = create("a", "ghost-link settings-github");
+  link.href = "https://github.com/leonjean214/ow-assistant";
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.textContent = "在 GitHub 查看源码";
+
+  appendText(card, "p", "数据与灵感来自 OverFast API、workshop.codes 与守望先锋社区调研，应用仅做本地聚合与辅助展示。");
+
+  const updateRow = create("div", "settings-update-row");
+  const update = create("button", "primary-btn");
+  update.id = "settingsCheckUpdate";
+  update.type = "button";
+  update.textContent = "检查更新";
+  const status = create("p", "api-state settings-update-status");
+  status.id = "settingsUpdateStatus";
+  status.setAttribute("role", "status");
+  status.setAttribute("aria-live", "polite");
+  status.textContent = "PWA 更新检查会在支持 Service Worker 时运行。";
+  updateRow.append(update, status);
+
+  card.append(appName, link, updateRow);
+  return card;
+}
+
+function handleSettingsClick(event) {
+  const theme = event.target.closest("button[data-setting-theme]");
+  if (theme) {
+    applyThemePreference(theme.dataset.settingTheme);
+    announceSettings(`已切换为${currentTheme() === "dark" ? "深色" : "浅色"}主题`);
+    return;
+  }
+
+  const platform = event.target.closest("button[data-setting-platform]");
+  if (platform) {
+    const next = platform.dataset.settingPlatform === "console" ? "console" : "pc";
+    saveDefaultPlatform(next);
+    setPlatform(next);
+    syncSettingsPlatformControls();
+    announceSettings(`已设默认平台为${next === "console" ? "主机" : "PC"}`);
+    return;
+  }
+
+  const heroView = event.target.closest("button[data-setting-hero-view]");
+  if (heroView) {
+    setHeroView(heroView.dataset.settingHeroView);
+    renderHeroGrid();
+    syncSettingsHeroViewControls();
+    announceSettings(`已设英雄库默认视图为${state.heroView === "list" ? "列表" : "卡片"}`);
+    return;
+  }
+
+  if (event.target.closest("#settingsCheckUpdate")) {
+    checkPwaUpdate();
+  }
+}
+
+function syncSettingsThemeControls() {
+  syncSettingsSegmented("settingsThemeControl", "settingTheme", currentTheme());
+}
+
+function syncSettingsPlatformControls() {
+  syncSettingsSegmented("settingsPlatformControl", "settingPlatform", loadDefaultPlatform());
+}
+
+function syncSettingsHeroViewControls() {
+  syncSettingsSegmented("settingsHeroViewControl", "settingHeroView", state.heroView);
+}
+
+function syncSettingsSegmented(id, dataName, activeValue) {
+  const group = document.getElementById(id);
+  if (!group) return;
+  group.querySelectorAll("button").forEach((button) => {
+    const active = button.dataset[dataName] === activeValue;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function announceSettings(message) {
+  const feedback = document.getElementById("settingsFeedback");
+  if (feedback) feedback.textContent = message;
+}
+
+async function checkPwaUpdate() {
+  const button = document.getElementById("settingsCheckUpdate");
+  const status = document.getElementById("settingsUpdateStatus");
+  if (button) button.disabled = true;
+  if (status) setApiState(status, "loading", "正在检查更新...");
+  try {
+    if (!("serviceWorker" in navigator)) {
+      if (status) setApiState(status, "empty", "当前浏览器不支持 Service Worker，无法检查更新。");
+      announceSettings("当前环境不支持 PWA 更新检查。");
+      return;
+    }
+    const registration = await navigator.serviceWorker.getRegistration();
+    if (!registration) {
+      if (status) setApiState(status, "empty", "当前页面尚未注册 Service Worker。");
+      announceSettings("当前页面尚未注册 Service Worker。");
+      return;
+    }
+    await registration.update();
+    if (status) setApiState(status, "", "已检查更新；如有新版，浏览器会在后台安装。");
+    announceSettings("已完成 PWA 更新检查。");
+  } catch (error) {
+    console.warn("PWA update check skipped:", error);
+    if (status) setApiState(status, "empty", "当前环境无法检查更新，请稍后再试。");
+    announceSettings("当前环境无法检查 PWA 更新。");
+  } finally {
+    if (button) button.disabled = false;
+  }
 }
 
 function setHeroSort(sort) {

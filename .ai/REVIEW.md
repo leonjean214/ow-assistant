@@ -284,3 +284,8 @@
 执行：Codex｜tools/qa.mjs **77/77 全过、0 运行时错误**；node 全过；0 innerHTML。版本提示(S3)、各职业强势榜按 Tier 排序+点击开详情、缺tier兜底、375px 无溢出均通过；不破坏 tierGrid/banBoard。
 
 ---
+
+## Phase 21 审查（设置与关于面板 #/settings）— 无阻塞
+执行：Codex｜tools/qa.mjs **89/89 全过、0 运行时错误**；node 全过；0 innerHTML。主题↔顶栏双向同步、默认平台/视图持久+刷新生效、关于区版本+GitHub外链+致谢+检查更新、375px 无溢出均通过。
+
+---
