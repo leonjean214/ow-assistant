@@ -299,3 +299,8 @@
 执行：Codex｜tools/qa.mjs **107/107 全过、0 运行时错误**；node 全过；0 innerHTML。详情分享按钮生成 PNG(深浅各一)、头像占位避免 CORS 致 toBlob 失败、Blob revoke、不破坏抽屉焦点陷阱均通过。
 
 ---
+
+## Phase 24 审查（移动端/响应式打磨）— 无阻塞
+执行：Codex｜tools/qa.mjs **124/124 全过、0 运行时错误**（含各视图 375px scrollWidth===clientWidth 断言）；node 全过；0 innerHTML。激活 tab scrollIntoView、tab 横滑渐隐、触控目标≥40px、三角标 375px 不重叠、全视图无横向溢出均通过；无功能回归。
+
+---

@@ -1,5 +1,28 @@
 # Handoff
 
+## Phase 24 已完成
+
+- 已完成移动端/响应式体验打磨，未引入框架、构建或依赖，未修改 `data/` 或 `sw.js`，未提交 git commit。
+- `src/app.js` 仅新增 `scrollActiveViewTabIntoView()` 并在 `syncNavigationA11y()` 末尾调用；激活 tab 使用 `scrollIntoView({ block:"nearest", inline:"center", behavior:"smooth" })`，保持 hash 路由、键盘 roving、命令面板和 overlay 短路不变。
+- `src/styles.css` 主体更新：`.view-tabs` 保持横向滚动并加 `mask-image`/`-webkit-mask-image` 边缘渐隐提示；≤768px 下 tab、pill、按钮、输入、卡片操作按钮等关键触控目标提升到至少 40px。
+- 375px 下英雄卡将 ★/对比/入队按钮移入顶部保留操作栏，避免覆盖头像或正文；compare/profile/journal/meta 等表格继续在自身容器内横向滚动，不撑破页面。
+- 补充移动端响应式约束：窄屏导航不换行、关键网格降列、workshop/me/settings/meta 等容易撑宽的行改为单列或容器滚动。
+- `tools/qa.mjs` 新增 Phase 24 专项：对 heroes/compare/me/team/workshop/matrix/updates/counter/profile/journal/maps/meta/ban/settings 逐视图 375px 断言 `documentElement.scrollWidth === clientWidth` 且 `body.scrollWidth <= clientWidth`；命令面板 375px 同样断言；验证 active tab 滚入可见区、≤768px 关键触控目标 ≥40px、375px 英雄卡操作按钮不重叠头像/内容。
+- `README.md` 已补充移动端导航、触控和 375px 无横向溢出说明；`docs/ROADMAP.md` 已标记 Phase 24 完成。
+
+## Phase 24 验证记录
+
+- 静态检查：
+  - `for f in src/*.js sw.js tools/qa.mjs; do node --check "$f" || exit 1; done`
+  - `rg -n "innerHTML|insertAdjacentHTML|outerHTML" . --glob '!node_modules/**' --glob '!*.png' --glob '!.git/**'` 无命中
+- Headless Chrome/CDP 回归：
+  - 启动 `python3 -m http.server 8125`
+  - 启动 Chrome：`"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu --no-sandbox --remote-debugging-port=9222 --user-data-dir=/tmp/ow-chrome-qa-phase24`
+  - `BASE=http://localhost:8125 node tools/qa.mjs`
+  - 结果：`124/124` 通过，`0` 个运行时错误。
+  - 覆盖 Phase 24：14 个主视图和命令面板在 375px 下 `root=375/375 body=375` 无页面横向溢出；切换到末尾 tab 后 active tab 在 `.view-tabs` 可视区内；触控目标抽样均 ≥40px；英雄卡 ★/对比/入队不重叠头像/内容。
+  - 覆盖回归：英雄库列表/排序/标签/收藏、对比深链、组队深链、克制网、Meta、设置、命令面板、英雄详情分享图、详情抽屉焦点陷阱、快捷键、工坊、个人中心、GEP 消息桥、overlay。
+
 ## Phase 23 已完成
 
 - 已实现英雄详情抽屉「分享图」按钮，挂在 `.detail-head-actions` 内，未改现有收藏/对比/入队按钮 hook，未引入框架、构建或依赖，未修改 `data/` 或 `sw.js`，未提交 git commit。

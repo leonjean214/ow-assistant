@@ -51,6 +51,21 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await c.send("Page.enable");
   const out = [];
   const check = (name, cond, extra = "") => out.push(`${cond ? "PASS" : "FAIL"} | ${name}${extra ? " | " + extra : ""}`);
+  const mobileNoOverflowExpr = `(()=>{
+    const root = document.documentElement;
+    const body = document.body;
+    return {
+      ok: root.scrollWidth === root.clientWidth && body.scrollWidth <= root.clientWidth,
+      rootScroll: root.scrollWidth,
+      rootClient: root.clientWidth,
+      bodyScroll: body.scrollWidth,
+      view: location.hash
+    };
+  })()`;
+  const checkMobileNoOverflow = async (name) => {
+    const result = await c.evals(mobileNoOverflowExpr);
+    check(name, result.ok === true, `root=${result.rootScroll}/${result.rootClient} body=${result.bodyScroll} hash=${result.view}`);
+  };
 
   await c.evals(`(async()=>{
     try{localStorage.clear()}catch(e){}
@@ -748,9 +763,58 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await c.send("Emulation.setDeviceMetricsOverride", { width: 375, height: 900, deviceScaleFactor: 1, mobile: true });
   await c.evals(`document.getElementById('cmdOpen').click(); null`);
   await sleep(200);
-  check("375px 命令面板无横向溢出", (await c.evals(`Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) <= window.innerWidth`)) === true);
+  await checkMobileNoOverflow("375px 命令面板无横向溢出");
   await c.evals(`document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true})); null`);
   await sleep(100);
+  await c.send("Emulation.clearDeviceMetricsOverride");
+
+  // Phase 24：移动端/响应式逐视图复查
+  await c.send("Emulation.setDeviceMetricsOverride", { width: 375, height: 900, deviceScaleFactor: 1, mobile: true });
+  for (const view of ["heroes", "compare", "me", "team", "workshop", "matrix", "updates", "counter", "profile", "journal", "maps", "meta", "ban", "settings"]) {
+    await c.evals(`location.hash = '#/${view}'; null`);
+    await sleep(500);
+    await checkMobileNoOverflow(`375px ${view} 视图无横向溢出`);
+  }
+  const activeTabVisible = await c.evals(`(async()=>{
+    const tabs = document.querySelector('.view-tabs');
+    const target = document.querySelector('.view-tab[data-view="ban"]');
+    target.click();
+    await new Promise((r)=>setTimeout(r,450));
+    const box = target.getBoundingClientRect();
+    const wrap = tabs.getBoundingClientRect();
+    return box.left >= wrap.left - 1 && box.right <= wrap.right + 1 && target.getAttribute('aria-selected') === 'true';
+  })()`);
+  check("移动端切视图 active tab 滚入可见区", activeTabVisible === true);
+  const touchTargets = await c.evals(`(async()=>{
+    location.hash = '#/heroes';
+    await new Promise((r)=>setTimeout(r,500));
+    document.querySelector('#heroViewToggle button[data-hero-view="grid"]')?.click();
+    await new Promise((r)=>setTimeout(r,120));
+    const selectors = ['.view-tab', '.segmented button', '.ghost-btn', '.primary-btn', '.favorite-filter', '.hero-card .favorite-btn', '.hero-card .compare-btn', '.hero-card .team-btn'];
+    return selectors.map((selector)=>{
+      const node = Array.from(document.querySelectorAll(selector)).find((item)=>{
+        const box = item.getBoundingClientRect();
+        return box.width > 0 && box.height > 0;
+      });
+      const rect = node?.getBoundingClientRect();
+      return { selector, ok: !rect || (rect.width >= 40 && rect.height >= 40), skipped: !rect, w: rect?.width || 0, h: rect?.height || 0 };
+    });
+  })()`);
+  check("≤768px 关键触控目标不小于 40px", touchTargets.every((item) => item.ok), JSON.stringify(touchTargets));
+  const heroActionOverlap = await c.evals(`(()=>{
+    const card = document.querySelector('#heroGrid .hero-card');
+    const avatar = card?.querySelector('.avatar');
+    const body = card?.querySelector('.hero-card-body');
+    const buttons = ['.favorite-btn', '.compare-btn', '.team-btn'].map((selector)=>card?.querySelector(selector)).filter(Boolean);
+    const avatarBox = avatar?.getBoundingClientRect();
+    const bodyBox = body?.getBoundingClientRect();
+    const separateFrom = (a, b) => a.bottom <= b.top || a.right <= b.left || a.left >= b.right || a.top >= b.bottom;
+    return !!card && !!avatarBox && !!bodyBox && buttons.every((button)=>{
+      const box = button.getBoundingClientRect();
+      return separateFrom(box, avatarBox) && separateFrom(box, bodyBox);
+    });
+  })()`);
+  check("375px 英雄卡 ★/对比/入队不重叠内容", heroActionOverlap === true);
   await c.send("Emulation.clearDeviceMetricsOverride");
 
   // 工坊代码模块
