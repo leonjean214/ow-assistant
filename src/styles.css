@@ -2476,6 +2476,10 @@ th[aria-sort="descending"] .hero-list-sort::after {
   gap: 12px;
 }
 
+.meta-layout > * {
+  min-width: 0;
+}
+
 .map-reco-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -2488,10 +2492,139 @@ th[aria-sort="descending"] .hero-list-sort::after {
 .map-picks h4,
 .map-reco h4,
 .ban-column h4,
-.tier-cell h4 {
+.tier-cell h4,
+.tier-unranked h4 {
   color: var(--text);
   font-size: 13px;
   font-weight: 800;
+}
+
+.meta-season-note {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border));
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface));
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+
+.meta-season-note strong {
+  color: var(--text);
+  font-size: 15px;
+}
+
+.meta-strong-card {
+  overflow-x: visible;
+}
+
+.meta-strong-head,
+.meta-strong-role-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.meta-strong-head h3 {
+  margin: 0;
+}
+
+.meta-strong-head p {
+  margin-top: 3px;
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.meta-strong-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.meta-strong-role {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  background: var(--surface-2);
+}
+
+.meta-strong-role h4 {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.meta-strong-role-head span {
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.meta-strong-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.meta-strong-item {
+  display: grid;
+  grid-template-columns: 22px 36px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px;
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+}
+
+.meta-strong-item:hover,
+.meta-strong-item:focus-visible {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-soft);
+}
+
+.meta-strong-item .avatar {
+  width: 36px;
+  height: 36px;
+}
+
+.meta-strong-rank {
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.meta-strong-name {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.meta-strong-name strong,
+.meta-strong-name span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta-strong-name span,
+.meta-strong-empty {
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.meta-empty {
+  margin: 12px 0 0;
 }
 
 .mini-hero-row {
@@ -2504,6 +2637,7 @@ th[aria-sort="descending"] .hero-list-sort::after {
 }
 
 .dashboard-card {
+  min-width: 0;
   overflow-x: auto;
   padding: 14px;
 }
@@ -2558,6 +2692,14 @@ th[aria-sort="descending"] .hero-list-sort::after {
 
 .portrait-row {
   margin-top: 8px;
+}
+
+.tier-unranked {
+  margin-top: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  background: var(--surface-2);
 }
 
 .portrait-btn {
@@ -2847,6 +2989,7 @@ body.is-overlay .overlay-panel {
   .overview-grid,
   .performance-cards,
   .journal-summary,
+  .meta-strong-columns,
   .tier-grid,
   .ban-columns {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2915,6 +3058,7 @@ body.is-overlay .overlay-panel {
   .overview-grid,
   .performance-cards,
   .journal-summary,
+  .meta-strong-columns,
   .tier-grid,
   .ban-columns {
     grid-template-columns: 1fr;

@@ -279,3 +279,8 @@
 执行：Codex｜tools/qa.mjs **68/68 全过、0 运行时错误**；node 全过；0 innerHTML。按职业分区 + 名称筛选、复用 createHeroLinkGroup 三组上色(绿/红/蓝)、chip/标题跳详情、#/matrix 深链+方向键、375px 无溢出均通过。
 
 ---
+
+## Phase 20 审查（Meta 视图增强）— 无阻塞
+执行：Codex｜tools/qa.mjs **77/77 全过、0 运行时错误**；node 全过；0 innerHTML。版本提示(S3)、各职业强势榜按 Tier 排序+点击开详情、缺tier兜底、375px 无溢出均通过；不破坏 tierGrid/banBoard。
+
+---

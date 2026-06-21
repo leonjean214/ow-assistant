@@ -28,6 +28,7 @@ http://localhost:8000/?overlay=1
 ```text
 http://localhost:8000/#/heroes
 http://localhost:8000/#/maps
+http://localhost:8000/#/meta
 http://localhost:8000/#/matrix
 http://localhost:8000/#/journal
 http://localhost:8000/#/hero/genji
@@ -56,7 +57,7 @@ http://localhost:8000/#/compare/genji,ana
 - 战绩查询：输入 BattleTag 搜索 OverFast 候选，选中后显示玩家档案、PC/主机段位、总览、表现卡片和英雄战绩表。
 - 记录：`#/journal` 可手动记录每局胜/负/平、我方英雄、地图、敌方阵容备注和复盘备注，使用 `localStorage` 的 `ow-journal` 持久化；统计总/今日胜率、当前连胜/连败、最近 10 局走势，并按英雄和地图聚合趋势。支持 JSON 导出/导入，导入默认按 `id` 去重合并且冲突保留较新记录，也可勾选替换全部；还可把当前统计绘制为本地 PNG 分享图。胜率按 `胜 / (胜 + 负)` 计算，平局单列。
 - 地图：加载 OverFast `/maps`，按模式筛选 57 张地图；25 张竞技图优先使用 `data/maps_meta.json` 展示地形要点和强势英雄头像行，缺图回退本地英雄地图文本聚合。
-- Meta：本地聚合 Tier 网格、Ban 三栏和职业打法速览。
+- Meta：本地聚合当前 Season 3 版本提示、各职业强势榜（按 Tier 排序，可点开详情）、Tier 网格、Ban 三栏和职业打法速览；缺 tier 英雄会归入未定级兜底。
 - Overlay：`?overlay=1` 下只显示紧凑克制计算器和 Meta Ban 速览。
 - PWA：提供 Web App Manifest、192/512/maskable PNG 图标和根级 Service Worker；安装后可从桌面/手机启动，离线时仍可刷新使用 app shell、本地英雄库、克制、对比、更新、Meta 和地图静态文本。
 

@@ -363,6 +363,65 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   check("375px 克制网无横向溢出", (await c.evals(`Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) <= window.innerWidth`)) === true);
   await c.send("Emulation.clearDeviceMetricsOverride");
 
+  // Phase 20：Meta 视图增强
+  await c.evals(`location.hash='#/meta'; null`); await sleep(700);
+  const metaInitial = await c.evals(`(async()=>{
+    const payload=await fetch('/data/heroes.json').then((r)=>r.json());
+    const note=document.getElementById('metaSeasonNote')?.textContent || '';
+    return {
+      activeView: document.getElementById('metaView').classList.contains('is-active'),
+      seasonOk: note.includes('Season 3') && note.includes("Into the Tiger's Den") && note.includes('2026-06-16') && note.includes(payload.meta.updated),
+      strongColumns: document.querySelectorAll('#metaStrongList .meta-strong-role').length,
+      strongItems: document.querySelectorAll('#metaStrongList button[data-jump-hero]').length,
+      itemShape: Array.from(document.querySelectorAll('#metaStrongList button[data-jump-hero]')).every((button)=>
+        button.querySelector('.avatar') && button.querySelector('.meta-strong-name strong') && button.querySelector('.meta-strong-name span') && button.querySelector('.tier-badge')
+      )
+    };
+  })()`);
+  check("Meta 深链激活视图", metaInitial.activeView === true);
+  check("Meta 顶部 Season 3 版本提示", metaInitial.seasonOk === true);
+  check("Meta 各职业强势榜三列渲染", metaInitial.strongColumns === 3 && metaInitial.strongItems >= 15);
+  check("Meta 强势榜项含头像/中英名/tier", metaInitial.itemShape === true);
+  const metaTierOrderOk = await c.evals(`(()=>{
+    const rank={S:0,A:1,B:2,C:3};
+    return Array.from(document.querySelectorAll('#metaStrongList .meta-strong-role')).every((roleBox)=>{
+      const rows=Array.from(roleBox.querySelectorAll('button[data-jump-hero]')).map((button)=>window.__qaHeroes.find((hero)=>hero.id===button.dataset.jumpHero));
+      return rows.every((hero,index)=>index===0 || (rank[rows[index-1].tier]??9) <= (rank[hero.tier]??9));
+    });
+  })()`);
+  check("Meta 强势榜按 Tier S>A>B>C 排序", metaTierOrderOk === true);
+  const metaOpenChecks = await c.evals(`(async()=>{
+    const strong=document.querySelector('#metaStrongList button[data-jump-hero]');
+    const strongId=strong.dataset.jumpHero;
+    strong.click();
+    await new Promise((r)=>setTimeout(r,250));
+    const strongOpen=document.getElementById('detailDrawer').classList.contains('is-open') && location.hash === '#/hero/' + encodeURIComponent(strongId);
+    document.getElementById('closeDrawer').click();
+    await new Promise((r)=>setTimeout(r,200));
+    location.hash='#/meta';
+    await new Promise((r)=>setTimeout(r,250));
+    const tier=document.querySelector('#tierGrid button[data-jump-hero]');
+    const tierId=tier.dataset.jumpHero;
+    tier.click();
+    await new Promise((r)=>setTimeout(r,250));
+    const tierOpen=document.getElementById('detailDrawer').classList.contains('is-open') && location.hash === '#/hero/' + encodeURIComponent(tierId);
+    document.getElementById('closeDrawer').click();
+    await new Promise((r)=>setTimeout(r,200));
+    return { strongOpen, tierOpen };
+  })()`);
+  check("Meta 强势榜点击打开详情", metaOpenChecks.strongOpen === true);
+  check("Meta Tier 网格点击打开详情", metaOpenChecks.tierOpen === true);
+  const metaFallbackSourceOk = await c.evals(`(async()=>{
+    const source=await fetch('/src/app.js').then((r)=>r.text());
+    return source.includes('未定级') && source.includes('暂无英雄数据') && source.includes('tierSortRank(hero.tier) > 3');
+  })()`);
+  check("Meta 缺 tier/空态兜底路径存在", metaFallbackSourceOk === true);
+  await c.evals(`location.hash='#/meta'; null`); await sleep(200);
+  await c.send("Emulation.setDeviceMetricsOverride", { width: 375, height: 900, deviceScaleFactor: 1, mobile: true });
+  await sleep(200);
+  check("375px Meta 无横向溢出", (await c.evals(`Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) <= window.innerWidth`)) === true);
+  await c.send("Emulation.clearDeviceMetricsOverride");
+
   // 英雄详情深链 + 焦点 + 克制上色
   await c.evals(`location.hash='#/hero/genji'; null`); await sleep(700);
   check("英雄深链开抽屉", (await c.evals(`document.getElementById('detailDrawer').classList.contains('is-open')`)) === true);
