@@ -48,6 +48,7 @@ http://localhost:8000/#/compare/genji,ana
 - 克制网：`#/matrix` 按重装/输出/支援分区总览每个英雄的「我克制 / 我怕 / 协同」关系，三组 chip 分别用绿/红/蓝区分；支持职业筛选和中文/英文/id 搜索，点英雄标题或 chip 打开详情。
 - 队伍构筑：英雄卡和详情头部可加入/移出队伍（最多 5），用 `localStorage` 的 `ow-team` 持久化；`#/team/<id1>,<id2>` 深链恢复阵容。组队视图分析职业配比（1 坦 2 输出 2 辅）、阵容原型（突进/消耗/缠斗，按 subrole+tags 关键词）、队内配合（synergy）、整体弱点（聚合 weakAgainst 计数排序），并可「拿威胁去克制计算器」。纯本地、离线可用。
 - 克制计算器对面阵容：选定敌方后顶部显示对面阵容原型（突进/消耗/缠斗）+ 职业配比 + 针对性提示（复用组队分析）。详情「克制关系」按关系上色（克制=绿/被克=红/协同=蓝）。
+- 全局命令面板：按 `Cmd/Ctrl-K` 或顶栏「搜索」打开，支持模糊搜索英雄、视图和 BattleTag；英雄结果可直接打开详情，视图结果切换页面，BattleTag 结果跳战绩查询。面板为 modal dialog，Esc 关闭并还原焦点，↑/↓/Enter 可键盘执行，overlay 模式下禁用。
 - 键盘快捷键：非输入态下按 `/` 跳战绩并聚焦搜索、`b` 跳英雄库并聚焦筛选；详情抽屉 `Esc` 关闭，导航 tab 支持 ←/→/Home/End。
 - 工坊代码：`#/workshop` 提供导入指南、分类工坊代码（练枪/英雄/1v1，一键复制）、每类挂 workshop.codes 实时搜索链接；含显著免责（代码可能失效，以 workshop.codes 为准），代码均标注社区来源、绝不伪造。数据 `data/workshop.json`，离线可用。
 - 个人中心：`#/me` 本地资料（昵称/BattleTag/主玩定位/头像英雄，`localStorage` 的 `ow-profile`）+ 数据概览（收藏/对比/队伍/对局胜率/最近查询玩家，可点跳转）+ 全部本地数据一键导出/导入备份与清空。零后端、离线、隐私本地。数据层 `src/profile.js` 用可插拔适配器（`setStorageAdapter`），**预留云同步**：接后端时换适配器即可，其余不动。
@@ -75,7 +76,7 @@ http://localhost:8000/#/compare/genji,ana
 - `src/recommend-hero.js`：`recommendHeroes(filters, heroes)` 新手英雄推荐纯函数和 `console.assert` 自测
 - `src/stats.js`：战绩整理、排序、段位格式化、表现卡片纯函数和 `console.assert` 自测
 - `src/journal.js`：本地对局记录读写、导出/导入解析、去重合并、汇总、英雄/地图趋势聚合纯函数和 `console.assert` 自测
-- `src/app.js`：导航、英雄库、设置、克制网、战绩、地图、Meta、Overlay 和详情交互
+- `src/app.js`：导航、全局命令面板、英雄库、设置、克制网、战绩、地图、Meta、Overlay 和详情交互
 - `manifest.webmanifest`：PWA 安装元数据
 - `sw.js`：预缓存 app shell、本地数据和图标；离线导航回退到 `index.html`
 - `icons/`：PWA 安装图标

@@ -1,5 +1,31 @@
 # Handoff
 
+## Phase 22 已完成
+
+- 已实现全局命令面板 `Cmd/Ctrl-K` / `Ctrl-K`，未引入框架、构建或依赖，未修改 `data/` 或 `sw.js`，未提交 git commit。
+- `index.html` 新增顶栏入口 `#cmdOpen` 与命令面板骨架 `#cmdPalette/#cmdDialog/#cmdInput/#cmdResults/#cmdEmpty`；面板使用 `role="dialog" aria-modal="true" aria-label="命令面板"`，结果区使用 `role="listbox"`/`option`。
+- `src/app.js` 新增命令面板状态、打开/关闭、焦点还原、Tab 焦点陷阱、Esc 关闭、↑/↓/Home/End/Enter 键盘执行，以及 `commandMatch()` 模糊匹配逻辑。
+- Cmd/Ctrl-K 监听接入既有 document keydown：带修饰键时输入态也可打开；overlay 模式短路不启用；命令面板打开时优先处理 Esc/Tab，避免和详情抽屉焦点陷阱打架。
+- 命令面板与详情抽屉互斥：打开命令面板前若详情抽屉已开会先关闭抽屉，再对页面背景执行 inert；关闭后恢复触发焦点。
+- 可搜索条目覆盖英雄、视图和 BattleTag：英雄按 `nameZh/name/id` 匹配并执行 `openDetail(id)`；视图读取 `.view-tab[data-view]` 文案并执行 `switchView(view)`；BattleTag 执行 `lookupBattletag(query)`。
+- 匹配排序为精确/前缀/包含加权，默认空查询展示常用视图和少量英雄，结果上限 20；无有效匹配且不像 BattleTag 时显示空态。
+- `src/styles.css` 新增命令入口和命令面板样式，复用现有 token，深浅主题一致；375px 下结果布局改为两列并避免横向溢出。
+- `tools/qa.mjs` 新增 Phase 22 用例：Cmd/Ctrl-K 打开/Esc 关闭/焦点还原、输入态 Cmd-K、英雄详情跳转、视图切换、BattleTag 搜索、↑/↓ roving、空态、Tab 焦点陷阱、375px 无溢出、overlay 短路。
+- `README.md` 已补充全局命令面板功能和 `src/app.js` 描述；`docs/ROADMAP.md` 已标记 Phase 22 完成。
+
+## Phase 22 验证记录
+
+- 静态检查：
+  - `for f in src/*.js sw.js tools/qa.mjs; do node --check "$f" || exit 1; done`
+  - `rg -n "innerHTML|insertAdjacentHTML|outerHTML" . --glob '!node_modules/**' --glob '!*.png' --glob '!.git/**'` 无命中
+- Headless Chrome/CDP 回归：
+  - 启动 `python3 -m http.server 8125`
+  - 启动 Chrome：`"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu --no-sandbox --remote-debugging-port=9222 --user-data-dir=/tmp/ow-chrome-qa-phase22`
+  - `BASE=http://localhost:8125 node tools/qa.mjs`
+  - 结果：`100/100` 通过，`0` 个运行时错误。
+  - 覆盖 Phase 22：Cmd/Ctrl-K 开、Esc 关、焦点进入输入框并还原；输入态 Cmd-K 可用；英雄→开详情、视图→切换、BattleTag→跳战绩；↑/↓ 更新 `aria-activedescendant`；无结果空态；Tab 焦点不漏背景；375px 命令面板无横向溢出；overlay 模式不启用。
+  - 覆盖回归：英雄库列表/排序/标签/收藏、对比深链、组队深链、克制网、Meta、设置、克制计算器、详情抽屉、`/` 与 `b` 快捷键、工坊、个人中心、GEP 消息桥、overlay。
+
 ## Phase 21 已完成
 
 - 已实现设置与关于面板 `#/settings`，未引入框架、构建或依赖，未修改 `data/` 或 `sw.js`，未提交 git commit。

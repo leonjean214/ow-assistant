@@ -539,6 +539,128 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await c.evals(`document.dispatchEvent(new KeyboardEvent('keydown',{key:'b',bubbles:true})); null`); await sleep(200);
   check("快捷键 b 跳英雄库并聚焦筛选", (await c.evals(`document.activeElement && document.activeElement.id === 'searchInput'`)) === true);
 
+  // Phase 22：全局命令面板 Cmd/Ctrl-K
+  const cmdOpenClose = await c.evals(`(async()=>{
+    const open=document.getElementById('cmdOpen');
+    open.focus();
+    open.dispatchEvent(new KeyboardEvent('keydown',{key:'k',ctrlKey:true,bubbles:true}));
+    await new Promise((r)=>setTimeout(r,120));
+    const opened=!document.getElementById('cmdPalette').hidden && document.activeElement.id === 'cmdInput';
+    document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+    await new Promise((r)=>setTimeout(r,120));
+    return {
+      opened,
+      closed: document.getElementById('cmdPalette').hidden,
+      restored: document.activeElement.id === 'cmdOpen'
+    };
+  })()`);
+  check("Cmd/Ctrl-K 打开命令面板并聚焦输入", cmdOpenClose.opened === true);
+  check("命令面板 Esc 关闭并还原焦点", cmdOpenClose.closed === true && cmdOpenClose.restored === true);
+
+  const cmdInputState = await c.evals(`(async()=>{
+    const input=document.getElementById('playerSearchInput');
+    input.focus();
+    input.dispatchEvent(new KeyboardEvent('keydown',{key:'k',metaKey:true,bubbles:true}));
+    await new Promise((r)=>setTimeout(r,120));
+    const opened=!document.getElementById('cmdPalette').hidden && document.activeElement.id === 'cmdInput';
+    document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+    await new Promise((r)=>setTimeout(r,120));
+    return opened && document.activeElement.id === 'playerSearchInput';
+  })()`);
+  check("Cmd-K 在输入态也能打开并还原输入焦点", cmdInputState === true);
+
+  const cmdHero = await c.evals(`(async()=>{
+    document.getElementById('cmdOpen').click();
+    await new Promise((r)=>setTimeout(r,100));
+    const input=document.getElementById('cmdInput');
+    input.value='源氏';
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+    await new Promise((r)=>setTimeout(r,80));
+    const hasHero=Array.from(document.querySelectorAll('#cmdResults [role="option"]')).some((item)=>item.textContent.includes('源氏'));
+    input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
+    await new Promise((r)=>setTimeout(r,250));
+    const opened=document.getElementById('detailDrawer').classList.contains('is-open') && location.hash === '#/hero/genji';
+    document.getElementById('closeDrawer').click();
+    await new Promise((r)=>setTimeout(r,150));
+    return { hasHero, opened };
+  })()`);
+  check("命令面板英雄搜索结果可打开详情", cmdHero.hasHero === true && cmdHero.opened === true);
+
+  const cmdView = await c.evals(`(async()=>{
+    document.getElementById('cmdOpen').click();
+    await new Promise((r)=>setTimeout(r,100));
+    const input=document.getElementById('cmdInput');
+    input.value='克制网';
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+    await new Promise((r)=>setTimeout(r,80));
+    input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
+    await new Promise((r)=>setTimeout(r,250));
+    return document.getElementById('matrixView').classList.contains('is-active') && location.hash === '#/matrix';
+  })()`);
+  check("命令面板视图搜索可切换视图", cmdView === true);
+
+  const cmdPlayer = await c.evals(`(async()=>{
+    document.getElementById('cmdOpen').click();
+    await new Promise((r)=>setTimeout(r,100));
+    const input=document.getElementById('cmdInput');
+    input.value='Jay3#1234';
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+    await new Promise((r)=>setTimeout(r,80));
+    const hasPlayer=Array.from(document.querySelectorAll('#cmdResults [role="option"]')).some((item)=>item.textContent.includes('搜索玩家') && item.textContent.includes('Jay3#1234'));
+    input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
+    await new Promise((r)=>setTimeout(r,250));
+    return {
+      hasPlayer,
+      active: document.getElementById('profileView').classList.contains('is-active'),
+      value: document.getElementById('playerSearchInput').value
+    };
+  })()`);
+  check("命令面板 BattleTag 搜索跳战绩", cmdPlayer.hasPlayer === true && cmdPlayer.active === true && cmdPlayer.value === "Jay3#1234");
+
+  const cmdKeyboard = await c.evals(`(async()=>{
+    document.getElementById('cmdOpen').click();
+    await new Promise((r)=>setTimeout(r,100));
+    const input=document.getElementById('cmdInput');
+    input.value='a';
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+    await new Promise((r)=>setTimeout(r,80));
+    const before=document.getElementById('cmdInput').getAttribute('aria-activedescendant');
+    input.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));
+    await new Promise((r)=>setTimeout(r,60));
+    const after=document.getElementById('cmdInput').getAttribute('aria-activedescendant');
+    input.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+    await new Promise((r)=>setTimeout(r,80));
+    return before && after && before !== after;
+  })()`);
+  check("命令面板 ↑↓ 更新 aria-activedescendant", cmdKeyboard === true);
+
+  const cmdEmptyAndTrap = await c.evals(`(async()=>{
+    document.getElementById('cmdOpen').click();
+    await new Promise((r)=>setTimeout(r,100));
+    const input=document.getElementById('cmdInput');
+    input.value='???';
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+    await new Promise((r)=>setTimeout(r,80));
+    const empty=!document.getElementById('cmdEmpty').hidden && document.querySelectorAll('#cmdResults [role="option"]').length===0;
+    document.getElementById('cmdClose').focus();
+    document.getElementById('cmdClose').dispatchEvent(new KeyboardEvent('keydown',{key:'Tab',bubbles:true}));
+    await new Promise((r)=>setTimeout(r,60));
+    const trapped=document.getElementById('cmdPalette').contains(document.activeElement);
+    document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+    await new Promise((r)=>setTimeout(r,80));
+    return { empty, trapped };
+  })()`);
+  check("命令面板无结果空态", cmdEmptyAndTrap.empty === true);
+  check("命令面板 Tab 焦点不漏到背景", cmdEmptyAndTrap.trapped === true);
+
+  await c.send("Emulation.setDeviceMetricsOverride", { width: 375, height: 900, deviceScaleFactor: 1, mobile: true });
+  await c.evals(`document.getElementById('cmdOpen').click(); null`);
+  await sleep(200);
+  check("375px 命令面板无横向溢出", (await c.evals(`Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) <= window.innerWidth`)) === true);
+  await c.evals(`document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true})); null`);
+  await sleep(100);
+  await c.send("Emulation.clearDeviceMetricsOverride");
+
   // 工坊代码模块
   await c.evals(`location.hash='#/workshop'; null`); await sleep(500);
   check("工坊视图激活", (await c.evals(`document.getElementById('workshopView').classList.contains('is-active')`)) === true);
@@ -565,6 +687,12 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   // overlay
   await c.evals(`location.href = '${BASE}/?overlay=1'; null`); await sleep(1800);
   check("overlay 模式 body.is-overlay", (await c.evals(`document.body.classList.contains('is-overlay')`)) === true);
+  const overlayCmd = await c.evals(`(async()=>{
+    document.dispatchEvent(new KeyboardEvent('keydown',{key:'k',ctrlKey:true,bubbles:true}));
+    await new Promise((r)=>setTimeout(r,120));
+    return document.getElementById('cmdPalette')?.hidden === true;
+  })()`);
+  check("overlay 模式不启用命令面板", overlayCmd === true);
   const overlayComp = await c.evals(`(()=>{const chip=document.querySelector('#overlayCounterMount .select-chip');if(!chip)return 'no-chip';chip.click();return document.querySelectorAll('#overlayCounterMount .enemy-comp').length})()`);
   check("overlay 选敌后显示对面阵容", overlayComp === 1, `v=${overlayComp}`);
 
