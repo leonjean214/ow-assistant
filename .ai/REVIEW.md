@@ -269,3 +269,8 @@
 - 补全 50 英雄完整 perk 双选项。
 - 接入官方/overpicker 数据校准克制权重。
 - counter 计算可纳入 synergy 加权与地图维度。
+
+## Phase 18 审查（英雄库 列表/表格视图）— 无阻塞
+执行：Codex｜tools/qa.mjs **57/57 全过、0 运行时错误**；node 全过；0 innerHTML。卡片/列表切换+持久化、列表点行开详情/★不误开、表头排序与下拉双向同步、筛选叠加、375px 无溢出、表格 a11y(caption/scope/aria-sort) 均通过。
+
+---

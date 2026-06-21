@@ -1,5 +1,30 @@
 # Handoff
 
+## Phase 18 已完成
+
+- 已实现英雄库「卡片 / 列表」视图模式，未引入框架、构建或依赖，未提交 git commit。
+- `index.html` 英雄库工具区新增 `#heroViewToggle` 卡片/列表分段控件，使用 `aria-pressed` 同步当前模式。
+- `src/app.js` 新增 `state.heroView` 与 `localStorage` key `ow-hero-view`，读写均 try/catch 容错；`renderHeroGrid()` 按模式渲染卡片或列表，并继续复用同一份 `filteredHeroes()` 过滤/排序结果。
+- 新增列表表格渲染：`<table>` + `<caption class="sr-only">` + `th[scope=col]`/行头 `scope=row`；列为英雄头像+中英名、职业、Tier、难度、总有效生命、代表标签、收藏。列表行保留 `data-hero-id`，收藏按钮继续使用 `button[data-favorite-hero]`，复用 `#heroGrid` 委托，点行开详情、点 ★ 不误开详情。
+- 表头排序支持名称、Tier、难度、总有效生命；点击表头写入 `state.filters.sort` 并同步 `#heroSortFilter`，下拉变更也同步列表 `aria-sort`。难度表头在 `diff-asc`/`diff-desc` 间切换。
+- `src/styles.css` 新增 OP.GG 式紧凑英雄表、斑马行、hover/focus、数字列、排序箭头和 `.hero-list-wrap { overflow-x:auto }`，375px 下页面不横向溢出，仅表格容器可横向滚动。
+- `tools/qa.mjs` 新增 Phase 18 用例：列表切换+刷新保持、表格 a11y、点行详情、★ 不误开、表头排序与下拉双向同步、筛选叠加、切模式不丢状态、375px 列表滚动。
+- `README.md` 已补充英雄库卡片/列表模式和 `ow-hero-view`；`docs/ROADMAP.md` 已标记 Phase 18 完成。
+
+## Phase 18 验证记录
+
+- 静态检查：
+  - `for f in src/*.js sw.js tools/qa.mjs; do node --check "$f" || exit 1; done`
+  - `git diff --check`
+  - `rg -n "innerHTML|insertAdjacentHTML|outerHTML" . --glob '!node_modules/**' --glob '!*.png' --glob '!.git/**'` 无命中
+- Headless Chrome/CDP 回归：
+  - 启动 `python3 -m http.server 8125`
+  - 启动全新 profile：`"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu --no-sandbox --remote-debugging-port=9222 --user-data-dir=/tmp/ow-chrome-qa-phase18`
+  - `BASE=http://localhost:8125 node tools/qa.mjs`
+  - 结果：`57/57` 通过，`0` 个运行时错误。
+  - 覆盖 Phase 18：卡片/列表切换、刷新保持 `ow-hero-view=list`、caption/scope/aria-sort、行点击开详情、列表 ★ 收藏不误开、表头 Tier/难度/HP 排序与 `#heroSortFilter` 同步、列表筛选叠加、切模式保持筛选/排序、375px 页面无横向溢出。
+  - 覆盖回归：Phase 17 排序/多标签、收藏、对比深链、组队深链、详情抽屉、主题、快捷键、工坊、个人中心、GEP 消息桥、overlay。
+
 ## Phase 17 已完成
 
 - 已实现英雄库排序 + 多标签筛选，未引入框架、构建或依赖，未提交 git commit。
