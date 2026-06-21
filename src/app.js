@@ -6,6 +6,8 @@ import { recommendHeroes } from "./recommend-hero.js";
 import { addJournalEntry, clearJournal, loadJournal, mergeJournal, parseImportedJournal, removeJournalEntry, saveJournal, serializeJournal, summarizeJournal } from "./journal.js";
 import { analyzeTeam, teamArchetype, teamRoleCount, ROLE_ZH as TEAM_ROLE_ZH } from "./team.js";
 import { loadProfile, saveProfile, localOverview, exportAllLocal, parseBackup, importAllLocal, clearAllLocal, ROLE_OPTIONS } from "./profile.js";
+import { appendText, create, createAvatar, createBadge, createCornerBadge, createKeyValueGrid, detailSection, safeUrl, textBadge } from "./dom.js";
+import { createRouter } from "./router.js";
 
 const roleNamesZh = { tank: "重装", damage: "输出", support: "支援" };
 const modeLabels = {
@@ -29,11 +31,8 @@ const DEFAULT_PLATFORM_KEY = "ow-default-platform";
 const THEME_KEY = "ow-theme";
 const APP_VERSION = "1.0";
 const DEFAULT_VIEW = "heroes";
-const HERO_ROUTE_PREFIX = "#/hero/";
-const COMPARE_ROUTE_PREFIX = "#/compare/";
 const MAX_COMPARE = 4;
 const TEAM_KEY = "ow-team";
-const TEAM_ROUTE_PREFIX = "#/team/";
 const MAX_TEAM = 5;
 const META_STRONG_LIMIT = 6;
 const COMMAND_RESULT_LIMIT = 20;
@@ -89,10 +88,10 @@ const state = {
 };
 
 const el = {};
-let isRouting = false;
 let overlayMode = false;
 let activeDetailHeroId = "";
 let routeViews = new Set();
+let router = null;
 let previousDetailFocus = null;
 let previousCommandFocus = null;
 let commandResults = [];
@@ -178,6 +177,28 @@ function bindElements() {
     el[id] = document.getElementById(id);
   }
   routeViews = new Set([...document.querySelectorAll(".view-tab[data-view]")].map((button) => button.dataset.view));
+  router = createRouter({
+    defaultView: DEFAULT_VIEW,
+    maxCompare: MAX_COMPARE,
+    maxTeam: MAX_TEAM,
+    getRouteViews: () => routeViews,
+    isOverlayMode: () => overlayMode,
+    hasHero: (heroId) => state.byId.has(heroId),
+    getHero: (heroId) => state.byId.get(heroId),
+    getHeroStat: (heroId) => state.heroStatById.get(heroId),
+    setDetailStat: (stat) => { state.detailStat = stat; },
+    setActiveDetailHeroId: (heroId) => { activeDetailHeroId = heroId; },
+    getCompareIds: () => state.compare,
+    getTeamIds: () => state.team,
+    getCurrentView: () => state.currentView,
+    uniqueValidHeroIds,
+    switchView,
+    renderDetail,
+    openDetailPanel,
+    closeDetailPanel,
+    setCompare,
+    setTeam
+  });
 }
 
 function bindEvents() {
@@ -1450,7 +1471,7 @@ function switchView(view) {
   if (view === "settings") renderSettings();
   if (view === "journal") renderJournal();
   activeDetailHeroId = "";
-  if (!isRouting) closeDetailPanel();
+  if (!router?.isRouting()) closeDetailPanel();
   syncNavigationA11y();
   syncHashForView(view);
 }
@@ -1466,88 +1487,7 @@ function applyOverlayMode() {
 }
 
 function initRouter() {
-  if (overlayMode) return;
-  window.addEventListener("hashchange", applyRouteFromHash);
-  applyRouteFromHash();
-}
-
-function applyRouteFromHash() {
-  if (overlayMode) return;
-  const route = parseHashRoute(window.location.hash);
-  isRouting = true;
-  try {
-    if (route.type === "hero") {
-      switchView(DEFAULT_VIEW);
-      if (state.byId.has(route.heroId)) {
-        const hero = state.byId.get(route.heroId);
-        state.detailStat = state.heroStatById.get(route.heroId) || null;
-        renderDetail(hero);
-        openDetailPanel(route.heroId);
-      } else {
-        activeDetailHeroId = "";
-        closeDetailPanel();
-        replaceHash(viewHash(DEFAULT_VIEW));
-      }
-      return;
-    }
-
-    if (route.type === "compare") {
-      setCompare(route.heroIds, { sync: false, silent: true });
-      switchView("compare");
-      activeDetailHeroId = "";
-      closeDetailPanel();
-      if (window.location.hash && route.invalid) replaceHash(compareHash());
-      return;
-    }
-
-    if (route.type === "team") {
-      setTeam(route.heroIds, { sync: false, silent: true });
-      switchView("team");
-      activeDetailHeroId = "";
-      closeDetailPanel();
-      if (window.location.hash && route.invalid) replaceHash(teamHash());
-      return;
-    }
-
-    switchView(route.view);
-    activeDetailHeroId = "";
-    closeDetailPanel();
-    if (window.location.hash && route.invalid) replaceHash(viewHash(route.view));
-  } finally {
-    isRouting = false;
-  }
-}
-
-function parseHashRoute(hash) {
-  const value = String(hash || "").trim();
-  if (value.startsWith(HERO_ROUTE_PREFIX)) {
-    const rawId = safeDecode(value.slice(HERO_ROUTE_PREFIX.length)).trim();
-    return rawId ? { type: "hero", heroId: rawId } : { type: "view", view: DEFAULT_VIEW, invalid: true };
-  }
-  if (value.startsWith(COMPARE_ROUTE_PREFIX)) {
-    const rawIds = value.slice(COMPARE_ROUTE_PREFIX.length).split(",").map((part) => safeDecode(part).trim()).filter(Boolean);
-    const validIds = uniqueValidHeroIds(rawIds).slice(0, MAX_COMPARE);
-    return { type: "compare", heroIds: validIds, invalid: rawIds.length !== validIds.length };
-  }
-  if (value.startsWith(TEAM_ROUTE_PREFIX)) {
-    const rawIds = value.slice(TEAM_ROUTE_PREFIX.length).split(",").map((part) => safeDecode(part).trim()).filter(Boolean);
-    const validIds = uniqueValidHeroIds(rawIds).slice(0, MAX_TEAM);
-    return { type: "team", heroIds: validIds, invalid: rawIds.length !== validIds.length };
-  }
-  if (value.startsWith("#/")) {
-    const view = safeDecode(value.slice(2)).trim();
-    if (routeViews.has(view)) return { type: "view", view, invalid: false };
-    return { type: "view", view: DEFAULT_VIEW, invalid: true };
-  }
-  return { type: "view", view: DEFAULT_VIEW, invalid: Boolean(value) };
-}
-
-function safeDecode(value) {
-  try {
-    return decodeURIComponent(value);
-  } catch {
-    return "";
-  }
+  router?.initRouter();
 }
 
 function isTypingTarget(node) {
@@ -1875,70 +1815,20 @@ function handleOverlayMessage(event) {
   }
 }
 
-function viewHash(view) {
-  if (view === "compare") return compareHash();
-  if (view === "team") return teamHash();
-  return `#/${routeViews.has(view) ? view : DEFAULT_VIEW}`;
-}
-
-function heroHash(heroId) {
-  return `${HERO_ROUTE_PREFIX}${encodeURIComponent(heroId)}`;
-}
-
-function compareHash() {
-  return state.compare.length
-    ? `${COMPARE_ROUTE_PREFIX}${state.compare.map((id) => encodeURIComponent(id)).join(",")}`
-    : "#/compare";
-}
-
 function syncHashForView(view, options = {}) {
-  if (overlayMode || isRouting) return;
-  const next = viewHash(view);
-  if (window.location.hash === next) return;
-  if (options.replace) {
-    replaceHash(next);
-  } else {
-    window.location.hash = next;
-  }
+  router?.syncHashForView(view, options);
 }
 
 function syncHashForHero(heroId) {
-  if (overlayMode || isRouting) return;
-  const next = heroHash(heroId);
-  if (window.location.hash !== next) window.location.hash = next;
+  router?.syncHashForHero(heroId);
 }
 
 function syncHashForCompare(options = {}) {
-  if (overlayMode || isRouting || state.currentView !== "compare") return;
-  const next = compareHash();
-  if (window.location.hash === next) return;
-  if (options.replace) {
-    replaceHash(next);
-  } else {
-    window.location.hash = next;
-  }
-}
-
-function teamHash() {
-  return state.team.length
-    ? `${TEAM_ROUTE_PREFIX}${state.team.map((id) => encodeURIComponent(id)).join(",")}`
-    : "#/team";
+  router?.syncHashForCompare(options);
 }
 
 function syncHashForTeam(options = {}) {
-  if (overlayMode || isRouting || state.currentView !== "team") return;
-  const next = teamHash();
-  if (window.location.hash === next) return;
-  if (options.replace) {
-    replaceHash(next);
-  } else {
-    window.location.hash = next;
-  }
-}
-
-function replaceHash(hash) {
-  const target = `${window.location.pathname}${window.location.search}${hash}`;
-  window.history.replaceState(null, "", target);
+  router?.syncHashForTeam(options);
 }
 
 function renderHeroGrid() {
@@ -3628,23 +3518,6 @@ function bestCompareValue(values, direction) {
   return direction === "min" ? Math.min(...valid) : Math.max(...valid);
 }
 
-function createAvatar(hero) {
-  const avatar = create("div", "avatar");
-  const initial = create("span");
-  initial.textContent = (hero.nameZh || hero.name || "?").slice(0, 1).toUpperCase();
-  avatar.append(initial);
-  const url = safeUrl(hero.portrait || hero.avatar || hero.image);
-  if (url) {
-    const img = document.createElement("img");
-    img.alt = `${hero.nameZh} 头像`;
-    img.src = url;
-    img.loading = "lazy";
-    img.addEventListener("error", () => img.remove());
-    avatar.append(img);
-  }
-  return avatar;
-}
-
 function openDetail(heroId, heroStat = null) {
   const hero = state.byId.get(heroId);
   if (!hero) return;
@@ -3926,25 +3799,6 @@ function createMapBlock(hero) {
   wrap.append(createList("劣势地图", hero.maps.weak));
   wrap.append(createKeyValueGrid([["备注", hero.maps.note]]));
   return wrap;
-}
-
-function detailSection(title, children) {
-  const section = create("section", "detail-section");
-  appendText(section, "h3", title);
-  children.forEach((child) => section.append(child));
-  return section;
-}
-
-function createKeyValueGrid(rows) {
-  const grid = create("dl", "kv-grid");
-  rows.forEach(([key, value]) => {
-    const dt = document.createElement("dt");
-    dt.textContent = key;
-    const dd = document.createElement("dd");
-    dd.textContent = fallback(value);
-    grid.append(dt, dd);
-  });
-  return grid;
 }
 
 function createList(title, items) {
@@ -5020,20 +4874,6 @@ function setApiState(container, type, message = "") {
   appendText(container, "span", message);
 }
 
-function createBadge(text, className = "") {
-  const badge = create("span", className ? `badge ${className}` : "badge");
-  badge.textContent = fallback(text);
-  if (className.split(/\s+/).includes("tier-badge")) {
-    const tier = String(text || "").replace(/^Tier\s+/i, "").trim().slice(0, 1).toUpperCase();
-    if (["S", "A", "B", "C"].includes(tier)) badge.dataset.tier = tier;
-  }
-  return badge;
-}
-
-function textBadge(text, className = "") {
-  return createBadge(text, className);
-}
-
 function createPatchTypeBadge(type, text = "") {
   const safeType = PATCH_TYPE_LABELS[type] ? type : "adjust";
   const badge = createBadge(text || `${patchTypeIcon(safeType)} ${PATCH_TYPE_LABELS[safeType]}`, `patch-type type-${safeType}`);
@@ -5052,12 +4892,6 @@ function recentChangeIcon(changes) {
   return patchTypeIcon(primary);
 }
 
-function createCornerBadge(text, className) {
-  const badge = create("span", `corner-badge ${className}`);
-  badge.textContent = text;
-  return badge;
-}
-
 function getLatestChanges(heroId) {
   return state.patches.latestChangesByHero.get(heroId) || [];
 }
@@ -5073,30 +4907,6 @@ function getLatestTimelineItem(heroId) {
 function heroName(heroId) {
   const hero = state.byId.get(heroId);
   return hero ? `${hero.nameZh} ${hero.name}` : heroId;
-}
-
-function appendText(parent, tagName, text) {
-  const node = document.createElement(tagName);
-  node.textContent = fallback(text);
-  parent.append(node);
-  return node;
-}
-
-function create(tagName, className = "") {
-  const node = document.createElement(tagName);
-  if (className) node.className = className;
-  return node;
-}
-
-function safeUrl(value) {
-  const url = String(value || "").trim();
-  if (!url) return "";
-  try {
-    const parsed = new URL(url, window.location.href);
-    return ["http:", "https:"].includes(parsed.protocol) ? parsed.href : "";
-  } catch {
-    return "";
-  }
 }
 
 function countryFlag(code) {

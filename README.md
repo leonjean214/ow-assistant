@@ -73,11 +73,13 @@ http://localhost:8000/#/compare/genji,ana
 - `src/pwa.js`：Service Worker 注册和轻量更新提示，`file://`/非安全上下文自动跳过
 - `src/api.js`：OverFast 请求封装、超时、重试、localStorage 缓存和英雄 key 映射
 - `src/data.js`：加载、规范化和索引英雄、地图 meta、补丁数据
+- `src/dom.js`：无状态 DOM helper（节点创建、文本追加、徽章、头像、详情 section、kv grid、安全 URL）
+- `src/router.js`：hash 路由解析、hash 同步和深链调度；由 `src/app.js` 注入状态/视图回调，避免循环依赖
 - `src/counter.js`：`recommend(enemyIds, heroes)` 纯函数和 `console.assert` 自测
 - `src/recommend-hero.js`：`recommendHeroes(filters, heroes)` 新手英雄推荐纯函数和 `console.assert` 自测
 - `src/stats.js`：战绩整理、排序、段位格式化、表现卡片纯函数和 `console.assert` 自测
 - `src/journal.js`：本地对局记录读写、导出/导入解析、去重合并、汇总、英雄/地图趋势聚合纯函数和 `console.assert` 自测
-- `src/app.js`：导航、全局命令面板、英雄库、设置、克制网、战绩、地图、Meta、Overlay、详情交互和 canvas 分享图
+- `src/app.js`：应用装配、全局命令面板、英雄库、设置、克制网、战绩、地图、Meta、Overlay、详情交互和 canvas 分享图
 - `manifest.webmanifest`：PWA 安装元数据
 - `sw.js`：预缓存 app shell、本地数据和图标；离线导航回退到 `index.html`
 - `icons/`：PWA 安装图标

@@ -1,5 +1,32 @@
 # Handoff
 
+## Phase 25 已完成
+
+- 已完成 `app.js` 渐进模块化纯重构；未引入框架、构建或依赖，未修改 `data/`，未提交 git commit。
+- 新增 `src/dom.js`：抽出无状态 DOM helper，包括 `create()`、`appendText()`、`createBadge()`、`textBadge()`、`createCornerBadge()`、`createAvatar()`、`detailSection()`、`createKeyValueGrid()`、`safeUrl()`；保留原 DOM 结构、class、id、data hook。
+- 新增 `src/router.js`：抽出 hash 路由解析、hash 生成、`hashchange` 调度和同步方法；由 `app.js` 通过 `createRouter({...callbacks})` 注入 state/视图/详情/对比/队伍回调，依赖方向保持单向 `app.js -> router.js`，避免循环依赖和重复 state。
+- `src/app.js` 从 5116 行降到 4926 行；保留应用装配、状态单例、事件绑定、视图渲染和跨模块协调。视图模块本阶段未继续拆分，避免扩大纯重构风险面。
+- `sw.js` 已升级 `CACHE_NAME` 到 `ow-cache-v16`，并把 `./src/dom.js`、`./src/router.js` 加入 `APP_SHELL`，离线预缓存覆盖新增模块。
+- `README.md` 已更新文件结构；`docs/ROADMAP.md` 已标记 Phase 25 完成。
+
+## Phase 25 验证记录
+
+- 增量验证：
+  - 抽 `src/dom.js` 后执行 `BASE=http://localhost:8125 node tools/qa.mjs`，复跑结果 `124/124` 通过，`0` 个运行时错误。
+  - 抽 `src/router.js` 后执行 `BASE=http://localhost:8125 node tools/qa.mjs`，结果 `124/124` 通过，`0` 个运行时错误。
+- 静态检查：
+  - `for f in src/*.js sw.js tools/qa.mjs; do node --check "$f" || exit 1; done`
+  - `rg -n "from \"./app.js\"|from './app.js'|innerHTML|insertAdjacentHTML|outerHTML" src sw.js index.html README.md docs/ROADMAP.md` 无命中。
+- Headless Chrome/CDP 回归：
+  - 启动 `python3 -m http.server 8125`
+  - 启动 Chrome：`"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu --no-sandbox --remote-debugging-port=9222 --user-data-dir=/tmp/ow-chrome-qa`
+  - `BASE=http://localhost:8125 node tools/qa.mjs`
+  - 最终结果：`124/124` 通过，`0` 个运行时错误。
+  - 覆盖回归：英雄库卡片/列表/排序/标签/收藏、对比深链、组队深链、克制网、Meta、英雄深链与抽屉、设置、命令面板、移动端 375px、工坊、个人中心、GEP 消息桥、overlay。
+- 离线验证：
+  - 在线加载后 `navigator.serviceWorker.controller === true`，`ow-cache-v16` 中包含 `/src/dom.js` 和 `/src/router.js`。
+  - Chrome CDP `Network.emulateNetworkConditions({ offline:true })` 后刷新 `#/heroes`，英雄库仍渲染 52 张卡，`console` 错误/异常为 0。
+
 ## Phase 24 已完成
 
 - 已完成移动端/响应式体验打磨，未引入框架、构建或依赖，未修改 `data/` 或 `sw.js`，未提交 git commit。
