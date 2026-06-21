@@ -31,7 +31,11 @@ function mkConn(wsUrl) {
   const ready = new Promise((res) => ws.addEventListener("open", () => res()));
   const evals = async (expr) => {
     const r = await send("Runtime.evaluate", { expression: expr, awaitPromise: true, returnByValue: true });
-    if (r.result?.exceptionDetails) throw new Error("eval err: " + r.result.exceptionDetails.text);
+    if (r.result?.exceptionDetails) {
+      const detail = r.result.exceptionDetails;
+      const message = detail.exception?.description || detail.exception?.value || detail.text;
+      throw new Error("eval err: " + message);
+    }
     return r.result?.result?.value;
   };
   return { send, ready, evals, errors };
@@ -48,15 +52,127 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const out = [];
   const check = (name, cond, extra = "") => out.push(`${cond ? "PASS" : "FAIL"} | ${name}${extra ? " | " + extra : ""}`);
 
-  await c.evals(`try{localStorage.clear()}catch(e){}; location.hash='#/heroes'; null`);
+  await c.evals(`(async()=>{
+    try{localStorage.clear()}catch(e){}
+    try{for (const key of await caches.keys()) await caches.delete(key)}catch(e){}
+    try{for (const registration of await navigator.serviceWorker.getRegistrations()) await registration.unregister()}catch(e){}
+    location.href=${JSON.stringify(BASE)} + '/?qa=' + Date.now() + '#/heroes';
+    return null;
+  })()`);
   await sleep(2500);
+  await c.evals(`(async()=>{ window.__qaHeroes = await fetch('/data/heroes.json').then((r)=>r.json()).then((data)=>data.heroes); return null; })()`);
 
   check("英雄库渲染", await c.evals(`document.querySelectorAll('#heroGrid .hero-card').length`) >= 40);
 
+  // Phase 17：英雄库排序 + 多标签筛选
+  const heroOrderExpr = `Array.from(document.querySelectorAll('#heroGrid .hero-card')).map((card)=>card.dataset.heroId)`;
+  const tierRanksOk = await c.evals(`(()=>{
+    const rank={S:0,A:1,B:2,C:3};
+    document.getElementById('heroSortFilter').value='tier';
+    document.getElementById('heroSortFilter').dispatchEvent(new Event('change',{bubbles:true}));
+    const rows=Array.from(document.querySelectorAll('#heroGrid .hero-card')).map((card)=>window.__qaHeroes.find((hero)=>hero.id===card.dataset.heroId));
+    return rows.every((hero,index)=>index===0 || (rank[rows[index-1].tier]??9) <= (rank[hero.tier]??9));
+  })()`);
+  check("英雄库 Tier 排序 S>A>B>C", tierRanksOk === true);
+  const diffAscOk = await c.evals(`(()=>{
+    document.getElementById('heroSortFilter').value='diff-asc';
+    document.getElementById('heroSortFilter').dispatchEvent(new Event('change',{bubbles:true}));
+    const rows=Array.from(document.querySelectorAll('#heroGrid .hero-card')).map((card)=>window.__qaHeroes.find((hero)=>hero.id===card.dataset.heroId));
+    return rows.every((hero,index)=>index===0 || Number(rows[index-1].difficulty ?? 99) <= Number(hero.difficulty ?? 99));
+  })()`);
+  check("英雄库难度升序 null 垫底", diffAscOk === true);
+  const diffDescOk = await c.evals(`(()=>{
+    document.getElementById('heroSortFilter').value='diff-desc';
+    document.getElementById('heroSortFilter').dispatchEvent(new Event('change',{bubbles:true}));
+    const rows=Array.from(document.querySelectorAll('#heroGrid .hero-card')).map((card)=>window.__qaHeroes.find((hero)=>hero.id===card.dataset.heroId));
+    return rows.every((hero,index)=>index===0 || (rows[index-1].difficulty == null ? -1 : rows[index-1].difficulty) >= (hero.difficulty == null ? -1 : hero.difficulty));
+  })()`);
+  check("英雄库难度降序 null 垫底", diffDescOk === true);
+  const hpDescOk = await c.evals(`(()=>{
+    document.getElementById('heroSortFilter').value='hp-desc';
+    document.getElementById('heroSortFilter').dispatchEvent(new Event('change',{bubbles:true}));
+    const hp=(hero)=>(hero.health?.hp||0)+(hero.health?.armor||0)+(hero.health?.shield||0);
+    const rows=Array.from(document.querySelectorAll('#heroGrid .hero-card')).map((card)=>window.__qaHeroes.find((hero)=>hero.id===card.dataset.heroId));
+    return rows.every((hero,index)=>index===0 || hp(rows[index-1]) >= hp(hero));
+  })()`);
+  check("英雄库总有效生命降序", hpDescOk === true);
+  const nameOk = await c.evals(`(()=>{
+    document.getElementById('heroSortFilter').value='name';
+    document.getElementById('heroSortFilter').dispatchEvent(new Event('change',{bubbles:true}));
+    const rows=Array.from(document.querySelectorAll('#heroGrid .hero-card')).map((card)=>window.__qaHeroes.find((hero)=>hero.id===card.dataset.heroId));
+    return rows.every((hero,index)=>index===0 || String(rows[index-1].nameZh||rows[index-1].name).localeCompare(String(hero.nameZh||hero.name),'zh-Hans-CN') <= 0);
+  })()`);
+  check("英雄库名称排序 zh-Hans-CN", nameOk === true);
+  const invalidFallbackOk = await c.evals(`(()=>{
+    const rank={S:0,A:1,B:2,C:3};
+    const invalid={id:'qa-invalid-tier',name:'ZZZ QA',nameZh:'ZZZ测试',role:'damage',tier:'Z',difficulty:null,health:{hp:1,armor:0,shield:0},tags:['qa-null'],ban:{priority:'low'},subrole:''};
+    const rows=[window.__qaHeroes[0], invalid, window.__qaHeroes.find((hero)=>['S','A','B','C'].includes(hero.tier))].sort((a,b)=>(rank[a.tier]??9)-(rank[b.tier]??9));
+    return rows.at(-1).id === 'qa-invalid-tier';
+  })()`);
+  check("无效 tier 排序兜底垫底", invalidFallbackOk === true);
+
   // 收藏
-  await c.evals(`document.querySelector('#heroGrid button[data-favorite-hero]').click(); null`);
+  await c.evals(`document.getElementById('heroSortFilter').value='default'; document.getElementById('heroSortFilter').dispatchEvent(new Event('change',{bubbles:true})); Array.from(document.querySelectorAll('#heroGrid button[data-favorite-hero]')).at(-1).click(); null`);
   check("收藏写入 ow-favorites", (await c.evals(`JSON.parse(localStorage.getItem('ow-favorites')||'[]').length`)) === 1);
   check("收藏不误开详情", (await c.evals(`document.getElementById('detailDrawer').classList.contains('is-open')`)) === false);
+  const favoriteDefaultTop = await c.evals(`(()=>{
+    const fav=JSON.parse(localStorage.getItem('ow-favorites')||'[]')[0];
+    document.getElementById('heroSortFilter').value='default';
+    document.getElementById('heroSortFilter').dispatchEvent(new Event('change',{bubbles:true}));
+    return document.querySelector('#heroGrid .hero-card')?.dataset.heroId === fav;
+  })()`);
+  check("默认排序仍收藏置顶", favoriteDefaultTop === true);
+  const nonDefaultNoFavoritePin = await c.evals(`(()=>{
+    const fav=JSON.parse(localStorage.getItem('ow-favorites')||'[]')[0];
+    document.getElementById('heroSortFilter').value='name';
+    document.getElementById('heroSortFilter').dispatchEvent(new Event('change',{bubbles:true}));
+    return document.querySelector('#heroGrid .hero-card')?.dataset.heroId !== fav;
+  })()`);
+  check("非默认排序不强制收藏置顶", nonDefaultNoFavoritePin === true);
+
+  const tagChecks = await c.evals(`(()=>{
+    const buttons=Array.from(document.querySelectorAll('#heroTagFilters button[data-hero-tag]'));
+    const chosen=buttons.map((button)=>button.dataset.heroTag).filter((tag)=>window.__qaHeroes.some((hero)=>hero.tags?.includes(tag)));
+    const pair=chosen.find((tag)=>window.__qaHeroes.some((hero)=>hero.tags?.includes(tag) && hero.tags.some((other)=>other!==tag && chosen.includes(other))));
+    const hero=window.__qaHeroes.find((item)=>item.tags?.includes(pair) && item.tags.some((other)=>other!==pair && chosen.includes(other)));
+    const other=hero.tags.find((tag)=>tag!==pair && chosen.includes(tag));
+    const clickTag=(tag)=>document.querySelector('#heroTagFilters button[data-hero-tag="'+CSS.escape(tag)+'"]').click();
+    document.getElementById('heroSortFilter').value='default';
+    document.getElementById('heroSortFilter').dispatchEvent(new Event('change',{bubbles:true}));
+    clickTag(pair); clickTag(other);
+    const selectedPressed=Array.from(document.querySelectorAll('#heroTagFilters button[aria-pressed="true"]')).length === 2;
+    const orIds=Array.from(document.querySelectorAll('#heroGrid .hero-card')).map((card)=>card.dataset.heroId);
+    document.getElementById('tagMatchToggle').click();
+    const andIds=Array.from(document.querySelectorAll('#heroGrid .hero-card')).map((card)=>card.dataset.heroId);
+    const expectedOr=window.__qaHeroes.filter((item)=>item.tags?.includes(pair)||item.tags?.includes(other)).length;
+    const expectedAnd=window.__qaHeroes.filter((item)=>item.tags?.includes(pair)&&item.tags?.includes(other)).length;
+    document.getElementById('tierFilter').value='S';
+    document.getElementById('tierFilter').dispatchEvent(new Event('change',{bubbles:true}));
+    const stacked=Array.from(document.querySelectorAll('#heroGrid .hero-card')).every((card)=>{
+      const item=window.__qaHeroes.find((h)=>h.id===card.dataset.heroId);
+      return item.tier==='S' && item.tags?.includes(pair) && item.tags?.includes(other);
+    });
+    document.getElementById('searchInput').value='zzzz-no-match';
+    document.getElementById('searchInput').dispatchEvent(new Event('input',{bubbles:true}));
+    const emptyShown=!document.getElementById('heroEmpty').hidden && document.getElementById('heroEmpty').textContent.includes('减少标签');
+    document.getElementById('clearTagFilters').click();
+    const cleared=Array.from(document.querySelectorAll('#heroTagFilters button[aria-pressed="true"]')).length===0 && document.getElementById('clearTagFilters').disabled;
+    document.getElementById('searchInput').value='';
+    document.getElementById('searchInput').dispatchEvent(new Event('input',{bubbles:true}));
+    document.getElementById('tierFilter').value='all';
+    document.getElementById('tierFilter').dispatchEvent(new Event('change',{bubbles:true}));
+    return { selectedPressed, orOk:orIds.length===expectedOr, andOk:andIds.length===expectedAnd, stacked, emptyShown, cleared };
+  })()`);
+  check("多标签 pill aria-pressed", tagChecks.selectedPressed === true);
+  check("多标签 OR 生效", tagChecks.orOk === true);
+  check("多标签 AND 生效", tagChecks.andOk === true);
+  check("多标签与其它筛选叠加", tagChecks.stacked === true);
+  check("标签筛选空态友好", tagChecks.emptyShown === true);
+  check("清空标签恢复控件状态", tagChecks.cleared === true);
+  await c.send("Emulation.setDeviceMetricsOverride", { width: 375, height: 900, deviceScaleFactor: 1, mobile: true });
+  await sleep(200);
+  check("375px 英雄库无横向溢出", (await c.evals(`Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) <= window.innerWidth`)) === true);
+  await c.send("Emulation.clearDeviceMetricsOverride");
 
   // 对比深链
   await c.evals(`location.hash='#/compare/genji,ana'; null`); await sleep(700);
@@ -135,5 +251,5 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   console.log(c.errors.length ? c.errors.join("\n") : "(无)");
   const failed = out.filter((l) => l.startsWith("FAIL")).length;
   console.log(`\n结果：${out.length - failed}/${out.length} 通过，${c.errors.length} 个运行时错误`);
-  process.exit(0);
+  process.exit(failed || c.errors.length ? 1 : 0);
 })().catch((e) => { console.error("QA 脚本错误:", e.message); process.exit(1); });

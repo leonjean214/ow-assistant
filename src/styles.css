@@ -505,7 +505,7 @@ img {
 .profile-search-grid,
 .patch-toolbar {
   display: grid;
-  grid-template-columns: auto minmax(128px, 160px) minmax(150px, 180px) minmax(220px, 1fr) auto;
+  grid-template-columns: auto minmax(108px, 140px) minmax(132px, 166px) minmax(150px, 190px) minmax(220px, 1fr) auto;
   gap: 10px;
   align-items: end;
   margin-bottom: 14px;
@@ -568,6 +568,63 @@ img {
   width: 16px;
   min-height: 16px;
   accent-color: var(--warn);
+}
+
+.tag-filter-panel {
+  display: grid;
+  gap: 8px;
+  margin: -4px 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  background: var(--surface-2);
+}
+
+.tag-filter-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tag-filter-head > span {
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.tag-filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+
+.tag-filter-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 112px;
+  overflow: auto;
+  padding: 1px;
+}
+
+.tag-filter-pill {
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.tag-match-toggle[aria-pressed="true"] {
+  border-color: var(--primary);
+  background: var(--primary-weak);
+  color: var(--primary);
+}
+
+.tag-filter-actions .ghost-btn:disabled {
+  cursor: not-allowed;
+  opacity: .55;
 }
 
 input,
