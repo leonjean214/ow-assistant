@@ -1,59 +1,46 @@
-# Task Phase 18：英雄库 列表/表格视图模式（OP.GG 式）
+# Task Phase 19：克制网总览视图（#/matrix）
 
-> Phase 1-17 全部功能须保留不回归。英雄库（heroes 视图）新增「卡片 / 列表」视图切换：列表模式用 OP.GG 式紧凑可排序数据表展示英雄。纯前端、Mac 可全测、0 innerHTML、零构建。
+> Phase 1-18 全部功能须保留不回归。新增「克制网」视图：按职业分区，一眼看全英雄的「我克制 / 我怕 / 协同」关系，可点跳详情。纯前端、复用现有 `counters` 数据、0 innerHTML、零构建。
 
 ## Goal
-英雄库顶部加「卡片 / 列表」切换。列表模式渲染一个紧凑表格：列 = 英雄(头像+中英名) | 职业 | Tier | 难度 | 总有效生命 | 代表标签 | 收藏★。点表头可排序（复用 Phase 17 的排序逻辑/state.filters.sort），点行打开英雄详情。视图模式持久化到 localStorage。
+新增 `matrix` 视图（tab「克制网」+ `matrixView` + `#/matrix` 深链）：按职业(坦/输出/辅)分区，每个英雄一行/一卡，展示其 strongAgainst（我克制，绿）、weakAgainst（我怕，红）、synergy（协同，蓝）三组对手头像 chip；支持按职业筛选 + 按英雄名搜索过滤；点英雄/chip 打开对应详情。
 
 ## Context（务必遵守）
-- 纯静态零构建 SPA，ES module。英雄库渲染 `renderHeroGrid()` → `filteredHeroes()` → `createHeroCard()`，容器 `#heroGrid`。
-- Phase 17 已加 `state.filters.sort`（default/tier/diff-asc/diff-desc/hp-desc/name）+ 标签筛选；`filteredHeroes()` 已做过滤+排序。**复用它**，列表模式与卡片模式共用同一份 `filteredHeroes()` 结果。
-- 字段：`hero.id/nameZh/name/role/tier/difficulty/health{hp,armor,shield}/tags[]`；`ROLE_LABELS`、`createAvatar(hero)`、`isFavorite/toggleFavorite`、`createBadge(tier,"tier-badge")`、`createFavoriteButton`、helper `create/appendText`。
-- 详情：点行 `openDetail(id)`。`#heroGrid` 现有 click/keydown 委托处理 data-hero-id + 收藏/对比/入队按钮，列表行也要复用同样的 data-hero-id 与按钮委托（行内放收藏★即可，复用 `button[data-favorite-hero]`）。
-- a11y：表格用 `<table>` + `<caption class="sr-only">` + `th[scope=col]`；可排序表头用 `aria-sort` 跟随 `state.filters.sort`；视图切换按钮 `aria-pressed`。
-- 硬约束：0 innerHTML 注入；不引框架/库；不破坏现有 id/class/data-* hook。
+- 纯静态零构建 SPA，ES module。视图体系：`.view-tab[data-view]` + `.view`(id=`${view}View`)、`switchView`、hash 路由(parseHashRoute/applyRouteFromHash/viewHash, isRouting guard, overlay 短路)、a11y `setupNavigationA11y`(role=tab/tabpanel/roving)。**新视图与 `#/matrix` 深链要纳入这套**（参考 journal/me/workshop 的纯视图接入；matrix 无参数，按普通 view 路由即可）。
+- 数据：`hero.counters.{strongAgainst[],weakAgainst[],synergy[]}`（id 数组）、`hero.role/nameZh/name`、`state.byId`、`state.heroes`。helper：`create/appendText/createAvatar/ROLE_LABELS`。已有 `createHeroLinkGroup(title, ids, kind)`（kind=strong/weak/synergy，带上色 + data-jump-hero 跳转）——**直接复用**。
+- 详情跳转：chip 用 `data-jump-hero`，在 matrixView 容器上加 click 委托 `openDetail`。
+- 硬约束：0 innerHTML 注入；不引框架/库；不破坏现有 id/class/data-* hook；overlay/路由不受影响。
 
 ## Requirements
-1. **视图模式状态**：`state.heroView`（`"grid"|"list"`，默认 grid），localStorage key `ow-hero-view` 持久化（try/catch 容错）。
-2. **切换控件**：英雄库筛选区加「卡片/列表」两按钮（或分段控件），`aria-pressed` 标当前；切换即重渲 + 存储。
-3. **列表渲染**：新增 `renderHeroList()`（或在 renderHeroGrid 内按模式分支）。用 `filteredHeroes()` 同一结果。表格列：
-   - 英雄（头像 + nameZh / name，点击打开详情，行用 `data-hero-id`）
-   - 职业（ROLE_LABELS）
-   - Tier（tier-badge 上色）
-   - 难度（`x/5` 或 —）
-   - 总有效生命（hp+armor+shield，tabular 数字）
-   - 标签（前 2-3 个）
-   - 收藏（★ 按钮，复用 `data-favorite-hero`，不冒泡开详情）
-4. **表头排序**：可排序列（Tier/难度/总有效生命/名称）表头可点，点击设置对应 `state.filters.sort` 并重渲；`aria-sort` 反映当前列方向。与顶部排序下拉双向一致（点表头也更新下拉值，反之亦然）。
-5. **空态/计数**：复用 `#heroEmpty`/`#heroCount`；列表为空时表格区显示友好空态。
-6. **响应式**：列表在 ≤768/375px 横向滚动不致页面溢出（表格容器 `overflow-x:auto`）。
-7. 卡片模式 = 现状不变。切到列表再切回卡片，筛选/排序/收藏状态保持。
+1. **视图与路由**：index.html 加 tab `data-view="matrix"`（标题「克制网」）+ `matrixView` section(含 `#matrixContent` + 筛选控件)。app.js：switchView 进 matrix 调 `renderMatrix()`；parseHashRoute/applyRouteFromHash 把 `#/matrix` 当普通 view（routeViews 已含则自动）。
+2. **筛选**：matrixView 顶部加 职业筛选(全部/坦/输出/辅，复用 segmented 风格) + 英雄名搜索框。`state.matrixFilter = { role:"all", search:"" }`，改动重渲。
+3. **渲染 `renderMatrix()`**：按 role 顺序(tank/damage/support)分区，区内每个英雄一张卡：左侧头像+中英名(点开详情)，右侧三组 `createHeroLinkGroup`（"我克制"/"我怕"/"协同"，复用 strong/weak/synergy 上色）。按筛选(role + 名称匹配 nameZh/name/id)过滤英雄。空态友好。
+4. **委托**：matrixContent 上 click 委托：先判 `button[data-jump-hero]` → openDetail；卡片标题点击也跳详情。
+5. **aria-live**：`#matrixContent` 设 aria-live=polite（沿用其它视图）。新控件键盘可用。
+6. **响应式**：≤768/375px 三组纵向堆叠、chip 换行，不致页面横向溢出。
 
 ## Constraints
-- 不改现有 JS 对外签名/数据流；复用 `filteredHeroes()`/`openDetail`/收藏委托；可加 `renderHeroList`、视图切换、表格样式。
+- 不改现有 JS 对外签名/数据流；复用 `createHeroLinkGroup`/`openDetail`/`createAvatar`；可加 renderMatrix、matrix 筛选、样式。
 - 只读 `data/`，不改 `data/`、`docs/`（本 TASK 除外；可在 docs/ROADMAP.md 标记完成）。
-- 0 innerHTML 注入（表格全 DOM API + CSS）。复用 token，深浅主题协调。
-- Phase 1-17 全功能不回归；overlay/路由不受影响。
-- `#heroGrid` 委托对 data-hero-id / data-favorite-hero / data-compare-hero / data-team-hero 的处理在列表模式仍有效（行与行内★用同样 data 属性）。
+- 0 innerHTML 注入（全 DOM API + CSS）。复用 token，深浅主题协调。
+- Phase 1-18 全功能不回归；overlay(`?overlay=1`)不受影响。
+- 新 tab 自动被 setupNavigationA11y/roving/方向键覆盖（确认初始化顺序）。
+- 不需新 sw 缓存项（无新 data 文件；若新增 js 才需进 APP_SHELL+升版本——本阶段建议都写进 app.js，免动 sw）。
 
 ## Implementation Plan（建议）
-1. state.heroView + load/save（localStorage `ow-hero-view`）。
-2. index.html：英雄库工具区加 卡片/列表 切换控件（稳定 id）。
-3. app.js：`renderHeroGrid()` 按 `state.heroView` 调 createHeroCard（grid）或 renderHeroList（list）；renderHeroList 用 `filteredHeroes()` 建表；表头点击改 sort（与 `#heroSortFilter` 同步）。
-4. styles.css：列表表格(斑马/hover/数字右对齐/tier 上色/收藏列)、视图切换控件、响应式。
-5. 自测（无头 Chrome + tools/qa.mjs 加列表用例）：见验收。更新 README、HANDOFF、ROADMAP 标记完成。
+1. index.html：matrix tab + matrixView(筛选 segmented + 搜索 input + `#matrixContent`)。
+2. app.js：state.matrixFilter；bindElements/bindEvents 接筛选；renderMatrix()（分区+英雄卡+复用 createHeroLinkGroup）；switchView 分支；matrixContent 委托 jump-hero；init 调一次 renderMatrix(或首次进视图懒渲)。
+3. styles.css：matrix 分区标题、英雄卡(头像+名+三组)、响应式。
+4. 自测(无头 Chrome + tools/qa.mjs 加 matrix 用例)：见验收。更新 README、HANDOFF、ROADMAP 标记完成。
 
 ## Acceptance Criteria
-- 卡片/列表可切换，刷新后保持（localStorage `ow-hero-view`）。
-- 列表模式表格展示英雄/职业/Tier/难度/HP/标签/收藏，点行开详情、点★收藏不误开详情。
-- 点表头排序生效且与顶部排序下拉一致，`aria-sort` 跟随；筛选/标签叠加在列表模式同样生效。
-- 切模式后筛选/排序/收藏状态不丢；空态/计数正确。
-- 375px 列表横向滚动不致页面溢出；深浅主题协调。
-- Phase 1-17 全功能不回归；`node --check` 全过；console 无报错；0 innerHTML；tools/qa.mjs 全绿（含新增列表用例）。
+- 「克制网」tab/`#/matrix` 深链可达(tablist/方向键沿用)；按职业筛选 + 名称搜索生效。
+- 每个英雄展示 我克制/我怕/协同 三组（上色正确：绿/红/蓝），chip 与卡片标题点击打开对应详情。
+- 空态友好；375px 无横向溢出；深浅主题协调。
+- Phase 1-18 全功能不回归；`node --check` 全过；console 无报错；0 innerHTML；tools/qa.mjs 全绿(含新增 matrix 用例)。
 
 ## Review Focus（Codex 自查）
-- 列表行与行内★的委托：复用 `#heroGrid` 现有 click/keydown，不破坏卡片模式；★不冒泡开详情。
-- 表头排序与 `#heroSortFilter` 双向同步不打架。
-- 切模式保持筛选/排序/收藏；list↔grid 无残留 DOM。
-- 表格 a11y：caption/scope/aria-sort；键盘可操作。
-- 0 innerHTML；375px 无页面横向溢出；overlay/路由不受影响。
+- 复用 createHeroLinkGroup 的上色/跳转是否正确；matrixContent 委托不影响其它视图。
+- 新 tab 被 a11y/路由/roving 覆盖；`#/matrix` 普通 view 路由不打架(isRouting guard)。
+- 筛选 role+search 边界(空结果空态、缺 counters 数据的英雄显示「—」)。
+- 0 innerHTML；overlay 不受影响；375px 无页面横向溢出。

@@ -1,5 +1,31 @@
 # Handoff
 
+## Phase 19 已完成
+
+- 已实现「克制网」总览视图，未引入框架、构建或依赖，未提交 git commit。
+- `index.html` 新增主导航 tab「克制网」和 `#matrixView`，包含职业分段控件 `#matrixRoleTabs`、搜索框 `#matrixSearchInput`、计数 `#matrixCount` 和 `#matrixContent`；自动纳入现有 `.view-tab[data-view]`、hash 路由、tablist/tabpanel、roving tabindex 体系。
+- `src/app.js` 新增 `state.matrixFilter = { role:"all", search:"" }`、`renderMatrix()`、`filteredMatrixHeroes()`、`syncMatrixRoleTabs()`、`createMatrixSection()`、`createMatrixCard()`；`switchView("matrix")` 懒渲染，`#/matrix` 作为普通 view 深链处理。
+- 克制网按 `tank/damage/support` 顺序分区，卡片左侧复用 `createAvatar(hero)` 展示头像和中英名，右侧直接复用 `createHeroLinkGroup("我克制"/"我怕"/"协同", ..., "strong"/"weak"/"synergy")`，保持绿/红/蓝上色和 `data-jump-hero`。
+- `#matrixContent` click 委托：优先处理 `button[data-jump-hero]`，再处理 `button[data-matrix-hero]`，均调用现有 `openDetail()`；未改详情签名或已有数据流。
+- 筛选支持职业 `all/tank/damage/support` 和英雄 `id/name/nameZh` 搜索；空结果显示友好空态。
+- `src/styles.css` 新增矩阵工具条、职业分区、矩阵卡、标题按钮、三组关系列和 920/375px 响应式；窄屏下三组纵向堆叠，chip 换行，不产生页面横向溢出。
+- `tools/qa.mjs` 新增 Phase 19 用例：`#/matrix` 深链、tab/roving a11y、三职业分区、`aria-live`、三组上色、标题/chip 打开详情、职业筛选、名称搜索、空态、375px 无横向溢出。
+- `README.md` 已补充 `#/matrix` 深链、克制网功能和 `src/app.js` 描述；`docs/ROADMAP.md` 已标记 Phase 19 完成。
+
+## Phase 19 验证记录
+
+- 静态检查：
+  - `node --check src/app.js`
+  - `node --check tools/qa.mjs`
+  - `rg -n "innerHTML|insertAdjacentHTML|outerHTML" index.html src tools --glob '!node_modules'` 无命中
+- Headless Chrome/CDP 回归：
+  - 启动 `python3 -m http.server 8125`
+  - 启动 Chrome：`"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu --no-sandbox --remote-debugging-port=9222 --user-data-dir=/tmp/ow-chrome-qa`
+  - `BASE=http://localhost:8125 node tools/qa.mjs`
+  - 结果：`68/68` 通过，`0` 个运行时错误。
+  - 覆盖 Phase 19：`#/matrix` 深链激活 view/tab，tablist roving 正确，三职业分区渲染，`#matrixContent aria-live=polite`，三组关系绿/红/蓝上色，标题和 chip 均打开详情，职业筛选和名称搜索生效，空态友好，375px 无横向溢出。
+  - 覆盖回归：英雄库列表/排序/标签/收藏、对比深链、组队深链、克制计算器、详情抽屉、主题、快捷键、工坊、个人中心、GEP 消息桥、overlay。
+
 ## Phase 18 已完成
 
 - 已实现英雄库「卡片 / 列表」视图模式，未引入框架、构建或依赖，未提交 git commit。

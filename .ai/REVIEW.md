@@ -274,3 +274,8 @@
 执行：Codex｜tools/qa.mjs **57/57 全过、0 运行时错误**；node 全过；0 innerHTML。卡片/列表切换+持久化、列表点行开详情/★不误开、表头排序与下拉双向同步、筛选叠加、375px 无溢出、表格 a11y(caption/scope/aria-sort) 均通过。
 
 ---
+
+## Phase 19 审查（克制网总览 #/matrix）— 无阻塞
+执行：Codex｜tools/qa.mjs **68/68 全过、0 运行时错误**；node 全过；0 innerHTML。按职业分区 + 名称筛选、复用 createHeroLinkGroup 三组上色(绿/红/蓝)、chip/标题跳详情、#/matrix 深链+方向键、375px 无溢出均通过。
+
+---

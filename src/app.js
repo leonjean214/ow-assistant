@@ -46,6 +46,7 @@ const state = {
   byId: new Map(),
   heroView: "grid",
   filters: { role: "all", tier: "all", ban: "all", search: "", favoritesOnly: false, sort: "default", tags: [], tagsMatchAll: false },
+  matrixFilter: { role: "all", search: "" },
   favorites: new Set(),
   compare: [],
   compareMessage: "",
@@ -147,6 +148,7 @@ function bindElements() {
     "dataMeta", "heroCount", "heroGrid", "heroEmpty", "roleTabs", "tierFilter", "banFilter", "heroSortFilter", "searchInput",
     "heroViewToggle", "favoriteOnlyToggle", "heroTagFilters", "tagMatchToggle", "clearTagFilters",
     "compareTray", "compareContent", "compareCount",
+    "matrixRoleTabs", "matrixSearchInput", "matrixContent", "matrixCount",
     "teamContent", "teamCount", "workshopContent", "meContent",
     "latestHeroLine", "updatesTimeline", "patchRoleFilter", "patchTypeFilter", "patchSearchInput", "patchList", "patchEmpty",
     "heroRecommendPanel", "recommendRole", "recommendDifficulty", "recommendDifficultyLabel", "recommendTag", "recommendResults",
@@ -219,6 +221,26 @@ function bindEvents() {
     state.filters.tags = [];
     syncTagFilterControls();
     renderHeroGrid();
+  });
+  el.matrixRoleTabs.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-matrix-role]");
+    if (!button) return;
+    state.matrixFilter.role = button.dataset.matrixRole;
+    syncMatrixRoleTabs();
+    renderMatrix();
+  });
+  el.matrixSearchInput.addEventListener("input", () => {
+    state.matrixFilter.search = el.matrixSearchInput.value.trim().toLowerCase();
+    renderMatrix();
+  });
+  el.matrixContent.addEventListener("click", (event) => {
+    const jump = event.target.closest("button[data-jump-hero]");
+    if (jump) {
+      openDetail(jump.dataset.jumpHero);
+      return;
+    }
+    const title = event.target.closest("button[data-matrix-hero]");
+    if (title) openDetail(title.dataset.matrixHero);
   });
   el.patchRoleFilter.addEventListener("change", () => {
     state.patchFilters.role = el.patchRoleFilter.value;
@@ -484,6 +506,7 @@ function setupA11y() {
     [el.playerSearchState, "polite"],
     [el.mapsState, "polite"],
     [el.compareContent, "polite"],
+    [el.matrixContent, "polite"],
     [el.teamContent, "polite"],
     [el.workshopContent, "polite"],
     [el.meContent, "polite"],
@@ -1152,6 +1175,7 @@ function switchView(view) {
   });
   if (view === "maps") loadMapsOnce();
   if (view === "compare") renderCompareView();
+  if (view === "matrix") renderMatrix();
   if (view === "team") renderTeam();
   if (view === "workshop") renderWorkshop();
   if (view === "me") renderMe();
@@ -1798,6 +1822,79 @@ function compareDifficultyDesc(a, b) {
 
 function totalHealth(hero) {
   return Number(hero?.health?.hp) + Number(hero?.health?.armor) + Number(hero?.health?.shield) || 0;
+}
+
+function renderMatrix() {
+  if (!el.matrixContent) return;
+  syncMatrixRoleTabs();
+  el.matrixContent.replaceChildren();
+  const heroes = filteredMatrixHeroes();
+  if (el.matrixCount) el.matrixCount.textContent = `${heroes.length} 位英雄`;
+  if (!heroes.length) {
+    const empty = create("p", "empty-state matrix-empty");
+    empty.textContent = "没有符合条件的英雄，换个职业或搜索词再试。";
+    el.matrixContent.append(empty);
+    return;
+  }
+  ["tank", "damage", "support"].forEach((role) => {
+    if (state.matrixFilter.role !== "all" && state.matrixFilter.role !== role) return;
+    const roleHeroes = heroes.filter((hero) => hero.role === role);
+    if (!roleHeroes.length) return;
+    el.matrixContent.append(createMatrixSection(role, roleHeroes));
+  });
+}
+
+function filteredMatrixHeroes() {
+  const search = state.matrixFilter.search;
+  return state.heroes.filter((hero) => {
+    if (state.matrixFilter.role !== "all" && hero.role !== state.matrixFilter.role) return false;
+    if (!search) return true;
+    return [hero.id, hero.name, hero.nameZh].filter(Boolean).join(" ").toLowerCase().includes(search);
+  });
+}
+
+function syncMatrixRoleTabs() {
+  if (!el.matrixRoleTabs) return;
+  el.matrixRoleTabs.querySelectorAll("button[data-matrix-role]").forEach((button) => {
+    const active = button.dataset.matrixRole === state.matrixFilter.role;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function createMatrixSection(role, heroes) {
+  const section = create("section", "matrix-section");
+  const head = create("div", "matrix-section-head");
+  appendText(head, "h3", ROLE_LABELS[role] || role);
+  const count = create("span", "badge");
+  count.textContent = `${heroes.length} 位`;
+  head.append(count);
+  const list = create("div", "matrix-list");
+  heroes.forEach((hero) => list.append(createMatrixCard(hero)));
+  section.append(head, list);
+  return section;
+}
+
+function createMatrixCard(hero) {
+  const card = create("article", "matrix-card");
+  card.dataset.matrixCard = hero.id;
+  const heroButton = create("button", "matrix-hero");
+  heroButton.type = "button";
+  heroButton.dataset.matrixHero = hero.id;
+  heroButton.append(createAvatar(hero));
+  const names = create("span", "matrix-hero-names");
+  appendText(names, "strong", hero.nameZh);
+  appendText(names, "span", hero.name);
+  heroButton.append(names);
+  const links = create("div", "matrix-links");
+  const counters = hero.counters || {};
+  links.append(
+    createHeroLinkGroup("我克制", counters.strongAgainst, "strong"),
+    createHeroLinkGroup("我怕", counters.weakAgainst, "weak"),
+    createHeroLinkGroup("协同", counters.synergy, "synergy")
+  );
+  card.append(heroButton, links);
+  return card;
 }
 
 function createHeroCard(hero) {

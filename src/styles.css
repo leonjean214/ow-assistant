@@ -524,6 +524,10 @@ img {
   grid-template-columns: minmax(180px, 240px);
 }
 
+.matrix-toolbar {
+  grid-template-columns: minmax(220px, auto) minmax(220px, 1fr);
+}
+
 .field {
   display: grid;
   gap: 6px;
@@ -738,6 +742,112 @@ input[type="range"] {
 .hero-link-strong:hover { border-color: var(--good); color: var(--good); }
 .hero-link-weak:hover { border-color: var(--loss); color: var(--loss); }
 .hero-link-synergy:hover { border-color: var(--primary); color: var(--primary); }
+
+.matrix-content,
+.matrix-section,
+.matrix-list,
+.matrix-links {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.matrix-section + .matrix-section {
+  margin-top: 16px;
+}
+
+.matrix-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.matrix-section-head h3 {
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.matrix-card {
+  display: grid;
+  grid-template-columns: minmax(190px, 240px) minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  background: var(--surface-2);
+}
+
+.matrix-hero {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.matrix-hero:hover strong {
+  color: var(--primary);
+}
+
+.matrix-hero .avatar {
+  width: 48px;
+  height: 48px;
+  aspect-ratio: auto;
+}
+
+.matrix-hero-names {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.matrix-hero-names strong,
+.matrix-hero-names span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.matrix-hero-names strong {
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.matrix-hero-names span {
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.matrix-links {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.matrix-links .link-group {
+  min-width: 0;
+}
+
+.matrix-links .link-row {
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.matrix-links .hero-link {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
 
 .segmented button.is-active,
 .select-chip.is-selected,
@@ -2710,6 +2820,7 @@ body.is-overlay .overlay-panel {
 
   .toolbar,
   .patch-toolbar,
+  .matrix-toolbar,
   .recommend-controls,
   .counter-layout,
   .journal-form,
@@ -2722,6 +2833,14 @@ body.is-overlay .overlay-panel {
 
   .journal-form .field-grow {
     grid-column: auto;
+  }
+
+  .matrix-card {
+    grid-template-columns: 1fr;
+  }
+
+  .matrix-links {
+    grid-template-columns: 1fr;
   }
 
   .rank-grid,
@@ -2882,6 +3001,7 @@ body.is-overlay .overlay-panel {
 
   .result-row,
   .position-box,
+  .matrix-section-head,
   .journal-actions,
   .journal-tools {
     align-items: stretch;

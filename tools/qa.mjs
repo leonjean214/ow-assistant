@@ -286,6 +286,83 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     check("克制结果显示对面阵容原型", (await c.evals(`document.querySelectorAll('#counterResults .enemy-comp').length`)) === 1);
   }
 
+  // 克制网视图
+  await c.evals(`location.hash='#/matrix'; null`); await sleep(700);
+  const matrixInitial = await c.evals(`(()=>{
+    const tabs=Array.from(document.querySelectorAll('.view-tab[data-view]'));
+    const activeTab=document.querySelector('.view-tab[data-view="matrix"]');
+    return {
+      activeView: document.getElementById('matrixView').classList.contains('is-active'),
+      activeTab: activeTab?.classList.contains('is-active') === true,
+      ariaSelected: activeTab?.getAttribute('aria-selected') === 'true',
+      tabIndexOk: tabs.filter((tab)=>tab.tabIndex===0).length===1 && activeTab?.tabIndex===0,
+      cards: document.querySelectorAll('#matrixContent .matrix-card').length,
+      sections: document.querySelectorAll('#matrixContent .matrix-section').length,
+      live: document.getElementById('matrixContent').getAttribute('aria-live')
+    };
+  })()`);
+  check("克制网深链激活视图/tab", matrixInitial.activeView && matrixInitial.activeTab && matrixInitial.ariaSelected);
+  check("克制网 tablist roving 状态", matrixInitial.tabIndexOk === true);
+  check("克制网按三职业分区渲染", matrixInitial.cards >= 40 && matrixInitial.sections === 3);
+  check("克制网 aria-live polite", matrixInitial.live === "polite");
+  const matrixGroupsOk = await c.evals(`(()=>{
+    const card=Array.from(document.querySelectorAll('#matrixContent .matrix-card')).find((item)=>
+      item.querySelector('.link-strong .hero-link-strong')
+      && item.querySelector('.link-weak .hero-link-weak')
+      && item.querySelector('.link-synergy .hero-link-synergy')
+    );
+    return !!card
+      && card.querySelectorAll('.link-strong .hero-link-strong').length >= 1
+      && card.querySelectorAll('.link-weak .hero-link-weak').length >= 1
+      && card.querySelectorAll('.link-synergy .hero-link-synergy').length >= 1;
+  })()`);
+  check("克制网三组关系绿红蓝上色", matrixGroupsOk === true);
+  const matrixOpenChecks = await c.evals(`(async()=>{
+    const first=document.querySelector('#matrixContent button[data-matrix-hero]');
+    const firstId=first.dataset.matrixHero;
+    first.click();
+    await new Promise((r)=>setTimeout(r,250));
+    const titleOpen=document.getElementById('detailDrawer').classList.contains('is-open') && location.hash === '#/hero/' + encodeURIComponent(firstId);
+    document.getElementById('closeDrawer').click();
+    await new Promise((r)=>setTimeout(r,200));
+    const chip=document.querySelector('#matrixContent button[data-jump-hero]:not(:disabled)');
+    const chipId=chip.dataset.jumpHero;
+    chip.click();
+    await new Promise((r)=>setTimeout(r,250));
+    const chipOpen=document.getElementById('detailDrawer').classList.contains('is-open') && location.hash === '#/hero/' + encodeURIComponent(chipId);
+    document.getElementById('closeDrawer').click();
+    await new Promise((r)=>setTimeout(r,200));
+    return { titleOpen, chipOpen };
+  })()`);
+  check("克制网标题点击打开详情", matrixOpenChecks.titleOpen === true);
+  check("克制网 chip 点击打开详情", matrixOpenChecks.chipOpen === true);
+  const matrixFilterChecks = await c.evals(`(()=>{
+    location.hash='#/matrix';
+    const supportCount=window.__qaHeroes.filter((hero)=>hero.role==='support').length;
+    document.querySelector('#matrixRoleTabs button[data-matrix-role="support"]').click();
+    const supportCards=Array.from(document.querySelectorAll('#matrixContent .matrix-card')).map((card)=>card.dataset.matrixCard);
+    const supportOk=supportCards.length===supportCount && supportCards.every((id)=>window.__qaHeroes.find((hero)=>hero.id===id)?.role==='support');
+    const ana=window.__qaHeroes.find((hero)=>hero.id==='ana') || window.__qaHeroes.find((hero)=>hero.role==='support');
+    document.getElementById('matrixSearchInput').value=ana.nameZh;
+    document.getElementById('matrixSearchInput').dispatchEvent(new Event('input',{bubbles:true}));
+    const searchIds=Array.from(document.querySelectorAll('#matrixContent .matrix-card')).map((card)=>card.dataset.matrixCard);
+    const searchOk=searchIds.length===1 && searchIds[0]===ana.id;
+    document.getElementById('matrixSearchInput').value='zzzz-no-matrix';
+    document.getElementById('matrixSearchInput').dispatchEvent(new Event('input',{bubbles:true}));
+    const emptyOk=!!document.querySelector('#matrixContent .matrix-empty') && document.querySelector('#matrixContent .matrix-empty').textContent.includes('没有符合条件');
+    document.querySelector('#matrixRoleTabs button[data-matrix-role="all"]').click();
+    document.getElementById('matrixSearchInput').value='';
+    document.getElementById('matrixSearchInput').dispatchEvent(new Event('input',{bubbles:true}));
+    return { supportOk, searchOk, emptyOk };
+  })()`);
+  check("克制网职业筛选生效", matrixFilterChecks.supportOk === true);
+  check("克制网名称搜索生效", matrixFilterChecks.searchOk === true);
+  check("克制网空态友好", matrixFilterChecks.emptyOk === true);
+  await c.send("Emulation.setDeviceMetricsOverride", { width: 375, height: 900, deviceScaleFactor: 1, mobile: true });
+  await sleep(200);
+  check("375px 克制网无横向溢出", (await c.evals(`Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) <= window.innerWidth`)) === true);
+  await c.send("Emulation.clearDeviceMetricsOverride");
+
   // 英雄详情深链 + 焦点 + 克制上色
   await c.evals(`location.hash='#/hero/genji'; null`); await sleep(700);
   check("英雄深链开抽屉", (await c.evals(`document.getElementById('detailDrawer').classList.contains('is-open')`)) === true);

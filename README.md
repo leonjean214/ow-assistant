@@ -28,6 +28,7 @@ http://localhost:8000/?overlay=1
 ```text
 http://localhost:8000/#/heroes
 http://localhost:8000/#/maps
+http://localhost:8000/#/matrix
 http://localhost:8000/#/journal
 http://localhost:8000/#/hero/genji
 http://localhost:8000/#/compare/genji,ana
@@ -38,10 +39,11 @@ http://localhost:8000/#/compare/genji,ana
 - 界面：默认 OP.GG / OverHub 式浅色数据门户风，冷灰背景、白色数据卡、蓝色强调、表格斑马行和响应式布局；右上角可切换浅/深主题，使用 `localStorage` 的 `ow-theme` 持久化。
 - 无障碍：主导航使用 tablist/tabpanel 语义并支持方向键、Home/End 切换；详情抽屉为 modal dialog，打开后焦点进入抽屉、Tab 被锁定在抽屉内、Esc/关闭后焦点回到触发元素；页面提供“跳到主内容”链接、统一 `:focus-visible` 焦点样式、表格 caption/scope/aria-sort 和动态区域 `aria-live`。
 - 英雄库：职业、Tier、Ban 优先级、关键词、收藏和多标签筛选；标签支持 OR/AND 多选 pill；支持卡片/列表两种视图，列表为紧凑可排序表格（英雄、职业、Tier、难度、总有效生命、标签、收藏），视图偏好使用 `localStorage` 的 `ow-hero-view` 持久化；排序支持默认收藏置顶、Tier、难度、总有效生命和中文名排序，列表表头排序会与顶部排序下拉同步；英雄详情使用本地官方头像字段。
-- 深链路由：使用 `location.hash` 支持 `#/heroes`、`#/counter`、`#/profile`、`#/maps`、`#/meta`、`#/updates`、`#/ban` 和 `#/hero/<id>`；浏览器后退/前进可切换视图并关闭/重开英雄详情。
+- 深链路由：使用 `location.hash` 支持 `#/heroes`、`#/matrix`、`#/counter`、`#/profile`、`#/maps`、`#/meta`、`#/updates`、`#/ban` 和 `#/hero/<id>`；浏览器后退/前进可切换视图并关闭/重开英雄详情。
 - 英雄收藏：英雄卡和详情抽屉均可点 ★ 收藏/取消，使用 `localStorage` 的 `ow-favorites` 持久化；英雄库支持“只看收藏”，默认排序下收藏英雄置顶，选择其它排序时按排序规则展示。
 - 英雄对比：英雄卡和详情头部可加入/移出对比，最多 4 位，使用 `localStorage` 的 `ow-compare` 持久化；底部对比盘支持移除、清空和查看对比。
 - 对比深链：`#/compare/<id1>,<id2>` 可恢复对比集合并落到英雄对比视图，非法 id 会跳过；对比视图用横向表格展示职业、Tier、难度、生命值、DPS/HPS、射程、机动、站位、标签、Ban 和代表克制，并高亮数值最优项。
+- 克制网：`#/matrix` 按重装/输出/支援分区总览每个英雄的「我克制 / 我怕 / 协同」关系，三组 chip 分别用绿/红/蓝区分；支持职业筛选和中文/英文/id 搜索，点英雄标题或 chip 打开详情。
 - 队伍构筑：英雄卡和详情头部可加入/移出队伍（最多 5），用 `localStorage` 的 `ow-team` 持久化；`#/team/<id1>,<id2>` 深链恢复阵容。组队视图分析职业配比（1 坦 2 输出 2 辅）、阵容原型（突进/消耗/缠斗，按 subrole+tags 关键词）、队内配合（synergy）、整体弱点（聚合 weakAgainst 计数排序），并可「拿威胁去克制计算器」。纯本地、离线可用。
 - 克制计算器对面阵容：选定敌方后顶部显示对面阵容原型（突进/消耗/缠斗）+ 职业配比 + 针对性提示（复用组队分析）。详情「克制关系」按关系上色（克制=绿/被克=红/协同=蓝）。
 - 键盘快捷键：非输入态下按 `/` 跳战绩并聚焦搜索、`b` 跳英雄库并聚焦筛选；详情抽屉 `Esc` 关闭，导航 tab 支持 ←/→/Home/End。
@@ -70,7 +72,7 @@ http://localhost:8000/#/compare/genji,ana
 - `src/recommend-hero.js`：`recommendHeroes(filters, heroes)` 新手英雄推荐纯函数和 `console.assert` 自测
 - `src/stats.js`：战绩整理、排序、段位格式化、表现卡片纯函数和 `console.assert` 自测
 - `src/journal.js`：本地对局记录读写、导出/导入解析、去重合并、汇总、英雄/地图趋势聚合纯函数和 `console.assert` 自测
-- `src/app.js`：导航、英雄库、战绩、地图、Meta、Overlay 和详情交互
+- `src/app.js`：导航、英雄库、克制网、战绩、地图、Meta、Overlay 和详情交互
 - `manifest.webmanifest`：PWA 安装元数据
 - `sw.js`：预缓存 app shell、本地数据和图标；离线导航回退到 `index.html`
 - `icons/`：PWA 安装图标
