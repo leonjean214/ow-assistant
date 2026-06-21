@@ -1,5 +1,30 @@
 # Handoff
 
+## Phase 23 已完成
+
+- 已实现英雄详情抽屉「分享图」按钮，挂在 `.detail-head-actions` 内，未改现有收藏/对比/入队按钮 hook，未引入框架、构建或依赖，未修改 `data/` 或 `sw.js`，未提交 git commit。
+- `src/app.js` 新增 `createHeroShareButton()`、`shareHeroCard()`、`drawHeroShareCard()` 和绘图辅助函数；点击时根据 `activeDetailHeroId`/按钮 `data-share-hero` 生成当前英雄 PNG。
+- 分享卡尺寸为 `1080x1350`，按 `devicePixelRatio` 设置 canvas backing store，并通过 `getComputedStyle(document.documentElement)` 读取 `--bg/--surface/--text/--primary/--tank/--damage/--support/--tier-*` 等 CSS 变量适配浅色/深色主题。
+- 卡片内容包含 `<nameZh> / <name>`、职业、定位、Tier、难度、总有效生命、代表标签、大招名、我克制 Top3、我怕 Top3 和水印 `OW 助手 · github.com/leonjean214/ow-assistant`。
+- 为避免外链头像污染 canvas，英雄头像区域只绘制本地色块和首字占位，不加载/绘制 CDN 图片，确保 `canvas.toBlob("image/png")` 不受 CORS 影响。
+- 输出流程复用 Phase 11 模式：`canvas.toBlob` → `downloadBlob()` 触发 PNG 下载（文件名 `ow-hero-<id>-YYYY-MM-DD.png`）→ `copyBlobToClipboard()` 尝试复制图片；剪贴板失败只通过详情区 `aria-live` 状态提示，不抛出到 UI。
+- `src/styles.css` 新增 `.hero-share-btn` 和 `.hero-share-status`，复用现有 token，移动端沿用详情头部 actions 的换行规则，不破坏抽屉焦点陷阱。
+- `tools/qa.mjs` 新增 Phase 23 用例：详情有分享按钮；浅色/深色各点击生成 PNG；断言 PNG 签名、MIME、尺寸 `1080x1350`、文件名含 `genji` 与日期前缀、剪贴板写入被调用、`revokeObjectURL` 被调用；验证详情焦点陷阱仍在抽屉内；console/runtime 继续捕获。
+- `README.md` 已补充英雄详情分享图功能、`src/app.js` 描述和本地 canvas 说明；`docs/ROADMAP.md` 已标记 Phase 23 完成。
+
+## Phase 23 验证记录
+
+- 静态检查：
+  - `node --check src/app.js && node --check src/theme.js && node --check src/data.js && node --check src/counter.js && node --check src/stats.js && node --check src/recommend-hero.js && node --check src/journal.js && node --check src/team.js && node --check src/profile.js && node --check tools/qa.mjs`
+  - `rg -n "innerHTML|insertAdjacentHTML|outerHTML" . --glob '!node_modules/**' --glob '!*.png' --glob '!.git/**'` 无命中
+- Headless Chrome/CDP 回归：
+  - 启动 `python3 -m http.server 8125`
+  - 启动 Chrome：`"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu --no-sandbox --remote-debugging-port=9222 --user-data-dir=/tmp/ow-chrome-qa`
+  - `BASE=http://localhost:8125 node tools/qa.mjs`
+  - 结果：`107/107` 通过，`0` 个运行时错误。
+  - 覆盖 Phase 23：详情按钮存在；浅色 PNG 下载有效，MIME 为 `image/png`，尺寸 `1080x1350`，文件名 `ow-hero-genji-*.png`；剪贴板写入和 `revokeObjectURL` 均执行；深色 PNG 同样可生成；详情焦点陷阱未破坏；未因头像/CORS 导致 `toBlob` 失败。
+  - 覆盖回归：英雄库列表/排序/标签/收藏、对比深链、组队深链、克制网、Meta、设置、命令面板、克制计算器、详情抽屉、快捷键、工坊、个人中心、GEP 消息桥、overlay。
+
 ## Phase 22 已完成
 
 - 已实现全局命令面板 `Cmd/Ctrl-K` / `Ctrl-K`，未引入框架、构建或依赖，未修改 `data/` 或 `sw.js`，未提交 git commit。

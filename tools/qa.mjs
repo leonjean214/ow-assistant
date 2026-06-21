@@ -428,6 +428,98 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   check("抽屉焦点在内", (await c.evals(`document.getElementById('detailDrawer').contains(document.activeElement)`)) === true);
   check("克制链接已上色", (await c.evals(`document.querySelectorAll('#detailContent .hero-link-strong, #detailContent .hero-link-weak').length`)) >= 1);
   check("源氏详情有克制为什么", (await c.evals(`document.querySelectorAll('#detailContent .counter-why').length`)) === 1);
+  const heroShareSetup = await c.evals(`(()=>{
+    window.__qaHeroShare = { downloads: [], copies: [], revoked: [] };
+    if (!window.__qaHeroSharePatched) {
+      window.__qaHeroSharePatched = true;
+      const originalClick = HTMLAnchorElement.prototype.click;
+      HTMLAnchorElement.prototype.click = function(){
+        if (this.download && window.__qaHeroShare) {
+          window.__qaHeroShare.downloads.push({ filename: this.download, href: this.href, blob: window.__qaHeroShare.lastBlob });
+          return;
+        }
+        return originalClick.call(this);
+      };
+      URL.createObjectURL = (blob)=>{
+        if (window.__qaHeroShare) window.__qaHeroShare.lastBlob = blob;
+        return 'blob:qa-hero-share-' + Date.now() + '-' + Math.random();
+      };
+      URL.revokeObjectURL = (url)=>{
+        if (window.__qaHeroShare) window.__qaHeroShare.revoked.push(url);
+      };
+      window.ClipboardItem = class ClipboardItem { constructor(items){ this.items = items; } };
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: { write: async (items)=>{
+          const blob = items?.[0]?.items?.['image/png'];
+          if (window.__qaHeroShare) window.__qaHeroShare.copies.push({ type: blob?.type || '', size: blob?.size || 0 });
+        } }
+      });
+    }
+    return !!document.querySelector('#detailContent button[data-share-hero="genji"]');
+  })()`);
+  check("详情头部有分享图按钮", heroShareSetup === true);
+  const heroShareLight = await c.evals(`(async()=>{
+    document.documentElement.dataset.theme='light';
+    window.__qaHeroShare.downloads = [];
+    window.__qaHeroShare.copies = [];
+    window.__qaHeroShare.revoked = [];
+    document.querySelector('#detailContent button[data-share-hero="genji"]').click();
+    for (let i=0;i<40 && !window.__qaHeroShare.downloads.length;i+=1) await new Promise((r)=>setTimeout(r,100));
+    const item = window.__qaHeroShare.downloads[0];
+    const blob = item?.blob;
+    const bytes = blob ? Array.from(new Uint8Array(await blob.slice(0, 8).arrayBuffer())) : [];
+    let bitmap = { width: 0, height: 0 };
+    if (blob && window.createImageBitmap) {
+      const img = await createImageBitmap(blob);
+      bitmap = { width: img.width, height: img.height };
+      img.close?.();
+    }
+    return {
+      hasButton: !!document.querySelector('#detailContent button[data-share-hero="genji"]'),
+      filename: item?.filename || '',
+      type: blob?.type || '',
+      size: blob?.size || 0,
+      png: bytes.join(',') === '137,80,78,71,13,10,26,10',
+      width: bitmap.width,
+      height: bitmap.height,
+      copied: window.__qaHeroShare.copies.length,
+      revoked: window.__qaHeroShare.revoked.length,
+      status: document.querySelector('[data-hero-share-status]')?.textContent || ''
+    };
+  })()`);
+  check("分享图浅色 PNG 下载", heroShareLight.png && heroShareLight.type === "image/png" && heroShareLight.size > 50000 && heroShareLight.filename.startsWith("ow-hero-genji-") && heroShareLight.filename.endsWith(".png"));
+  check("分享图浅色尺寸 1080x1350", heroShareLight.width === 1080 && heroShareLight.height === 1350);
+  check("分享图尝试复制剪贴板并 revoke", heroShareLight.copied === 1 && heroShareLight.revoked >= 1 && heroShareLight.status.includes("已生成"));
+  const heroShareDark = await c.evals(`(async()=>{
+    document.documentElement.dataset.theme='dark';
+    window.__qaHeroShare.downloads = [];
+    window.__qaHeroShare.copies = [];
+    window.__qaHeroShare.revoked = [];
+    document.querySelector('#detailContent button[data-share-hero="genji"]').click();
+    for (let i=0;i<40 && !window.__qaHeroShare.downloads.length;i+=1) await new Promise((r)=>setTimeout(r,100));
+    const item = window.__qaHeroShare.downloads[0];
+    const blob = item?.blob;
+    const bytes = blob ? Array.from(new Uint8Array(await blob.slice(0, 8).arrayBuffer())) : [];
+    return {
+      filename: item?.filename || '',
+      type: blob?.type || '',
+      size: blob?.size || 0,
+      png: bytes.join(',') === '137,80,78,71,13,10,26,10',
+      copied: window.__qaHeroShare.copies.length,
+      text: document.querySelector('#detailContent')?.textContent || ''
+    };
+  })()`);
+  check("分享图深色 PNG 可生成", heroShareDark.png && heroShareDark.type === "image/png" && heroShareDark.size > 50000 && heroShareDark.copied === 1);
+  check("分享图内容来自英雄详情", /源氏|Genji|Tier|克制/.test(heroShareDark.text));
+  const drawerTrapAfterShare = await c.evals(`(async()=>{
+    const last = Array.from(document.querySelectorAll('#detailDrawer button:not([disabled])')).at(-1);
+    last.focus();
+    last.dispatchEvent(new KeyboardEvent('keydown',{key:'Tab',bubbles:true}));
+    await new Promise((r)=>setTimeout(r,60));
+    return document.getElementById('detailDrawer').contains(document.activeElement);
+  })()`);
+  check("分享按钮不破坏详情焦点陷阱", drawerTrapAfterShare === true);
   await c.evals(`document.getElementById('closeDrawer').click(); null`); await sleep(300);
   check("关抽屉后失去 is-open", (await c.evals(`document.getElementById('detailDrawer').classList.contains('is-open')`)) === false);
 

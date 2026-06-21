@@ -294,3 +294,8 @@
 执行：Codex｜tools/qa.mjs **100/100 全过、0 运行时错误**；node 全过；0 innerHTML。Cmd/Ctrl-K 开/Esc 关/焦点管理、英雄→详情/视图→切换/BattleTag→战绩、↑↓Enter、overlay 短路、与详情抽屉焦点陷阱互斥、现有 / b 快捷键不回归、375px 自适应均通过。
 
 ---
+
+## Phase 23 审查（英雄可分享卡片）— 无阻塞
+执行：Codex｜tools/qa.mjs **107/107 全过、0 运行时错误**；node 全过；0 innerHTML。详情分享按钮生成 PNG(深浅各一)、头像占位避免 CORS 致 toBlob 失败、Blob revoke、不破坏抽屉焦点陷阱均通过。
+
+---

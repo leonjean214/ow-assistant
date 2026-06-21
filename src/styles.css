@@ -3125,6 +3125,28 @@ body.is-overlay .overlay-panel {
   justify-content: flex-end;
 }
 
+.hero-share-btn {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.hero-share-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.hero-share-status {
+  min-height: 20px;
+  margin: -4px 0 8px;
+  color: var(--text-2);
+  font-size: 13px;
+}
+
 .detail-section {
   margin-top: 10px;
   border: 1px solid var(--border);
