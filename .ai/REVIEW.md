@@ -2,6 +2,16 @@
 
 审查人：Claude（设计+数据+审查）｜执行：Codex（前端实现）｜日期：2026-06-20
 
+## Phase 17 审查（英雄库排序 + 多标签筛选）— 无阻塞，可交付
+执行：Codex（额度恢复后）｜验证：Codex 扩 tools/qa.mjs + Claude 复核。
+- 排序：Tier S>A>B>C、难度升/降(null 垫底)、总有效生命降序、名称 zh-Hans-CN；default 仍收藏置顶，非 default 不强制置顶——CDP 逐项断言通过。
+- 多标签 pill：OR/AND 切换、与 role/tier/ban/search/收藏 叠加、清空、空态——通过。
+- 硬指标：`node --check` 全过；0 innerHTML；**tools/qa.mjs 44/44 全过、0 运行时错误**；375px 无溢出。
+- 无阻塞。
+
+---
+
+
 ## Phase 13 审查（数据时效/完整性 · Claude 联网核实）— 无阻塞，可交付
 执行方：**Claude**（Codex 额度耗尽期间；数据本就是 Claude 主场）。手段：WebSearch 多源核实 + node JSON 校验 + 无头加载冒烟。
 

@@ -1,5 +1,29 @@
 # Handoff
 
+## Phase 17 已完成
+
+- 已实现英雄库排序 + 多标签筛选，未引入框架、构建或依赖，未提交 git commit。
+- `index.html` 英雄库筛选区新增 `#heroSortFilter` 排序下拉；新增 `#heroTagFilters` 多标签 pill 容器、`#tagMatchToggle` OR/AND 切换和 `#clearTagFilters` 清空按钮。标签 pill 全部由 DOM API 渲染，使用 `aria-pressed` 同步选中态。
+- `src/app.js` 扩展 `state.filters`：`sort/tags/tagsMatchAll`；新增 `renderTagFilters()`、`syncTagFilterControls()`、`matchesHeroTags()`、`sortFilteredHeroes()` 等逻辑。`filteredHeroes()` 现在先叠加 role/tier/ban/favorites/search/tags 过滤，再排序。
+- 排序规则：`default` 保留收藏置顶 + 原始顺序；`tier` 按 S/A/B/C、无效 tier 垫底；`diff-asc/diff-desc` 均把 `null` 难度垫底；`hp-desc` 按 hp+armor+shield；`name` 按 `zh-Hans-CN` 比较 `nameZh/name`。非 default 排序不强制收藏置顶。
+- 空态在标签筛选无结果时提示「没有符合条件的英雄，试试减少标签或清空筛选。」；英雄计数继续来自过滤后结果数。
+- `src/styles.css` 新增标签筛选面板、pill、OR/AND 按钮和响应式布局；375px 下无横向溢出，深浅主题复用现有 token。
+- `tools/qa.mjs` 新增 Phase 17 回归：排序各项、`null` 难度、无效 tier 兜底、default 收藏置顶、非 default 不置顶、多标签 OR/AND、与其它筛选叠加、空态、清空、pill `aria-pressed`、375px 无溢出；并在 QA 开始时清理 SW/Cache，避免 PWA 缓存旧脚本。
+- `README.md` 已补充英雄库排序、多标签筛选和收藏置顶行为；`docs/ROADMAP.md` 已标记 Phase 17 完成。
+
+## Phase 17 验证记录
+
+- 静态检查：
+  - `for f in src/*.js sw.js tools/qa.mjs; do node --check "$f" || exit 1; done`
+  - `rg -n "innerHTML|insertAdjacentHTML|outerHTML" . --glob '!node_modules/**' --glob '!*.png' --glob '!.git/**'` 无命中
+- Headless Chrome/CDP 回归：
+  - `BASE=http://localhost:8125 node tools/qa.mjs`
+  - 结果：`44/44` 通过，`0` 个运行时错误。
+  - 覆盖排序：Tier S>A>B>C、难度升/降且 `null` 垫底、总有效生命降序、中文名称排序、无效 tier 兜底。
+  - 覆盖筛选：多标签 OR/AND、与 Tier/search 等筛选叠加、空态文案、清空标签恢复、pill `aria-pressed`。
+  - 覆盖回归：收藏、对比深链、组队深链、英雄详情抽屉、主题切换、快捷键、工坊、个人中心、GEP 消息桥、overlay。
+  - 375px 英雄库无横向溢出；console 错误/异常为 0。
+
 ## Phase 11 已完成
 
 - 已实现「记录」视图 session 增强：JSON 导出/导入、合并/替换、去重冲突保新、损坏文件友好错误、战绩分享 PNG 图卡；未引入框架、构建或依赖，未提交 git commit。

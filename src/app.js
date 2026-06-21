@@ -43,7 +43,7 @@ const FOCUSABLE_SELECTOR = [
 const state = {
   heroes: [],
   byId: new Map(),
-  filters: { role: "all", tier: "all", ban: "all", search: "", favoritesOnly: false },
+  filters: { role: "all", tier: "all", ban: "all", search: "", favoritesOnly: false, sort: "default", tags: [], tagsMatchAll: false },
   favorites: new Set(),
   compare: [],
   compareMessage: "",
@@ -111,6 +111,7 @@ async function init() {
     state.journalEntries = loadJournal();
     renderMetaText(data.meta);
     renderLatestHeroLine();
+    renderTagFilters();
     renderRecommendControls();
     renderHeroRecommendations();
     renderCurrentHeroOptions();
@@ -140,8 +141,8 @@ async function init() {
 
 function bindElements() {
   for (const id of [
-    "dataMeta", "heroCount", "heroGrid", "heroEmpty", "roleTabs", "tierFilter", "banFilter", "searchInput",
-    "favoriteOnlyToggle",
+    "dataMeta", "heroCount", "heroGrid", "heroEmpty", "roleTabs", "tierFilter", "banFilter", "heroSortFilter", "searchInput",
+    "favoriteOnlyToggle", "heroTagFilters", "tagMatchToggle", "clearTagFilters",
     "compareTray", "compareContent", "compareCount",
     "teamContent", "teamCount", "workshopContent", "meContent",
     "latestHeroLine", "updatesTimeline", "patchRoleFilter", "patchTypeFilter", "patchSearchInput", "patchList", "patchEmpty",
@@ -183,12 +184,31 @@ function bindEvents() {
     state.filters.ban = el.banFilter.value;
     renderHeroGrid();
   });
+  el.heroSortFilter.addEventListener("change", () => {
+    state.filters.sort = el.heroSortFilter.value;
+    renderHeroGrid();
+  });
   el.searchInput.addEventListener("input", () => {
     state.filters.search = el.searchInput.value.trim().toLowerCase();
     renderHeroGrid();
   });
   el.favoriteOnlyToggle.addEventListener("change", () => {
     state.filters.favoritesOnly = el.favoriteOnlyToggle.checked;
+    renderHeroGrid();
+  });
+  el.heroTagFilters.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-hero-tag]");
+    if (!button) return;
+    toggleHeroTagFilter(button.dataset.heroTag);
+  });
+  el.tagMatchToggle.addEventListener("click", () => {
+    state.filters.tagsMatchAll = !state.filters.tagsMatchAll;
+    syncTagFilterControls();
+    renderHeroGrid();
+  });
+  el.clearTagFilters.addEventListener("click", () => {
+    state.filters.tags = [];
+    syncTagFilterControls();
     renderHeroGrid();
   });
   el.patchRoleFilter.addEventListener("change", () => {
@@ -1329,8 +1349,52 @@ function renderHeroGrid() {
   el.heroEmpty.hidden = heroes.length !== 0;
   el.heroEmpty.textContent = state.filters.favoritesOnly && !state.favorites.size
     ? "还没有收藏英雄，点卡片右上角 ★ 添加"
-    : "没有符合条件的英雄。";
+    : state.filters.tags.length
+      ? "没有符合条件的英雄，试试减少标签或清空筛选。"
+      : "没有符合条件的英雄。";
   for (const hero of heroes) el.heroGrid.append(createHeroCard(hero));
+}
+
+function renderTagFilters() {
+  if (!el.heroTagFilters) return;
+  el.heroTagFilters.replaceChildren();
+  heroTagOptions().forEach((tag) => {
+    const button = create("button", "select-chip tag-filter-pill");
+    button.type = "button";
+    button.dataset.heroTag = tag;
+    button.textContent = tag;
+    el.heroTagFilters.append(button);
+  });
+  syncTagFilterControls();
+}
+
+function heroTagOptions() {
+  return [...new Set(state.heroes.flatMap((hero) => toArray(hero.tags).map(String).filter(Boolean)))]
+    .sort((a, b) => a.localeCompare(b, "zh-Hans-CN"));
+}
+
+function toggleHeroTagFilter(tag) {
+  if (!tag) return;
+  state.filters.tags = state.filters.tags.includes(tag)
+    ? state.filters.tags.filter((item) => item !== tag)
+    : [...state.filters.tags, tag];
+  syncTagFilterControls();
+  renderHeroGrid();
+}
+
+function syncTagFilterControls() {
+  if (!el.heroTagFilters) return;
+  const selected = new Set(state.filters.tags);
+  el.heroTagFilters.querySelectorAll("button[data-hero-tag]").forEach((button) => {
+    const active = selected.has(button.dataset.heroTag);
+    button.classList.toggle("is-selected", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+  if (el.tagMatchToggle) {
+    el.tagMatchToggle.setAttribute("aria-pressed", String(state.filters.tagsMatchAll));
+    el.tagMatchToggle.textContent = state.filters.tagsMatchAll ? "全部命中 AND" : "任一命中 OR";
+  }
+  if (el.clearTagFilters) el.clearTagFilters.disabled = state.filters.tags.length === 0;
 }
 
 function renderUpdates() {
@@ -1471,17 +1535,73 @@ function createPatchChangeRow(change) {
 }
 
 function filteredHeroes() {
+  const originalIndex = new Map(state.heroes.map((hero, index) => [hero.id, index]));
   const heroes = state.heroes.filter((hero) => {
     if (state.filters.role !== "all" && hero.role !== state.filters.role) return false;
     if (state.filters.tier !== "all" && hero.tier !== state.filters.tier) return false;
     if (state.filters.ban !== "all" && hero.ban.priority !== state.filters.ban) return false;
     if (state.filters.favoritesOnly && !isFavorite(hero.id)) return false;
+    if (!matchesHeroTags(hero)) return false;
     if (!state.filters.search) return true;
     const haystack = [hero.id, hero.name, hero.nameZh, hero.subrole, hero.tier, ...hero.tags].join(" ").toLowerCase();
     return haystack.includes(state.filters.search);
   });
-  if (state.filters.favoritesOnly) return heroes;
-  return heroes.sort((a, b) => Number(isFavorite(b.id)) - Number(isFavorite(a.id)));
+  return sortFilteredHeroes(heroes, originalIndex);
+}
+
+function matchesHeroTags(hero) {
+  const selectedTags = state.filters.tags;
+  if (!selectedTags.length) return true;
+  const tags = new Set(toArray(hero.tags).map(String));
+  return state.filters.tagsMatchAll
+    ? selectedTags.every((tag) => tags.has(tag))
+    : selectedTags.some((tag) => tags.has(tag));
+}
+
+function sortFilteredHeroes(heroes, originalIndex) {
+  const indexOf = (hero) => originalIndex.get(hero.id) ?? Number.MAX_SAFE_INTEGER;
+  const byOriginalOrder = (a, b) => indexOf(a) - indexOf(b);
+  const sort = state.filters.sort;
+  if (sort === "tier") {
+    return heroes.sort((a, b) => tierSortRank(a.tier) - tierSortRank(b.tier) || byOriginalOrder(a, b));
+  }
+  if (sort === "diff-asc") {
+    return heroes.sort((a, b) => difficultySortValue(a) - difficultySortValue(b) || byOriginalOrder(a, b));
+  }
+  if (sort === "diff-desc") {
+    return heroes.sort((a, b) => compareDifficultyDesc(a, b) || byOriginalOrder(a, b));
+  }
+  if (sort === "hp-desc") {
+    return heroes.sort((a, b) => totalHealth(b) - totalHealth(a) || byOriginalOrder(a, b));
+  }
+  if (sort === "name") {
+    return heroes.sort((a, b) => String(a.nameZh || a.name).localeCompare(String(b.nameZh || b.name), "zh-Hans-CN") || byOriginalOrder(a, b));
+  }
+  if (state.filters.favoritesOnly) return heroes.sort(byOriginalOrder);
+  return heroes.sort((a, b) => Number(isFavorite(b.id)) - Number(isFavorite(a.id)) || byOriginalOrder(a, b));
+}
+
+function tierSortRank(tier) {
+  return { S: 0, A: 1, B: 2, C: 3 }[tier] ?? 9;
+}
+
+function difficultySortValue(hero) {
+  if (hero?.difficulty == null) return Number.POSITIVE_INFINITY;
+  const value = Number(hero?.difficulty);
+  return Number.isFinite(value) ? value : Number.POSITIVE_INFINITY;
+}
+
+function compareDifficultyDesc(a, b) {
+  const av = difficultySortValue(a);
+  const bv = difficultySortValue(b);
+  if (av === Number.POSITIVE_INFINITY && bv === Number.POSITIVE_INFINITY) return 0;
+  if (av === Number.POSITIVE_INFINITY) return 1;
+  if (bv === Number.POSITIVE_INFINITY) return -1;
+  return bv - av;
+}
+
+function totalHealth(hero) {
+  return Number(hero?.health?.hp) + Number(hero?.health?.armor) + Number(hero?.health?.shield) || 0;
 }
 
 function createHeroCard(hero) {
