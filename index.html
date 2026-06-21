@@ -61,6 +61,7 @@
       <button class="view-tab" type="button" data-view="compare" id="compareTab">英雄对比</button>
       <button class="view-tab" type="button" data-view="matrix" id="matrixTab">克制网</button>
       <button class="view-tab" type="button" data-view="me" id="meTab">个人中心</button>
+      <button class="view-tab" type="button" data-view="settings" id="settingsTab">设置</button>
       <button class="view-tab" type="button" data-view="team" id="teamTab">组队</button>
       <button class="view-tab" type="button" data-view="workshop" id="workshopTab">工坊</button>
       <button class="view-tab" type="button" data-view="updates" id="updatesTab">更新</button>
@@ -248,6 +249,17 @@
           </div>
         </div>
         <div class="me-content" id="meContent" aria-live="polite"></div>
+      </section>
+
+      <section class="panel view" id="settingsView" aria-labelledby="settingsTitle">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Settings</p>
+            <h2 id="settingsTitle">设置</h2>
+          </div>
+          <span class="count-pill">偏好与关于</span>
+        </div>
+        <div class="settings-content" id="settingsContent" aria-live="polite"></div>
       </section>
 
       <section class="panel view" id="workshopView" aria-labelledby="workshopTitle">

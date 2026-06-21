@@ -443,6 +443,95 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     check("找到主题切换按钮", false, "(选择器未命中)");
   }
 
+  // Phase 21：设置与关于
+  await c.evals(`location.hash='#/settings'; null`); await sleep(500);
+  check("设置 hash 路由激活", (await c.evals(`document.getElementById('settingsView').classList.contains('is-active') && document.querySelector('.view-tab[data-view="settings"]').classList.contains('is-active')`)) === true);
+  const settingsBasics = await c.evals(`(()=>{
+    const github=document.querySelector('#settingsContent a[href="https://github.com/leonjean214/ow-assistant"]');
+    return {
+      hasContent: !!document.getElementById('settingsContent'),
+      prefs: document.querySelectorAll('#settingsContent .settings-fieldset').length,
+      version: document.getElementById('settingsContent')?.textContent.includes('版本 1.0'),
+      githubOk: !!github && github.target==='_blank' && github.rel.includes('noopener') && github.rel.includes('noreferrer'),
+      thanks: /OverFast API/.test(document.getElementById('settingsContent')?.textContent||'') && /workshop\\.codes/.test(document.getElementById('settingsContent')?.textContent||'') && /社区调研/.test(document.getElementById('settingsContent')?.textContent||''),
+      update: !!document.getElementById('settingsCheckUpdate')
+    };
+  })()`);
+  check("设置页渲染偏好与关于", settingsBasics.hasContent && settingsBasics.prefs >= 3);
+  check("关于显示版本/GitHub/致谢/检查更新", settingsBasics.version && settingsBasics.githubOk && settingsBasics.thanks && settingsBasics.update);
+
+  const settingsThemeOneWay = await c.evals(`(()=>{
+    document.querySelector('#settingsThemeControl button[data-setting-theme="light"]').click();
+    return {
+      root: document.documentElement.dataset.theme,
+      stored: localStorage.getItem('ow-theme'),
+      top: document.getElementById('themeToggle')?.getAttribute('aria-pressed'),
+      setting: document.querySelector('#settingsThemeControl button[data-setting-theme="light"]')?.getAttribute('aria-pressed')
+    };
+  })()`);
+  check("设置主题→顶栏同步", settingsThemeOneWay.root === "light" && settingsThemeOneWay.stored === "light" && settingsThemeOneWay.top === "false" && settingsThemeOneWay.setting === "true");
+  const settingsThemeBack = await c.evals(`(async()=>{
+    document.getElementById('themeToggle').click();
+    await new Promise((r)=>setTimeout(r,50));
+    return {
+      root: document.documentElement.dataset.theme,
+      stored: localStorage.getItem('ow-theme'),
+      setting: document.querySelector('#settingsThemeControl button[data-setting-theme="dark"]')?.getAttribute('aria-pressed')
+    };
+  })()`);
+  check("顶栏主题→设置同步", settingsThemeBack.root === "dark" && settingsThemeBack.stored === "dark" && settingsThemeBack.setting === "true");
+
+  const settingsPlatform = await c.evals(`(()=>{
+    document.querySelector('#settingsPlatformControl button[data-setting-platform="console"]').click();
+    return {
+      stored: localStorage.getItem('ow-default-platform'),
+      tab: document.querySelector('#platformTabs button[data-platform="console"]')?.classList.contains('is-active'),
+      setting: document.querySelector('#settingsPlatformControl button[data-setting-platform="console"]')?.getAttribute('aria-pressed'),
+      feedback: document.getElementById('settingsFeedback')?.textContent || ''
+    };
+  })()`);
+  check("默认平台写入并同步当前平台", settingsPlatform.stored === "console" && settingsPlatform.tab === true && settingsPlatform.setting === "true" && settingsPlatform.feedback.includes("主机"));
+
+  const settingsHeroView = await c.evals(`(()=>{
+    document.querySelector('#settingsHeroViewControl button[data-setting-hero-view="list"]').click();
+    return {
+      stored: localStorage.getItem('ow-hero-view'),
+      setting: document.querySelector('#settingsHeroViewControl button[data-setting-hero-view="list"]')?.getAttribute('aria-pressed')
+    };
+  })()`);
+  check("默认英雄库视图写入 ow-hero-view", settingsHeroView.stored === "list" && settingsHeroView.setting === "true");
+
+  await c.evals(`location.href=${JSON.stringify(BASE)} + '/?qa=settings-reload-' + Date.now() + '#/settings'; null`);
+  await sleep(1800);
+  const settingsPersisted = await c.evals(`(()=>{
+    return {
+      activeSettings: document.getElementById('settingsView').classList.contains('is-active'),
+      platformStored: localStorage.getItem('ow-default-platform'),
+      platformTab: document.querySelector('#platformTabs button[data-platform="console"]')?.classList.contains('is-active'),
+      platformSetting: document.querySelector('#settingsPlatformControl button[data-setting-platform="console"]')?.getAttribute('aria-pressed'),
+      heroStored: localStorage.getItem('ow-hero-view'),
+      heroSetting: document.querySelector('#settingsHeroViewControl button[data-setting-hero-view="list"]')?.getAttribute('aria-pressed')
+    };
+  })()`);
+  check("刷新后 settings 路由与默认平台恢复", settingsPersisted.activeSettings && settingsPersisted.platformStored === "console" && settingsPersisted.platformTab === true && settingsPersisted.platformSetting === "true");
+  check("刷新后默认英雄视图恢复", settingsPersisted.heroStored === "list" && settingsPersisted.heroSetting === "true");
+  await c.evals(`location.hash='#/heroes'; null`); await sleep(400);
+  check("刷新生效：英雄库默认列表视图", (await c.evals(`document.querySelectorAll('#heroGrid .hero-list-row').length`)) >= 40);
+
+  const updateStatus = await c.evals(`(async()=>{
+    document.getElementById('settingsTab').click();
+    await new Promise((r)=>setTimeout(r,100));
+    document.getElementById('settingsCheckUpdate').click();
+    await new Promise((r)=>setTimeout(r,500));
+    return document.getElementById('settingsUpdateStatus')?.textContent || '';
+  })()`);
+  check("检查更新按钮友好反馈", updateStatus.length > 0 && !/正在检查/.test(updateStatus), updateStatus);
+
+  await c.send("Emulation.setDeviceMetricsOverride", { width: 375, height: 900, deviceScaleFactor: 1, mobile: true });
+  await sleep(200);
+  check("375px 设置页无横向溢出", (await c.evals(`Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) <= window.innerWidth`)) === true);
+  await c.send("Emulation.clearDeviceMetricsOverride");
+
   // 键盘快捷键
   await c.evals(`location.hash='#/heroes'; document.body.focus(); null`); await sleep(200);
   await c.evals(`document.dispatchEvent(new KeyboardEvent('keydown',{key:'/',bubbles:true})); null`); await sleep(200);

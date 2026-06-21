@@ -30,6 +30,7 @@ http://localhost:8000/#/heroes
 http://localhost:8000/#/maps
 http://localhost:8000/#/meta
 http://localhost:8000/#/matrix
+http://localhost:8000/#/settings
 http://localhost:8000/#/journal
 http://localhost:8000/#/hero/genji
 http://localhost:8000/#/compare/genji,ana
@@ -50,6 +51,7 @@ http://localhost:8000/#/compare/genji,ana
 - 键盘快捷键：非输入态下按 `/` 跳战绩并聚焦搜索、`b` 跳英雄库并聚焦筛选；详情抽屉 `Esc` 关闭，导航 tab 支持 ←/→/Home/End。
 - 工坊代码：`#/workshop` 提供导入指南、分类工坊代码（练枪/英雄/1v1，一键复制）、每类挂 workshop.codes 实时搜索链接；含显著免责（代码可能失效，以 workshop.codes 为准），代码均标注社区来源、绝不伪造。数据 `data/workshop.json`，离线可用。
 - 个人中心：`#/me` 本地资料（昵称/BattleTag/主玩定位/头像英雄，`localStorage` 的 `ow-profile`）+ 数据概览（收藏/对比/队伍/对局胜率/最近查询玩家，可点跳转）+ 全部本地数据一键导出/导入备份与清空。零后端、离线、隐私本地。数据层 `src/profile.js` 用可插拔适配器（`setStorageAdapter`），**预留云同步**：接后端时换适配器即可，其余不动。
+- 设置：`#/settings` 集中偏好与关于信息；主题选择与顶栏按钮双向同步，战绩默认平台使用 `ow-default-platform` 启动即生效，英雄库默认视图复用 `ow-hero-view`，关于区提供版本、GitHub 源码链接、数据来源致谢和 PWA 检查更新。
 - 更新：读取 `data/patches.json` 展示 2026 新英雄时间线、最新英雄紫苑高亮、补丁逐英雄改动、职业/type/搜索筛选和本补丁统计。
 - 近期调整：最新补丁涉及的英雄卡片显示调整徽章，英雄详情新增“近期调整”分区；紫苑卡片显示 `NEW`，英雄库标题处显示当前最新英雄。
 - 我该玩谁：英雄库顶部折叠面板可按职业、难度上限和风格标签推荐低难英雄，并给出新手理由。
@@ -73,7 +75,7 @@ http://localhost:8000/#/compare/genji,ana
 - `src/recommend-hero.js`：`recommendHeroes(filters, heroes)` 新手英雄推荐纯函数和 `console.assert` 自测
 - `src/stats.js`：战绩整理、排序、段位格式化、表现卡片纯函数和 `console.assert` 自测
 - `src/journal.js`：本地对局记录读写、导出/导入解析、去重合并、汇总、英雄/地图趋势聚合纯函数和 `console.assert` 自测
-- `src/app.js`：导航、英雄库、克制网、战绩、地图、Meta、Overlay 和详情交互
+- `src/app.js`：导航、英雄库、设置、克制网、战绩、地图、Meta、Overlay 和详情交互
 - `manifest.webmanifest`：PWA 安装元数据
 - `sw.js`：预缓存 app shell、本地数据和图标；离线导航回退到 `index.html`
 - `icons/`：PWA 安装图标

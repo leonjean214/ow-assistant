@@ -1720,6 +1720,110 @@ th[aria-sort="descending"] .hero-list-sort::after {
   .me-stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
 }
 
+.settings-content {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, .8fr);
+  gap: 12px;
+  min-width: 0;
+}
+
+.settings-card {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  background: var(--surface-2);
+}
+
+.settings-card h3 {
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.settings-fieldset {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin: 0;
+  padding: 10px;
+  background: var(--surface);
+}
+
+.settings-fieldset legend {
+  padding: 0 4px;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.settings-fieldset p,
+.settings-about p,
+.settings-about-head span,
+.settings-update-status,
+.settings-feedback {
+  color: var(--text-2);
+}
+
+.settings-segmented {
+  min-width: 0;
+}
+
+.settings-segmented button {
+  min-width: 86px;
+}
+
+.settings-about-head {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.settings-about-head strong {
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.settings-github {
+  justify-self: start;
+  min-height: 36px;
+}
+
+.settings-update-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.settings-update-row .primary-btn:disabled {
+  cursor: progress;
+  opacity: .7;
+}
+
+.settings-update-status,
+.settings-feedback {
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+}
+
+@media (max-width: 820px) {
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .swap-advisor h3,
 .swap-options h4 {
   color: var(--primary);
@@ -3147,8 +3251,10 @@ body.is-overlay .overlay-panel {
   .position-box,
   .matrix-section-head,
   .journal-actions,
-  .journal-tools {
+  .journal-tools,
+  .settings-update-row {
     align-items: stretch;
+    grid-template-columns: 1fr;
     flex-direction: column;
   }
 

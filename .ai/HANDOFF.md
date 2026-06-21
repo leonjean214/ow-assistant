@@ -1,5 +1,33 @@
 # Handoff
 
+## Phase 21 已完成
+
+- 已实现设置与关于面板 `#/settings`，未引入框架、构建或依赖，未修改 `data/` 或 `sw.js`，未提交 git commit。
+- `index.html` 新增主导航「设置」tab（`data-view="settings"`）和 `#settingsView/#settingsContent`，自动纳入既有 `.view-tab[data-view]`、hash 路由、tablist/tabpanel、overlay 短路体系。
+- `src/app.js` 新增 `APP_VERSION = "1.0"`、`DEFAULT_PLATFORM_KEY = "ow-default-platform"`、设置页渲染与事件委托；`switchView("settings")` 调用 `renderSettings()`。
+- 主题偏好与顶栏 `#themeToggle` 双向同步：设置页切换会更新 `document.documentElement.dataset.theme`、`ow-theme`、顶栏 `aria-pressed` 和文案；顶栏按钮点击后也会同步设置页分段控件。
+- 战绩默认平台使用 `ow-default-platform`，应用启动早期读取并设置 `state.platform` 初值，同时同步 `#platformTabs`；设置页改默认平台会立即写入 localStorage 并切当前平台。
+- 英雄库默认视图复用 Phase 18 的 `ow-hero-view` 和 `state.heroView`，设置页改动即时写入、同步英雄库控件，并刷新英雄库渲染。
+- 关于区显示应用名、版本、GitHub 外链 `https://github.com/leonjean214/ow-assistant`（`target="_blank" rel="noopener noreferrer"`）、OverFast API / workshop.codes / 社区调研致谢，以及 PWA「检查更新」按钮。
+- PWA 检查更新逻辑仅写在 `app.js`：`navigator.serviceWorker.getRegistration()?.update()` 路径带 try/catch；无 SW/不支持/失败时给友好反馈，不影响主功能。
+- `src/styles.css` 新增设置页网格、设置卡、fieldset、关于区、更新状态与 820/375px 响应式规则，深浅主题复用现有 token。
+- `tools/qa.mjs` 新增 Phase 21 用例：`#/settings` 路由/tab、主题双向同步、默认平台写入/刷新恢复、默认英雄视图写入/刷新生效、关于区版本/GitHub/致谢/检查更新、375px 无横向溢出。
+- `README.md` 已补充 `#/settings` 深链、设置功能说明和 `src/app.js` 描述；`docs/ROADMAP.md` 已标记 Phase 21 完成。
+
+## Phase 21 验证记录
+
+- 静态检查：
+  - `for f in src/*.js sw.js tools/qa.mjs; do node --check "$f" || exit 1; done`
+  - `git diff --check`
+  - `rg -n "innerHTML|insertAdjacentHTML|outerHTML" . --glob '!node_modules/**' --glob '!*.png' --glob '!.git/**'` 无命中
+- Headless Chrome/CDP 回归：
+  - 启动 `python3 -m http.server 8125`
+  - 启动 Chrome：`"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu --no-sandbox --remote-debugging-port=9222 --user-data-dir=/tmp/ow-chrome-qa-phase21`
+  - `BASE=http://localhost:8125 node tools/qa.mjs`
+  - 结果：`89/89` 通过，`0` 个运行时错误。
+  - 覆盖 Phase 21：settings hash/tab 可达，主题设置与顶栏双向同步，`ow-default-platform` 写入且刷新后应用到 `state.platform/#platformTabs`，`ow-hero-view` 写入且刷新后英雄库默认列表视图生效，关于区版本/GitHub/致谢齐全，PWA 检查更新有友好反馈，375px 设置页无横向溢出。
+  - 覆盖回归：英雄库列表/排序/标签/收藏、对比深链、组队深链、克制网、Meta、克制计算器、详情抽屉、快捷键、工坊、个人中心、GEP 消息桥、overlay。
+
 ## Phase 20 已完成
 
 - 已实现 Meta 视图增强，未引入框架、构建或依赖，未修改 `data/` 或 `sw.js`，未提交 git commit。
