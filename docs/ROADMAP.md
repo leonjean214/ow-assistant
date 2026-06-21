@@ -20,6 +20,7 @@
 - **Phase 20**：Meta 视图增强（`#/meta` 当前 Season 3 版本提示 + 各职业强势榜按 Tier 排序，强势榜/Tier 项可点详情，缺 tier/空态兜底，QA 覆盖）。
 - **Phase 21**：设置与关于面板（`#/settings`，主题与顶栏双向同步、战绩默认平台 `ow-default-platform`、英雄库默认视图复用 `ow-hero-view`、关于/GitHub/PWA 检查更新，QA 覆盖）。
 - **Phase 22**：全局命令面板（`Cmd/Ctrl-K`，英雄/视图/BattleTag 模糊搜索跳转，modal dialog 焦点陷阱，overlay 短路，QA 覆盖）。
+- **Phase 23**：英雄可分享卡片（详情抽屉生成当前英雄 canvas PNG，深浅主题、下载 + 剪贴板降级、头像占位避免 CORS，QA 覆盖）。
 - **Phase 12**：队伍构筑 + 阵容分析（`#/team/<ids>`，职业配比/原型/配合/弱点 + 拿威胁去克制计算器，离线可用）。**Codex 额度耗尽期间由 Claude 直接实现**（一额度用完换另一额度继续）。
 
 - **Phase 14**：工坊代码模块（`#/workshop`，导入指南 + 免责 + 分类代码一键复制 + workshop.codes 实时源链接；只收社区多源流行代码并标来源，离线可用）。✅ Claude 实现。

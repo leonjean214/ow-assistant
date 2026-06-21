@@ -41,6 +41,7 @@ http://localhost:8000/#/compare/genji,ana
 - 界面：默认 OP.GG / OverHub 式浅色数据门户风，冷灰背景、白色数据卡、蓝色强调、表格斑马行和响应式布局；右上角可切换浅/深主题，使用 `localStorage` 的 `ow-theme` 持久化。
 - 无障碍：主导航使用 tablist/tabpanel 语义并支持方向键、Home/End 切换；详情抽屉为 modal dialog，打开后焦点进入抽屉、Tab 被锁定在抽屉内、Esc/关闭后焦点回到触发元素；页面提供“跳到主内容”链接、统一 `:focus-visible` 焦点样式、表格 caption/scope/aria-sort 和动态区域 `aria-live`。
 - 英雄库：职业、Tier、Ban 优先级、关键词、收藏和多标签筛选；标签支持 OR/AND 多选 pill；支持卡片/列表两种视图，列表为紧凑可排序表格（英雄、职业、Tier、难度、总有效生命、标签、收藏），视图偏好使用 `localStorage` 的 `ow-hero-view` 持久化；排序支持默认收藏置顶、Tier、难度、总有效生命和中文名排序，列表表头排序会与顶部排序下拉同步；英雄详情使用本地官方头像字段。
+- 英雄详情分享图：详情抽屉头部可生成当前英雄 PNG 卡片，包含中英名、职业/定位/Tier、难度、总有效生命、标签、大招、克制速览和水印；卡片按当前深浅主题读取 CSS 变量绘制，下载 PNG 并尝试复制到剪贴板，头像使用本地文字占位避免外链 CORS 污染 canvas。
 - 深链路由：使用 `location.hash` 支持 `#/heroes`、`#/matrix`、`#/counter`、`#/profile`、`#/maps`、`#/meta`、`#/updates`、`#/ban` 和 `#/hero/<id>`；浏览器后退/前进可切换视图并关闭/重开英雄详情。
 - 英雄收藏：英雄卡和详情抽屉均可点 ★ 收藏/取消，使用 `localStorage` 的 `ow-favorites` 持久化；英雄库支持“只看收藏”，默认排序下收藏英雄置顶，选择其它排序时按排序规则展示。
 - 英雄对比：英雄卡和详情头部可加入/移出对比，最多 4 位，使用 `localStorage` 的 `ow-compare` 持久化；底部对比盘支持移除、清空和查看对比。
@@ -76,7 +77,7 @@ http://localhost:8000/#/compare/genji,ana
 - `src/recommend-hero.js`：`recommendHeroes(filters, heroes)` 新手英雄推荐纯函数和 `console.assert` 自测
 - `src/stats.js`：战绩整理、排序、段位格式化、表现卡片纯函数和 `console.assert` 自测
 - `src/journal.js`：本地对局记录读写、导出/导入解析、去重合并、汇总、英雄/地图趋势聚合纯函数和 `console.assert` 自测
-- `src/app.js`：导航、全局命令面板、英雄库、设置、克制网、战绩、地图、Meta、Overlay 和详情交互
+- `src/app.js`：导航、全局命令面板、英雄库、设置、克制网、战绩、地图、Meta、Overlay、详情交互和 canvas 分享图
 - `manifest.webmanifest`：PWA 安装元数据
 - `sw.js`：预缓存 app shell、本地数据和图标；离线导航回退到 `index.html`
 - `icons/`：PWA 安装图标
@@ -90,7 +91,7 @@ OverFast Base URL：`https://overfast-api.tekrop.fr`
 
 - 玩家搜索、概要和统计缓存 10 分钟。
 - 地图缓存 1 天。
-- 对局记录只存本机 `localStorage`，不请求外部 API；损坏或不可用时回退空记录。JSON 导入会过滤无效条目并友好提示损坏文件，分享图使用本地 canvas 生成。
+- 对局记录只存本机 `localStorage`，不请求外部 API；损坏或不可用时回退空记录。JSON 导入会过滤无效条目并友好提示损坏文件，记录分享图和英雄详情分享图都使用本地 canvas 生成。
 - Service Worker 不拦截也不缓存 `overfast-api.tekrop.fr` 请求，外部 API 仍由 `src/api.js` 的网络请求和 `localStorage` 缓存控制。
 - 请求超时、404、网络/CORS 失败都会显示中文错误提示，不会白屏。
 - API 英雄 key 会映射 `junker-queen/soldier-76/wrecking-ball` 与本地 `junkerqueen/soldier76/wreckingball`。

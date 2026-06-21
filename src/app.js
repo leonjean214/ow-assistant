@@ -334,6 +334,11 @@ function bindEvents() {
       toggleTeam(teamButton.dataset.teamHero);
       return;
     }
+    const shareButton = event.target.closest("button[data-share-hero]");
+    if (shareButton) {
+      shareHeroCard(shareButton.dataset.shareHero);
+      return;
+    }
     const target = event.target.closest("[data-jump-hero]");
     if (!target) return;
     openDetail(target.dataset.jumpHero);
@@ -862,6 +867,112 @@ async function shareJournalCard() {
   }
 }
 
+async function shareHeroCard(heroId = activeDetailHeroId) {
+  const hero = state.byId.get(heroId);
+  if (!hero) {
+    announceHeroShare("没有找到要分享的英雄。");
+    return;
+  }
+  announceHeroShare("正在生成分享图...");
+  try {
+    const canvas = document.createElement("canvas");
+    drawHeroShareCard(canvas, hero);
+    const blob = await canvasToBlob(canvas);
+    downloadBlob(blob, `ow-hero-${hero.id}-${dateFilePart()}.png`);
+    const copied = await copyBlobToClipboard(blob);
+    announceHeroShare(copied ? "已生成 PNG，并尝试复制到剪贴板。" : "已生成 PNG，当前浏览器未允许复制图片。");
+  } catch {
+    announceHeroShare("生成分享图失败，请稍后重试。");
+  }
+}
+
+function drawHeroShareCard(canvas, hero) {
+  const width = 1080;
+  const height = 1350;
+  const dpr = Math.max(1, window.devicePixelRatio || 1);
+  canvas.width = Math.round(width * dpr);
+  canvas.height = Math.round(height * dpr);
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const colors = shareCardColors();
+  const roleColor = colors[hero.role] || colors.primary;
+  const totalHealth = heroHealthTotal(hero);
+  const ultimateName = formatShareAbilityName(hero.abilities?.ultimate);
+
+  ctx.fillStyle = colors.bg;
+  ctx.fillRect(0, 0, width, height);
+  ctx.fillStyle = colors.surface;
+  roundRect(ctx, 54, 54, 972, 1242, 34);
+  ctx.fill();
+  ctx.strokeStyle = colors.border;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.fillStyle = colors.surface2;
+  roundRect(ctx, 96, 106, 168, 168, 34);
+  ctx.fill();
+  ctx.fillStyle = roleColor;
+  roundRect(ctx, 112, 122, 136, 136, 28);
+  ctx.fill();
+  ctx.fillStyle = colors.onAccent;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = shareFont(72, 900);
+  ctx.fillText((hero.nameZh || hero.name || "?").slice(0, 1).toUpperCase(), 180, 190);
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+
+  ctx.fillStyle = colors.primary;
+  ctx.font = shareFont(28, 900);
+  ctx.fillText("OW 助手 · Hero Card", 304, 132);
+  ctx.fillStyle = colors.text;
+  ctx.font = shareFont(58, 900);
+  drawWrappedText(ctx, `${hero.nameZh} / ${hero.name}`, 304, 206, 630, 64, 2);
+  drawSharePill(ctx, colors, 304, 244, ROLE_LABELS[hero.role] || hero.role, roleColor);
+  drawSharePill(ctx, colors, 454, 244, fallback(hero.subrole), colors.surface3, colors.text);
+  drawSharePill(ctx, colors, 650, 244, `Tier ${fallback(hero.tier)}`, tierShareColor(hero.tier, colors), colors.onAccent);
+
+  drawShareMetric(ctx, colors, 96, 334, 254, 160, "难度", hero.difficulty ? `${hero.difficulty}/5` : "-", "上手门槛");
+  drawShareMetric(ctx, colors, 388, 334, 254, 160, "总有效生命", `${totalHealth || "-"}`, `HP ${hero.health?.hp || 0} / 甲 ${hero.health?.armor || 0} / 盾 ${hero.health?.shield || 0}`);
+  drawShareMetric(ctx, colors, 680, 334, 254, 160, "职业定位", ROLE_LABELS[hero.role] || hero.role, fallback(hero.subrole));
+
+  drawShareSectionTitle(ctx, colors, "代表标签", 96, 580);
+  const tags = toArray(hero.tags).slice(0, 6);
+  if (!tags.length) {
+    drawSharePill(ctx, colors, 96, 618, "暂无标签", colors.surface3, colors.text2);
+  } else {
+    let x = 96;
+    let y = 618;
+    tags.forEach((tag) => {
+      const pillWidth = Math.min(258, Math.max(112, ctx.measureText(tag).width + 48));
+      if (x + pillWidth > 934) {
+        x = 96;
+        y += 62;
+      }
+      drawSharePill(ctx, colors, x, y, tag, colors.surface3, colors.text);
+      x += pillWidth + 16;
+    });
+  }
+
+  drawShareSectionTitle(ctx, colors, "大招", 96, 800);
+  ctx.fillStyle = colors.surface2;
+  roundRect(ctx, 96, 830, 838, 102, 22);
+  ctx.fill();
+  ctx.fillStyle = colors.text;
+  ctx.font = shareFont(32, 900);
+  drawWrappedText(ctx, ultimateName || "暂无大招数据", 128, 890, 774, 38, 2);
+
+  drawShareSectionTitle(ctx, colors, "克制速览", 96, 1012);
+  drawHeroShareCounters(ctx, colors, hero, 96, 1050, "我克制 Top3", "strongAgainst", colors.good);
+  drawHeroShareCounters(ctx, colors, hero, 550, 1050, "我怕 Top3", "weakAgainst", colors.loss);
+
+  ctx.fillStyle = colors.text3;
+  ctx.font = shareFont(22, 700);
+  ctx.fillText("OW 助手 · github.com/leonjean214/ow-assistant", 96, 1240);
+}
+
 function drawJournalShareCard(canvas, summary) {
   const width = 1080;
   const height = 1350;
@@ -977,8 +1088,96 @@ function shareCardColors() {
     primary: token("--primary", "#2F63D7"),
     win: token("--win", "#275DCE"),
     loss: token("--loss", "#D52D44"),
+    good: token("--good", "#137A43"),
+    warn: token("--warn", "#9A6400"),
+    tank: token("--tank", "#A85516"),
+    damage: token("--damage", "#D52D44"),
+    support: token("--support", "#137A43"),
+    tierS: token("--tier-s", "#D52D44"),
+    tierA: token("--tier-a", "#A85516"),
+    tierB: token("--tier-b", "#137A43"),
+    tierC: token("--tier-c", "#666C75"),
     onAccent: "#FFFFFF"
   };
+}
+
+function drawShareSectionTitle(ctx, colors, title, x, y) {
+  ctx.fillStyle = colors.text;
+  ctx.font = shareFont(34, 900);
+  ctx.fillText(title, x, y);
+}
+
+function drawSharePill(ctx, colors, x, y, text, bg, textColor = colors.onAccent) {
+  const label = fallback(text);
+  ctx.font = shareFont(24, 900);
+  const width = Math.min(280, Math.max(112, ctx.measureText(label).width + 48));
+  ctx.fillStyle = bg;
+  roundRect(ctx, x, y, width, 44, 22);
+  ctx.fill();
+  ctx.fillStyle = textColor;
+  ctx.fillText(label, x + 24, y + 30);
+  return width;
+}
+
+function drawHeroShareCounters(ctx, colors, hero, x, y, title, key, color) {
+  ctx.fillStyle = colors.surface2;
+  roundRect(ctx, x, y, 384, 150, 22);
+  ctx.fill();
+  ctx.fillStyle = color;
+  ctx.font = shareFont(24, 900);
+  ctx.fillText(title, x + 28, y + 44);
+  const names = toArray(hero.counters?.[key]).slice(0, 3).map((id) => state.byId.get(id)?.nameZh || id);
+  ctx.fillStyle = colors.text;
+  ctx.font = shareFont(30, 900);
+  drawWrappedText(ctx, names.length ? names.join(" / ") : "暂无", x + 28, y + 94, 328, 36, 2);
+}
+
+function drawWrappedText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 3) {
+  const words = String(fallback(text)).split("");
+  let line = "";
+  let lineCount = 0;
+  for (const char of words) {
+    const test = line + char;
+    if (line && ctx.measureText(test).width > maxWidth) {
+      lineCount += 1;
+      const suffix = lineCount === maxLines ? "..." : "";
+      ctx.fillText(suffix ? trimTextToWidth(ctx, line, maxWidth - ctx.measureText(suffix).width) + suffix : line, x, y);
+      if (lineCount >= maxLines) return;
+      line = char;
+      y += lineHeight;
+    } else {
+      line = test;
+    }
+  }
+  if (line && lineCount < maxLines) ctx.fillText(line, x, y);
+}
+
+function trimTextToWidth(ctx, text, maxWidth) {
+  let value = String(text);
+  while (value && ctx.measureText(value).width > maxWidth) value = value.slice(0, -1);
+  return value;
+}
+
+function tierShareColor(tier, colors) {
+  const value = String(tier || "").toUpperCase();
+  if (value === "S") return colors.tierS;
+  if (value === "A") return colors.tierA;
+  if (value === "B") return colors.tierB;
+  if (value === "C") return colors.tierC;
+  return colors.text3;
+}
+
+function heroHealthTotal(hero) {
+  return (Number(hero.health?.hp) || 0) + (Number(hero.health?.armor) || 0) + (Number(hero.health?.shield) || 0);
+}
+
+function formatShareAbilityName(ability = {}) {
+  return [ability.nameZh, ability.name].filter(Boolean).join(" / ");
+}
+
+function announceHeroShare(message) {
+  const status = el.detailContent?.querySelector("[data-hero-share-status]");
+  if (status) status.textContent = message;
 }
 
 function resultColor(result, colors) {
@@ -2737,6 +2936,16 @@ function createTeamButton(hero, context) {
   return button;
 }
 
+function createHeroShareButton(hero) {
+  const button = create("button", "hero-share-btn detail-share");
+  button.type = "button";
+  button.dataset.shareHero = hero.id;
+  button.setAttribute("aria-label", `生成 ${hero.nameZh} 分享图`);
+  button.title = "生成分享图";
+  button.textContent = "分享图";
+  return button;
+}
+
 function updateTeamButton(button = null, hero = null) {
   const buttons = button ? [button] : [...document.querySelectorAll("button[data-team-hero]")];
   buttons.forEach((item) => {
@@ -3558,9 +3767,12 @@ function renderDetail(hero) {
   names.append(title, subtitle);
   heroHead.append(names);
   const headActions = create("div", "detail-head-actions");
-  headActions.append(createFavoriteButton(hero, "detail"), createCompareButton(hero, "detail"), createTeamButton(hero, "detail"));
+  headActions.append(createFavoriteButton(hero, "detail"), createCompareButton(hero, "detail"), createTeamButton(hero, "detail"), createHeroShareButton(hero));
   heroHead.append(headActions);
-  el.detailContent.append(heroHead);
+  const shareStatus = create("p", "hero-share-status");
+  shareStatus.dataset.heroShareStatus = "true";
+  shareStatus.setAttribute("aria-live", "polite");
+  el.detailContent.append(heroHead, shareStatus);
 
   if (state.detailStat) el.detailContent.append(detailSection("你的此英雄战绩", [createHeroStatSummary(state.detailStat)]));
   const recentChanges = getLatestChanges(hero.id);
