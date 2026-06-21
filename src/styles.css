@@ -505,7 +505,7 @@ img {
 .profile-search-grid,
 .patch-toolbar {
   display: grid;
-  grid-template-columns: auto minmax(108px, 140px) minmax(132px, 166px) minmax(150px, 190px) minmax(220px, 1fr) auto;
+  grid-template-columns: auto minmax(108px, 140px) minmax(132px, 166px) minmax(150px, 190px) minmax(128px, auto) minmax(220px, 1fr) auto;
   gap: 10px;
   align-items: end;
   margin-bottom: 14px;
@@ -568,6 +568,14 @@ img {
   width: 16px;
   min-height: 16px;
   accent-color: var(--warn);
+}
+
+.hero-view-field {
+  min-width: max-content;
+}
+
+.hero-view-toggle {
+  flex-wrap: nowrap;
 }
 
 .tag-filter-panel {
@@ -753,6 +761,139 @@ input[type="range"] {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(126px, 1fr));
   gap: 10px;
+}
+
+.hero-list-mount {
+  min-width: 0;
+}
+
+.hero-list-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.hero-list-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.hero-list-table th,
+.hero-list-table td {
+  height: 44px;
+  border-bottom: 1px solid var(--border);
+  padding: 8px 10px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.hero-list-table thead th {
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 900;
+  text-align: left;
+}
+
+.hero-list-table thead th[aria-sort]:not([aria-sort="none"]) {
+  color: var(--primary);
+}
+
+.hero-list-table tbody tr:nth-child(even) {
+  background: var(--surface-2);
+}
+
+.hero-list-row {
+  cursor: pointer;
+}
+
+.hero-list-row:hover,
+.hero-list-row:focus-visible {
+  background: var(--primary-weak);
+}
+
+.hero-list-row:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.hero-list-row.is-new-hero {
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+
+.hero-list-name {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-width: 210px;
+}
+
+.hero-list-name .avatar {
+  width: 36px;
+  height: 36px;
+}
+
+.hero-list-names {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.hero-list-names strong,
+.hero-list-names span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hero-list-names span {
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.hero-list-number,
+.hero-list-favorite {
+  text-align: right;
+}
+
+.hero-list-tags {
+  flex-wrap: nowrap;
+}
+
+.hero-list-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font-weight: inherit;
+  cursor: pointer;
+}
+
+.hero-list-sort::after {
+  color: var(--text-3);
+  font-size: 10px;
+  content: "↕";
+}
+
+th[aria-sort="ascending"] .hero-list-sort::after {
+  color: var(--primary);
+  content: "↑";
+}
+
+th[aria-sort="descending"] .hero-list-sort::after {
+  color: var(--primary);
+  content: "↓";
+}
+
+.hero-list-sort:hover {
+  color: var(--primary);
 }
 
 .hero-card {

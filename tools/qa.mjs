@@ -64,6 +64,104 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
   check("英雄库渲染", await c.evals(`document.querySelectorAll('#heroGrid .hero-card').length`) >= 40);
 
+  const listInitial = await c.evals(`(()=>{
+    document.querySelector('#heroViewToggle button[data-hero-view="list"]').click();
+    const rows=Array.from(document.querySelectorAll('#heroGrid .hero-list-row'));
+    const ths=Array.from(document.querySelectorAll('#heroGrid thead th'));
+    return {
+      stored: localStorage.getItem('ow-hero-view'),
+      rows: rows.length,
+      cards: document.querySelectorAll('#heroGrid .hero-card').length,
+      caption: document.querySelector('#heroGrid caption')?.textContent,
+      scopeOk: ths.every((th)=>th.getAttribute('scope')==='col') && document.querySelector('#heroGrid tbody th')?.getAttribute('scope')==='row',
+      pressedList: document.querySelector('#heroViewToggle button[data-hero-view="list"]')?.getAttribute('aria-pressed'),
+      pressedGrid: document.querySelector('#heroViewToggle button[data-hero-view="grid"]')?.getAttribute('aria-pressed')
+    };
+  })()`);
+  check("列表模式渲染表格", listInitial.rows >= 40 && listInitial.cards === 0);
+  check("列表模式持久化 ow-hero-view", listInitial.stored === "list");
+  check("列表表格 a11y caption/scope", listInitial.caption === "英雄库列表" && listInitial.scopeOk === true);
+  check("视图切换 aria-pressed", listInitial.pressedList === "true" && listInitial.pressedGrid === "false");
+
+  await c.evals(`location.reload(); null`);
+  await sleep(1800);
+  await c.evals(`(async()=>{ window.__qaHeroes = await fetch('/data/heroes.json').then((r)=>r.json()).then((data)=>data.heroes); return null; })()`);
+  check("刷新保持列表模式", (await c.evals(`document.querySelectorAll('#heroGrid .hero-list-row').length`)) >= 40 && (await c.evals(`localStorage.getItem('ow-hero-view')`)) === "list");
+
+  const listRowOpenOk = await c.evals(`(async()=>{
+    const row=document.querySelector('#heroGrid .hero-list-row');
+    row.click();
+    await new Promise((r)=>setTimeout(r,250));
+    const opened=document.getElementById('detailDrawer').classList.contains('is-open');
+    document.getElementById('closeDrawer').click();
+    await new Promise((r)=>setTimeout(r,150));
+    return opened;
+  })()`);
+  check("列表点行打开详情", listRowOpenOk === true);
+  const listFavNoOpen = await c.evals(`(async()=>{
+    const button=document.querySelector('#heroGrid button[data-favorite-hero]');
+    const id=button.dataset.favoriteHero;
+    button.click();
+    await new Promise((r)=>setTimeout(r,120));
+    const noOpen=!document.getElementById('detailDrawer').classList.contains('is-open');
+    const storedAfterAdd=JSON.parse(localStorage.getItem('ow-favorites')||'[]').includes(id);
+    document.querySelector('#heroGrid button[data-favorite-hero="'+CSS.escape(id)+'"]').click();
+    await new Promise((r)=>setTimeout(r,120));
+    const removed=!JSON.parse(localStorage.getItem('ow-favorites')||'[]').includes(id);
+    return noOpen && storedAfterAdd && removed;
+  })()`);
+  check("列表点★收藏且不误开详情", listFavNoOpen === true);
+
+  const listSortChecks = await c.evals(`(()=>{
+    const hp=(hero)=>(hero.health?.hp||0)+(hero.health?.armor||0)+(hero.health?.shield||0);
+    const heroes=()=>Array.from(document.querySelectorAll('#heroGrid .hero-list-row')).map((row)=>window.__qaHeroes.find((hero)=>hero.id===row.dataset.heroId));
+    document.querySelector('button[data-hero-list-sort="tier"]').click();
+    const rank={S:0,A:1,B:2,C:3};
+    const tierOk=document.getElementById('heroSortFilter').value==='tier'
+      && document.querySelector('button[data-hero-list-sort="tier"]').closest('th').getAttribute('aria-sort')==='descending'
+      && heroes().every((hero,index,rows)=>index===0 || (rank[rows[index-1].tier]??9) <= (rank[hero.tier]??9));
+    document.getElementById('heroSortFilter').value='hp-desc';
+    document.getElementById('heroSortFilter').dispatchEvent(new Event('change',{bubbles:true}));
+    const hpOk=document.querySelector('button[data-hero-list-sort="hp"]').closest('th').getAttribute('aria-sort')==='descending'
+      && heroes().every((hero,index,rows)=>index===0 || hp(rows[index-1]) >= hp(hero));
+    document.querySelector('button[data-hero-list-sort="difficulty"]').click();
+    const diffAsc=document.getElementById('heroSortFilter').value==='diff-asc'
+      && document.querySelector('button[data-hero-list-sort="difficulty"]').closest('th').getAttribute('aria-sort')==='ascending';
+    document.querySelector('button[data-hero-list-sort="difficulty"]').click();
+    const diffDesc=document.getElementById('heroSortFilter').value==='diff-desc'
+      && document.querySelector('button[data-hero-list-sort="difficulty"]').closest('th').getAttribute('aria-sort')==='descending';
+    return { tierOk, hpOk, diffAsc, diffDesc };
+  })()`);
+  check("列表表头 Tier 排序同步下拉/aria-sort", listSortChecks.tierOk === true);
+  check("排序下拉同步列表 HP aria-sort", listSortChecks.hpOk === true);
+  check("列表难度表头可升降切换", listSortChecks.diffAsc === true && listSortChecks.diffDesc === true);
+
+  const listFilterState = await c.evals(`(()=>{
+    document.getElementById('tierFilter').value='S';
+    document.getElementById('tierFilter').dispatchEvent(new Event('change',{bubbles:true}));
+    const listOk=Array.from(document.querySelectorAll('#heroGrid .hero-list-row')).every((row)=>window.__qaHeroes.find((hero)=>hero.id===row.dataset.heroId)?.tier==='S');
+    document.querySelector('#heroViewToggle button[data-hero-view="grid"]').click();
+    const gridOk=document.getElementById('tierFilter').value==='S'
+      && document.getElementById('heroSortFilter').value==='diff-desc'
+      && document.querySelectorAll('#heroGrid .hero-card').length===window.__qaHeroes.filter((hero)=>hero.tier==='S').length;
+    document.querySelector('#heroViewToggle button[data-hero-view="list"]').click();
+    const backOk=document.querySelectorAll('#heroGrid .hero-list-row').length===window.__qaHeroes.filter((hero)=>hero.tier==='S').length;
+    document.getElementById('tierFilter').value='all';
+    document.getElementById('tierFilter').dispatchEvent(new Event('change',{bubbles:true}));
+    document.getElementById('heroSortFilter').value='default';
+    document.getElementById('heroSortFilter').dispatchEvent(new Event('change',{bubbles:true}));
+    return { listOk, gridOk, backOk };
+  })()`);
+  check("列表筛选叠加生效", listFilterState.listOk === true);
+  check("切模式不丢筛选/排序状态", listFilterState.gridOk === true && listFilterState.backOk === true);
+
+  await c.send("Emulation.setDeviceMetricsOverride", { width: 375, height: 900, deviceScaleFactor: 1, mobile: true });
+  await sleep(200);
+  const listMobileOk = await c.evals(`Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) <= window.innerWidth && document.querySelector('.hero-list-wrap').scrollWidth >= document.querySelector('.hero-list-wrap').clientWidth`);
+  check("375px 列表仅表格容器横向滚动", listMobileOk === true);
+  await c.send("Emulation.clearDeviceMetricsOverride");
+  await c.evals(`document.querySelector('#heroViewToggle button[data-hero-view="grid"]').click(); null`);
+
   // Phase 17：英雄库排序 + 多标签筛选
   const heroOrderExpr = `Array.from(document.querySelectorAll('#heroGrid .hero-card')).map((card)=>card.dataset.heroId)`;
   const tierRanksOk = await c.evals(`(()=>{

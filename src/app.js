@@ -24,6 +24,7 @@ const roleTips = {
 };
 const FAVORITES_KEY = "ow-favorites";
 const COMPARE_KEY = "ow-compare";
+const HERO_VIEW_KEY = "ow-hero-view";
 const DEFAULT_VIEW = "heroes";
 const HERO_ROUTE_PREFIX = "#/hero/";
 const COMPARE_ROUTE_PREFIX = "#/compare/";
@@ -43,6 +44,7 @@ const FOCUSABLE_SELECTOR = [
 const state = {
   heroes: [],
   byId: new Map(),
+  heroView: "grid",
   filters: { role: "all", tier: "all", ban: "all", search: "", favoritesOnly: false, sort: "default", tags: [], tagsMatchAll: false },
   favorites: new Set(),
   compare: [],
@@ -97,6 +99,7 @@ async function init() {
   setupA11y();
   bindEvents();
   state.favorites = loadFavorites();
+  state.heroView = loadHeroView();
   try {
     const [data, mapMeta, patches, workshop, counterNotes] = await Promise.all([loadHeroData(), loadMapMeta(), loadPatches(), loadWorkshop(), loadCounterNotes()]);
     state.heroes = data.heroes;
@@ -142,7 +145,7 @@ async function init() {
 function bindElements() {
   for (const id of [
     "dataMeta", "heroCount", "heroGrid", "heroEmpty", "roleTabs", "tierFilter", "banFilter", "heroSortFilter", "searchInput",
-    "favoriteOnlyToggle", "heroTagFilters", "tagMatchToggle", "clearTagFilters",
+    "heroViewToggle", "favoriteOnlyToggle", "heroTagFilters", "tagMatchToggle", "clearTagFilters",
     "compareTray", "compareContent", "compareCount",
     "teamContent", "teamCount", "workshopContent", "meContent",
     "latestHeroLine", "updatesTimeline", "patchRoleFilter", "patchTypeFilter", "patchSearchInput", "patchList", "patchEmpty",
@@ -185,7 +188,13 @@ function bindEvents() {
     renderHeroGrid();
   });
   el.heroSortFilter.addEventListener("change", () => {
-    state.filters.sort = el.heroSortFilter.value;
+    setHeroSort(el.heroSortFilter.value);
+    renderHeroGrid();
+  });
+  el.heroViewToggle.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-hero-view]");
+    if (!button || button.dataset.heroView === state.heroView) return;
+    setHeroView(button.dataset.heroView);
     renderHeroGrid();
   });
   el.searchInput.addEventListener("input", () => {
@@ -229,6 +238,12 @@ function bindEvents() {
   });
 
   el.heroGrid.addEventListener("click", (event) => {
+    const sortButton = event.target.closest("button[data-hero-list-sort]");
+    if (sortButton) {
+      setHeroSort(nextHeroListSort(sortButton.dataset.heroListSort));
+      renderHeroGrid();
+      return;
+    }
     const favoriteButton = event.target.closest("button[data-favorite-hero]");
     if (favoriteButton) {
       toggleFavorite(favoriteButton.dataset.favoriteHero);
@@ -250,9 +265,10 @@ function bindEvents() {
   el.heroGrid.addEventListener("keydown", (event) => {
     if (event.key !== "Enter" && event.key !== " ") return;
     const card = event.target.closest(".hero-card[data-hero-id]");
-    if (!card || event.target !== card) return;
+    const row = event.target.closest(".hero-list-row[data-hero-id]");
+    if ((!card || event.target !== card) && (!row || event.target !== row)) return;
     event.preventDefault();
-    openDetail(card.dataset.heroId);
+    openDetail((card || row).dataset.heroId);
   });
   el.updatesTimeline.addEventListener("click", (event) => {
     const item = event.target.closest("[data-update-hero]");
@@ -1345,6 +1361,11 @@ function replaceHash(hash) {
 function renderHeroGrid() {
   el.heroGrid.replaceChildren();
   const heroes = filteredHeroes();
+  const listMode = state.heroView === "list";
+  syncHeroViewControls();
+  syncHeroSortFilter();
+  el.heroGrid.classList.toggle("hero-grid", !listMode);
+  el.heroGrid.classList.toggle("hero-list-mount", listMode);
   el.heroCount.textContent = `${heroes.length} 位英雄`;
   el.heroEmpty.hidden = heroes.length !== 0;
   el.heroEmpty.textContent = state.filters.favoritesOnly && !state.favorites.size
@@ -1352,7 +1373,182 @@ function renderHeroGrid() {
     : state.filters.tags.length
       ? "没有符合条件的英雄，试试减少标签或清空筛选。"
       : "没有符合条件的英雄。";
+  if (listMode) {
+    renderHeroList(heroes);
+    return;
+  }
   for (const hero of heroes) el.heroGrid.append(createHeroCard(hero));
+}
+
+function renderHeroList(heroes) {
+  if (!heroes.length) return;
+  const wrap = create("div", "hero-list-wrap");
+  const table = create("table", "hero-list-table");
+  const caption = create("caption", "sr-only");
+  caption.textContent = "英雄库列表";
+  table.append(caption, createHeroListHead(), createHeroListBody(heroes));
+  wrap.append(table);
+  el.heroGrid.append(wrap);
+}
+
+function createHeroListHead() {
+  const thead = document.createElement("thead");
+  const row = document.createElement("tr");
+  [
+    { label: "英雄", sort: "name" },
+    { label: "职业" },
+    { label: "Tier", sort: "tier" },
+    { label: "难度", sort: "difficulty" },
+    { label: "总有效生命", sort: "hp" },
+    { label: "代表标签" },
+    { label: "收藏" }
+  ].forEach((column) => row.append(createHeroListHeader(column)));
+  thead.append(row);
+  return thead;
+}
+
+function createHeroListHeader(column) {
+  const th = document.createElement("th");
+  th.scope = "col";
+  if (!column.sort) {
+    th.textContent = column.label;
+    return th;
+  }
+  th.setAttribute("aria-sort", heroListAriaSort(column.sort));
+  const button = create("button", "hero-list-sort");
+  button.type = "button";
+  button.dataset.heroListSort = column.sort;
+  button.textContent = column.label;
+  th.append(button);
+  return th;
+}
+
+function createHeroListBody(heroes) {
+  const tbody = document.createElement("tbody");
+  heroes.forEach((hero) => tbody.append(createHeroListRow(hero)));
+  return tbody;
+}
+
+function createHeroListRow(hero) {
+  const tr = create("tr", hero.id === state.patches.meta.latestHero ? "hero-list-row is-new-hero" : "hero-list-row");
+  tr.dataset.heroId = hero.id;
+  tr.tabIndex = 0;
+  tr.setAttribute("aria-label", `${hero.nameZh} ${hero.name} 详情`);
+  tr.append(
+    createHeroListNameCell(hero),
+    createHeroListTextCell(ROLE_LABELS[hero.role] || hero.role),
+    createHeroListTierCell(hero),
+    createHeroListNumberCell(hero.difficulty == null ? "—" : `${hero.difficulty}/5`, "difficulty"),
+    createHeroListNumberCell(String(totalHealth(hero)), "health"),
+    createHeroListTagsCell(hero),
+    createHeroListFavoriteCell(hero)
+  );
+  return tr;
+}
+
+function createHeroListNameCell(hero) {
+  const th = document.createElement("th");
+  th.scope = "row";
+  const body = create("div", "hero-list-name");
+  body.append(createAvatar(hero));
+  const names = create("span", "hero-list-names");
+  appendText(names, "strong", hero.nameZh);
+  appendText(names, "span", hero.name);
+  body.append(names);
+  th.append(body);
+  return th;
+}
+
+function createHeroListTextCell(text) {
+  const td = document.createElement("td");
+  td.textContent = fallback(text);
+  return td;
+}
+
+function createHeroListTierCell(hero) {
+  const td = document.createElement("td");
+  td.append(createBadge(hero.tier, "tier-badge"));
+  return td;
+}
+
+function createHeroListNumberCell(text, className) {
+  const td = create("td", `hero-list-number ${className}`);
+  td.textContent = fallback(text);
+  return td;
+}
+
+function createHeroListTagsCell(hero) {
+  const td = document.createElement("td");
+  const tags = create("div", "tag-row hero-list-tags");
+  const shownTags = hero.tags.length ? hero.tags.slice(0, 3) : ["—"];
+  shownTags.forEach((tag) => tags.append(textBadge(tag, "tag")));
+  td.append(tags);
+  return td;
+}
+
+function createHeroListFavoriteCell(hero) {
+  const td = create("td", "hero-list-favorite");
+  td.append(createFavoriteButton(hero, "list"));
+  return td;
+}
+
+function loadHeroView() {
+  try {
+    return window.localStorage.getItem(HERO_VIEW_KEY) === "list" ? "list" : "grid";
+  } catch {
+    return "grid";
+  }
+}
+
+function saveHeroView() {
+  try {
+    window.localStorage.setItem(HERO_VIEW_KEY, state.heroView);
+  } catch {
+    // View preference is optional if storage is unavailable.
+  }
+}
+
+function setHeroView(view) {
+  state.heroView = view === "list" ? "list" : "grid";
+  saveHeroView();
+  syncHeroViewControls();
+}
+
+function syncHeroViewControls() {
+  if (!el.heroViewToggle) return;
+  el.heroViewToggle.querySelectorAll("button[data-hero-view]").forEach((button) => {
+    const active = button.dataset.heroView === state.heroView;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function setHeroSort(sort) {
+  state.filters.sort = ["default", "tier", "diff-asc", "diff-desc", "hp-desc", "name"].includes(sort) ? sort : "default";
+  syncHeroSortFilter();
+}
+
+function syncHeroSortFilter() {
+  if (el.heroSortFilter && el.heroSortFilter.value !== state.filters.sort) el.heroSortFilter.value = state.filters.sort;
+}
+
+function nextHeroListSort(sortKey) {
+  if (sortKey === "difficulty") return state.filters.sort === "diff-asc" ? "diff-desc" : "diff-asc";
+  if (sortKey === "hp") return "hp-desc";
+  if (sortKey === "name") return "name";
+  if (sortKey === "tier") return "tier";
+  return "default";
+}
+
+function heroListAriaSort(sortKey) {
+  if (sortKey === "difficulty") {
+    if (state.filters.sort === "diff-asc") return "ascending";
+    if (state.filters.sort === "diff-desc") return "descending";
+  }
+  if (sortKey === "hp" && state.filters.sort === "hp-desc") return "descending";
+  if (sortKey === "name" && state.filters.sort === "name") return "ascending";
+  if (sortKey === "tier" && state.filters.sort === "tier") return "descending";
+  return "none";
 }
 
 function renderTagFilters() {
