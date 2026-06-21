@@ -38,7 +38,7 @@ http://localhost:8000/#/compare/genji,ana
 
 ## 功能
 
-- 界面：默认 OP.GG / OverHub 式浅色数据门户风，冷灰背景、白色数据卡、蓝色强调、表格斑马行和响应式布局；右上角可切换浅/深主题，使用 `localStorage` 的 `ow-theme` 持久化。
+- 界面：默认 OP.GG / OverHub 式浅色数据门户风，冷灰背景、白色数据卡、蓝色强调、表格斑马行和响应式布局；移动端主导航横滑带边缘渐隐提示，切换视图后当前 tab 自动滚入可见区，375px 下各视图避免页面横向溢出；右上角可切换浅/深主题，使用 `localStorage` 的 `ow-theme` 持久化。
 - 无障碍：主导航使用 tablist/tabpanel 语义并支持方向键、Home/End 切换；详情抽屉为 modal dialog，打开后焦点进入抽屉、Tab 被锁定在抽屉内、Esc/关闭后焦点回到触发元素；页面提供“跳到主内容”链接、统一 `:focus-visible` 焦点样式、表格 caption/scope/aria-sort 和动态区域 `aria-live`。
 - 英雄库：职业、Tier、Ban 优先级、关键词、收藏和多标签筛选；标签支持 OR/AND 多选 pill；支持卡片/列表两种视图，列表为紧凑可排序表格（英雄、职业、Tier、难度、总有效生命、标签、收藏），视图偏好使用 `localStorage` 的 `ow-hero-view` 持久化；排序支持默认收藏置顶、Tier、难度、总有效生命和中文名排序，列表表头排序会与顶部排序下拉同步；英雄详情使用本地官方头像字段。
 - 英雄详情分享图：详情抽屉头部可生成当前英雄 PNG 卡片，包含中英名、职业/定位/Tier、难度、总有效生命、标签、大招、克制速览和水印；卡片按当前深浅主题读取 CSS 变量绘制，下载 PNG 并尝试复制到剪贴板，头像使用本地文字占位避免外链 CORS 污染 canvas。
@@ -68,7 +68,7 @@ http://localhost:8000/#/compare/genji,ana
 ## 文件结构
 
 - `index.html`：页面骨架
-- `src/styles.css`：OP.GG / OverHub 式浅色数据门户主题、深色变量和响应式布局
+- `src/styles.css`：OP.GG / OverHub 式浅色数据门户主题、深色变量、移动端触控目标和响应式布局
 - `src/theme.js`：浅/深主题切换与 `ow-theme` 持久化
 - `src/pwa.js`：Service Worker 注册和轻量更新提示，`file://`/非安全上下文自动跳过
 - `src/api.js`：OverFast 请求封装、超时、重试、localStorage 缓存和英雄 key 映射

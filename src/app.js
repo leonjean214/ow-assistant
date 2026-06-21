@@ -609,6 +609,12 @@ function syncNavigationA11y() {
     button.setAttribute("aria-selected", String(active));
     button.tabIndex = active ? 0 : -1;
   });
+  scrollActiveViewTabIntoView();
+}
+
+function scrollActiveViewTabIntoView() {
+  const activeTab = document.querySelector(".view-tab[aria-selected='true']");
+  activeTab?.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
 }
 
 function handleViewTabKeydown(event) {

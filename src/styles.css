@@ -370,7 +370,11 @@ img {
   border-bottom: 1px solid var(--border);
   background: var(--surface);
   overflow-x: auto;
+  overflow-y: hidden;
+  scroll-padding-inline: 16px;
   scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
 }
 
 .view-tabs::-webkit-scrollbar {
@@ -388,6 +392,7 @@ img {
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
+  scroll-margin-inline: 24px;
 }
 
 .view-tab::after {
@@ -890,6 +895,7 @@ input[type="range"] {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(126px, 1fr));
   gap: 10px;
+  min-width: 0;
 }
 
 .hero-list-mount {
@@ -3301,13 +3307,15 @@ body.is-overlay .overlay-panel {
 
   .view-tabs {
     position: static;
-    flex-wrap: wrap;
-    gap: 0 14px;
+    flex-wrap: nowrap;
+    gap: 14px;
     padding-top: 4px;
+    padding-bottom: 0;
   }
 
   .view-tab {
-    min-height: 38px;
+    min-height: 40px;
+    padding-inline: 4px;
   }
 
   .app-shell {
@@ -3330,6 +3338,68 @@ body.is-overlay .overlay-panel {
 
   .hero-grid {
     grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  }
+
+  .theme-toggle,
+  .cmd-open,
+  .overlay-link,
+  .ghost-link,
+  .season-pill,
+  .favorite-filter,
+  input,
+  select,
+  textarea,
+  .segmented button,
+  .primary-btn,
+  .ghost-btn,
+  .hero-link,
+  .select-chip,
+  .selected-chip,
+  .recent-chip,
+  .table-sort,
+  .ban-mini,
+  .workshop-code,
+  .hero-share-btn,
+  .journal-replace-toggle {
+    min-height: 40px;
+  }
+
+  .favorite-btn,
+  .compare-btn,
+  .team-btn,
+  .icon-btn,
+  .portrait-btn,
+  .journal-delete {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .favorite-btn,
+  .compare-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .team-btn {
+    height: 40px;
+    padding-inline: 10px;
+  }
+
+  .hero-card .compare-btn {
+    top: 51px;
+  }
+
+  .hero-card .team-btn {
+    top: 95px;
+  }
+
+  .corner-badge {
+    min-height: 24px;
+    padding-inline: 7px;
+  }
+
+  .recent-corner {
+    top: 35px;
   }
 
   .timeline-grid,
@@ -3378,6 +3448,22 @@ body.is-overlay .overlay-panel {
     grid-template-columns: 1fr;
     gap: 4px;
   }
+
+  .workshop-code-row,
+  .me-bt-row,
+  .settings-update-row,
+  .meta-strong-item {
+    grid-template-columns: 1fr;
+  }
+
+  .workshop-code,
+  .settings-github {
+    width: 100%;
+  }
+
+  .meta-table {
+    min-width: 560px;
+  }
 }
 
 @media (max-width: 375px) {
@@ -3425,7 +3511,36 @@ body.is-overlay .overlay-panel {
   }
 
   .hero-card {
-    padding: 7px;
+    padding: 51px 7px 7px;
+  }
+
+  .hero-card-body {
+    gap: 6px;
+  }
+
+  .hero-title-row {
+    padding-right: 34px;
+  }
+
+  .favorite-btn,
+  .compare-btn,
+  .team-btn {
+    box-shadow: 0 1px 4px rgba(15, 23, 42, .12);
+  }
+
+  .hero-card .favorite-btn,
+  .hero-card .compare-btn,
+  .hero-card .team-btn {
+    top: 7px;
+  }
+
+  .hero-card .compare-btn {
+    left: 51px;
+  }
+
+  .hero-card .team-btn {
+    left: 95px;
+    max-width: calc(100% - 102px);
   }
 
   .compare-tray {
