@@ -304,3 +304,10 @@
 执行：Codex｜tools/qa.mjs **124/124 全过、0 运行时错误**（含各视图 375px scrollWidth===clientWidth 断言）；node 全过；0 innerHTML。激活 tab scrollIntoView、tab 横滑渐隐、触控目标≥40px、三角标 375px 不重叠、全视图无横向溢出均通过；无功能回归。
 
 ---
+
+## Phase 25 审查（app.js 渐进模块化，纯重构）— 无阻塞
+执行：Codex(首次卡死1h零产出被kill,重试~10min完成)｜验证：tools/qa.mjs **124/124 全过、0 运行时错误**(0行为变化硬门槛达成)；node 全过；0 innerHTML。
+- 抽出 src/dom.js(9 无状态 helper) + src/router.js(createRouter 工厂,依赖注入避免循环依赖);state 单一定义无重复;sw v16 预缓存新模块。
+- 保守抽离(按「宁可少拆不出bug」),app.js 仍较大;后续可继续抽自包含视图模块。无阻塞。
+
+---
