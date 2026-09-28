@@ -129,12 +129,9 @@ node tools/check-site.mjs
 - `src` 下每个 JS 文件的 `node --check` 语法检查；
 - `index.html` 基础 a11y：`<img>` 缺 `alt`、`<button>` 无可访问名、表单控件无 label。
 
-再跑交互级回归（需要本地 Chrome，用法见 `tools/README.md`）：
+再跑交互级回归（需要本地起 http.server + headless Chrome 开远程调试，具体命令见 `tools/README.md`）：
 
 ```bash
-python3 -m http.server 8125 &
-/opt/pw-browsers/chromium --headless=new --disable-gpu --no-sandbox \
-  --remote-debugging-port=9222 --user-data-dir=/tmp/ow-chrome-qa &
 BASE=http://localhost:8125 node tools/qa.mjs
 ```
 
