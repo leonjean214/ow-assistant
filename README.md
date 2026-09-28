@@ -111,3 +111,28 @@ OverFast Base URL：`https://overfast-api.tekrop.fr`
 ## 社区需求来源
 
 Phase 3 新增的“我该玩谁”“换不换顾问”“地图地形要点”“表现卡片”来自社区需求调研，包括 Reddit r/Overwatch、贴吧、OverHub 等。页面不会伪造 workshop 代码或不存在的数据。
+
+## 提交前检查
+
+提交代码或数据改动前建议依次跑：
+
+```bash
+node tools/check-site.mjs
+```
+
+零依赖静态体检脚本，覆盖：
+
+- `index.html`/`sw.js`/`overwolf/` 页面与 `src/*.js` 引用的本地资源路径是否存在（含 `import`、`fetch`、动态 `script.src`/`img.src`）；
+- `sw.js` 的 `APP_SHELL` 预缓存清单与「实际应离线可用」的文件集合是否一致，多列或漏列都会报出；
+- `manifest.webmanifest` 图标路径是否存在、真实 PNG 尺寸是否与声明的 `sizes` 一致；
+- `data/*.json` 能否解析、id 是否唯一、克制关系/地图强势英雄/补丁英雄等互相引用是否都指向存在的英雄；
+- `src` 下每个 JS 文件的 `node --check` 语法检查；
+- `index.html` 基础 a11y：`<img>` 缺 `alt`、`<button>` 无可访问名、表单控件无 label。
+
+再跑交互级回归（需要本地起 http.server + headless Chrome 开远程调试，具体命令见 `tools/README.md`）：
+
+```bash
+BASE=http://localhost:8125 node tools/qa.mjs
+```
+
+两者都应无 FAIL 才提交；`check-site.mjs` 中因数据内容本身不确定（如某些英雄 `counters` 字段写成了职业/阵容类别描述而非具体英雄 id）而暂不修改的项，会在 PR 说明里单独列出。
