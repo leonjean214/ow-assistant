@@ -68,5 +68,8 @@ Cmd/Ctrl-K 模糊搜索英雄/视图/玩家一键跳转。
 ## Phase 26 — i18n 中英双语 UI
 `src/i18n.js`：界面 chrome 中/英切换 + 英雄名随语言；默认中文，持久化。
 
+## Phase 27 — 全面体检修复
+新增零依赖 `tools/check-site.mjs`：本地资源引用、`sw.js` 预缓存清单一致性、manifest 图标尺寸、`data/*.json` 解析与 id/交叉引用、`src` 语法检查、`index.html` 基础 a11y。修复：`data/heroes.json` 中 24 处 `counters` 字段把英雄 id 和中文注释/别名写在一起（如 `"ana(反治疗)"`、`"junker queen"`）导致克制网/详情页把它们当无效引用渲染成禁用按钮，已清理为纯英雄 id；`#/journal` 隐藏的 JSON 导入 `<input type="file">` 补充 `aria-label`（i18n 双语）。仍有约 46 处 `counters` 字段是职业/阵容类描述（如“脆皮后排”“所有 dive”）而非具体英雄 id，内容本身需要人工判断对应哪些英雄，本轮不臆改，详见对应 PR 说明。
+
 ---
 开发与测试基建见 `tools/qa.mjs`（Node ≥22 内置 WebSocket 驱动 Chrome CDP 交互回归，当前 129 项全绿）；数据来源/核实见 `docs/SOURCES.md`；Win 端实时对局（Overwolf）规划见 `overwolf/SPIKE.md`。
