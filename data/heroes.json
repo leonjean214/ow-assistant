@@ -1098,7 +1098,7 @@
           "cassidy"
         ],
         "synergy": [
-          "nano(ana)",
+          "ana",
           "lucio",
           "kiriko"
         ]
@@ -1709,7 +1709,7 @@
         "weakAgainst": [
           "widowmaker",
           "ashe",
-          "tracer(对枪)",
+          "tracer",
           "nano combo"
         ],
         "synergy": [
@@ -1837,7 +1837,7 @@
         "weakAgainst": [
           "sombra",
           "widowmaker",
-          "ana(反治疗)"
+          "ana"
         ],
         "synergy": [
           "reinhardt",
@@ -1966,7 +1966,7 @@
           "tracer",
           "sombra",
           "winston",
-          "ana(反治疗)"
+          "ana"
         ],
         "synergy": [
           "ashe",
@@ -2085,7 +2085,7 @@
           "reaper"
         ],
         "weakAgainst": [
-          "ana(反治疗)",
+          "ana",
           "widowmaker",
           "ashe",
           "sombra"
@@ -2093,7 +2093,7 @@
         "synergy": [
           "reinhardt",
           "mauga",
-          "junker queen"
+          "junkerqueen"
         ]
       },
       "maps": {
@@ -2207,7 +2207,7 @@
         ],
         "weakAgainst": [
           "sombra",
-          "ana(反治疗)",
+          "ana",
           "pharah",
           "echo",
           "bastion"
@@ -2337,7 +2337,7 @@
         "weakAgainst": [
           "zarya",
           "sombra",
-          "ana(反治疗)",
+          "ana",
           "mei",
           "symmetra"
         ],
@@ -2429,10 +2429,10 @@
         "strongAgainst": [
           "reinhardt",
           "winston",
-          "dva(大体型)"
+          "dva"
         ],
         "weakAgainst": [
-          "ana(反治疗)",
+          "ana",
           "zarya",
           "pharah",
           "echo",
@@ -2685,7 +2685,7 @@
         ],
         "weakAgainst": [
           "widowmaker",
-          "ashe(远程对枪)",
+          "ashe",
           "sombra",
           "dva"
         ],
@@ -2949,7 +2949,7 @@
         ],
         "synergy": [
           "mercy",
-          "nano(ana)",
+          "ana",
           "zarya"
         ]
       },
@@ -3328,7 +3328,7 @@
         "synergy": [
           "mei",
           "reinhardt",
-          "junker queen"
+          "junkerqueen"
         ]
       },
       "maps": {
@@ -3441,10 +3441,10 @@
           "脆皮dps",
           "ana",
           "zenyatta",
-          "kiriko(钩中)"
+          "kiriko"
         ],
         "weakAgainst": [
-          "ana(反治疗)",
+          "ana",
           "zarya",
           "sombra",
           "pharah",
@@ -3708,7 +3708,7 @@
         ],
         "weakAgainst": [
           "zarya",
-          "ana(反治疗)",
+          "ana",
           "sombra",
           "bastion"
         ],
@@ -3832,7 +3832,7 @@
         "weakAgainst": [
           "pharah",
           "echo",
-          "ana(反治疗)",
+          "ana",
           "zarya",
           "sombra"
         ],
@@ -4086,7 +4086,7 @@
           "reinhardt",
           "大体型坦克",
           "winston",
-          "pharah(近)"
+          "pharah"
         ],
         "weakAgainst": [
           "genji",
@@ -4600,7 +4600,7 @@
         "weakAgainst": [
           "widowmaker",
           "ashe",
-          "ana(反治疗灭燃烧续航)",
+          "ana",
           "dva"
         ],
         "synergy": [
@@ -5102,13 +5102,13 @@
           "echo",
           "widowmaker",
           "ashe",
-          "ana(反治疗)",
+          "ana",
           "远程"
         ],
         "synergy": [
           "reinhardt",
           "mei",
-          "junker queen",
+          "junkerqueen",
           "zarya"
         ]
       },
@@ -5636,7 +5636,7 @@
           "widowmaker",
           "ashe",
           "sombra",
-          "ana(反治疗)",
+          "ana",
           "dva"
         ],
         "synergy": [
@@ -6151,7 +6151,7 @@
         "weakAgainst": [
           "widowmaker",
           "ashe",
-          "ana(反治疗)",
+          "ana",
           "sombra"
         ],
         "synergy": [
@@ -6540,7 +6540,7 @@
           "tracer",
           "widowmaker",
           "sombra",
-          "ana(反治疗)"
+          "ana"
         ],
         "synergy": [
           "ashe",
