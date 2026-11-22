@@ -1,4 +1,5 @@
 export const JOURNAL_KEY = "ow-journal";
+export const JOURNAL_LIMIT = 1000;
 
 const RESULT_LABELS = { win: "胜", loss: "负", draw: "平" };
 const RESULT_CODES = { win: "W", loss: "L", draw: "D" };
@@ -14,7 +15,7 @@ export function loadJournal(storage = storageRef()) {
 }
 
 export function saveJournal(entries, storage = storageRef()) {
-  const normalized = normalizeJournalEntries(entries);
+  const normalized = normalizeJournalEntries(entries).slice(0, JOURNAL_LIMIT);
   try {
     storage.setItem(JOURNAL_KEY, JSON.stringify(normalized));
   } catch {
@@ -137,7 +138,8 @@ export function normalizeJournalEntries(entries) {
   return entries
     .map(normalizeJournalEntry)
     .filter(Boolean)
-    .sort((a, b) => b.ts - a.ts || String(b.id).localeCompare(String(a.id)));
+    .sort((a, b) => b.ts - a.ts || String(b.id).localeCompare(String(a.id)))
+    .slice(0, JOURNAL_LIMIT);
 }
 
 export function normalizeJournalEntry(entry = {}) {

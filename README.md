@@ -93,7 +93,7 @@ OverFast Base URL：`https://overfast-api.tekrop.fr`
 
 - 玩家搜索、概要和统计缓存 10 分钟。
 - 地图缓存 1 天。
-- 当前版本用浏览器 `localStorage` 保存对局记录，也可以导出 JSON 另行备份；本地数据损坏或不可用时回退空记录。JSON 导入会过滤无效条目并友好提示损坏文件，记录分享图和英雄详情分享图都使用本地 canvas 生成。
+- 对局记录只存本机 `localStorage`，不请求外部 API；损坏或不可用时回退空记录。JSON 导入会过滤无效条目并友好提示损坏文件，记录分享图和英雄详情分享图都使用本地 canvas 生成。
 - Service Worker 不拦截也不缓存 `overfast-api.tekrop.fr` 请求，外部 API 仍由 `src/api.js` 的网络请求和 `localStorage` 缓存控制。
 - 请求超时、404、网络/CORS 失败都会显示中文错误提示，不会白屏。
 - API 英雄 key 会映射 `junker-queen/soldier-76/wrecking-ball` 与本地 `junkerqueen/soldier76/wreckingball`。

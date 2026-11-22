@@ -919,6 +919,7 @@ function renderJournal(message = "") {
   if (!el.journalSummary) return;
   const summary = summarizeJournal(state.journalEntries, state.byId);
   el.journalCount.textContent = formatCount("journalCount", summary.total.games);
+  syncJournalToolState(summary.total.games);
   if (message) {
     el.journalStatus.textContent = message;
   } else {
@@ -930,7 +931,17 @@ function renderJournal(message = "") {
   renderJournalList();
 }
 
+function syncJournalToolState(totalGames) {
+  const disabled = totalGames === 0;
+  if (el.exportJournal) el.exportJournal.disabled = disabled;
+  if (el.shareJournal) el.shareJournal.disabled = disabled;
+}
+
 function exportJournalFile() {
+  if (!state.journalEntries.length) {
+    renderJournal(isEnglish() ? "Record a few games before exporting." : "先记录几局再导出。");
+    return;
+  }
   const payload = serializeJournal(state.journalEntries);
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
   downloadBlob(blob, `ow-journal-${dateFilePart()}.json`);
@@ -964,6 +975,10 @@ async function importJournalFile() {
 }
 
 async function shareJournalCard() {
+  if (!state.journalEntries.length) {
+    renderJournal(isEnglish() ? "Record a few games before sharing." : "先记录几局再分享。");
+    return;
+  }
   try {
     const canvas = el.journalShareCanvas;
     drawJournalShareCard(canvas, summarizeJournal(state.journalEntries, state.byId));
@@ -4446,7 +4461,7 @@ function rememberPlayer(player) {
       avatar: player.avatar || "",
       title: player.title || ""
     });
-    window.localStorage.setItem("ow:recentPlayers", JSON.stringify(list.slice(0, 6)));
+    window.localStorage.setItem("ow:recentPlayers", JSON.stringify(list));
   } catch {
     // Recent searches are optional.
   }
@@ -4466,7 +4481,7 @@ function renderRecentPlayers() {
   el.recentPlayers.replaceChildren();
   if (!recent.length) return;
   appendText(el.recentPlayers, "span", t("recentSearch"));
-  recent.forEach((player) => {
+  recent.slice(0, 6).forEach((player) => {
     const button = create("button", "recent-chip");
     button.type = "button";
     button.dataset.playerId = player.player_id;
