@@ -4461,7 +4461,7 @@ function rememberPlayer(player) {
       avatar: player.avatar || "",
       title: player.title || ""
     });
-    window.localStorage.setItem("ow:recentPlayers", JSON.stringify(list.slice(0, 6)));
+    window.localStorage.setItem("ow:recentPlayers", JSON.stringify(list));
   } catch {
     // Recent searches are optional.
   }
@@ -4481,7 +4481,7 @@ function renderRecentPlayers() {
   el.recentPlayers.replaceChildren();
   if (!recent.length) return;
   appendText(el.recentPlayers, "span", t("recentSearch"));
-  recent.forEach((player) => {
+  recent.slice(0, 6).forEach((player) => {
     const button = create("button", "recent-chip");
     button.type = "button";
     button.dataset.playerId = player.player_id;
